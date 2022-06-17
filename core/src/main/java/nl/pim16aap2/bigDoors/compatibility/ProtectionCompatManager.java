@@ -112,15 +112,15 @@ public class ProtectionCompatManager implements Listener
      * @param playerUUID The {@link UUID} of the player to get.
      * @param playerName The name of the player. Used in case the player isn't
      *                   online.
-     * @param world      The {@link World} the player is in.
+     * @param location   The {@link Location} of the player.
      * @return An online {@link Player}. Either fake or real.
      * @see FakePlayerCreator
      */
-    private @Nullable Player getPlayer(UUID playerUUID, String playerName, World world)
+    private @Nullable Player getPlayer(UUID playerUUID, String playerName, Location location)
     {
         Player player = Bukkit.getPlayer(playerUUID);
         if (player == null)
-            player = fakePlayerCreator.getFakePlayer(Bukkit.getOfflinePlayer(playerUUID), playerName, world);
+            player = fakePlayerCreator.getFakePlayer(Bukkit.getOfflinePlayer(playerUUID), playerName, location);
         return player;
     }
 
@@ -139,7 +139,7 @@ public class ProtectionCompatManager implements Listener
         if (protectionCompats.isEmpty())
             return null;
 
-        final @Nullable Player fakePlayer = getPlayer(playerUUID, playerName, loc.getWorld());
+        final @Nullable Player fakePlayer = getPlayer(playerUUID, playerName, loc);
         if (fakePlayer == null)
             return "InvalidFakePlayer";
 
@@ -178,7 +178,7 @@ public class ProtectionCompatManager implements Listener
         if (protectionCompats.isEmpty())
             return null;
 
-        final @Nullable Player fakePlayer = getPlayer(playerUUID, playerName, world);
+        final @Nullable Player fakePlayer = getPlayer(playerUUID, playerName, loc1);
         if (fakePlayer == null)
             return "InvalidFakePlayer";
 
