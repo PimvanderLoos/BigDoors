@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.compatibility;
 
 import nl.pim16aap2.bigDoors.BigDoors;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -17,7 +18,7 @@ import java.util.UUID;
 
 import static nl.pim16aap2.bigDoors.reflection.ReflectionBuilder.*;
 
-class FakePlayerInstantiator
+class FakePlayerInstantiator implements IFakePlayerInstantiator
 {
     private Class<?> classCraftOfflinePlayer;
     private Class<?> classCraftWorld;
@@ -92,9 +93,9 @@ class FakePlayerInstantiator
                                 .withOptionalParameters(classNMSWorld)).setNullable().get();
     }
 
-
-    public @Nullable Player getFakePlayer(OfflinePlayer oPlayer, String playerName, World world)
+    public @Nullable Player getFakePlayer(OfflinePlayer oPlayer, String playerName, Location location)
     {
+        final World world = location.getWorld();
         if (oPlayer == null || world == null)
             return null;
 
