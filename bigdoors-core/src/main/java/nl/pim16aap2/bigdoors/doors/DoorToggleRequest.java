@@ -36,7 +36,7 @@ public class DoorToggleRequest
     @Getter
     private final IMessageable messageReceiver;
     @Getter
-    private final @Nullable IPPlayer responsible;
+    private final @Nullable CompletableFuture<IPPlayer> responsible;
     @Getter
     private final double time;
     @Getter
@@ -53,10 +53,10 @@ public class DoorToggleRequest
     @AssistedInject
     public DoorToggleRequest(
         @Assisted DoorRetriever doorRetriever, @Assisted DoorActionCause doorActionCause,
-        @Assisted IMessageable messageReceiver, @Assisted @Nullable IPPlayer responsible, @Assisted double time,
-        @Assisted boolean skipAnimation, @Assisted DoorActionType doorActionType, ILocalizer localizer,
-        DoorActivityManager doorActivityManager, AutoCloseScheduler autoCloseScheduler, IPPlayerFactory playerFactory,
-        IPExecutor executor)
+        @Assisted IMessageable messageReceiver, @Assisted @Nullable CompletableFuture<IPPlayer> responsible,
+        @Assisted double time, @Assisted boolean skipAnimation, @Assisted DoorActionType doorActionType,
+        ILocalizer localizer, DoorActivityManager doorActivityManager, AutoCloseScheduler autoCloseScheduler,
+        IPPlayerFactory playerFactory, IPExecutor executor)
     {
         this.doorRetriever = doorRetriever;
         this.doorActionCause = doorActionCause;
@@ -80,8 +80,20 @@ public class DoorToggleRequest
     public CompletableFuture<DoorToggleResult> execute()
     {
         log.at(Level.FINE).log("Executing toggle request: %s", this);
-        return doorRetriever.getDoor().thenCompose(this::execute)
-                            .exceptionally(throwable -> Util.exceptionally(throwable, DoorToggleResult.ERROR));
+        if (responsible != null)
+            return execute(doorRetriever, responsible);
+        else
+            return doorRetriever.getDoor().thenCompose(this::execute)
+                                .exceptionally(throwable -> Util.exceptionally(throwable, DoorToggleResult.ERROR));
+    }
+
+    private CompletableFuture<DoorToggleResult> execute(
+        DoorRetriever doorRetriever, CompletableFuture<IPPlayer> responsible)
+    {
+        final CompletableFuture<Optional<AbstractDoor>> futureDoor = doorRetriever.getDoor();
+        final CompletableFuture<Void> result = CompletableFuture.allOf(futureDoor, responsible);
+        return result.thenComposeAsync(ignored -> execute(futureDoor.join(), responsible.join()))
+                     .exceptionally(throwable -> Util.exceptionally(throwable, DoorToggleResult.ERROR));
     }
 
     private CompletableFuture<DoorToggleResult> execute(Optional<AbstractDoor> doorOpt)
@@ -91,12 +103,25 @@ public class DoorToggleRequest
             log.at(Level.INFO).log("Toggle failure (no door found): %s", this);
             return CompletableFuture.completedFuture(DoorToggleResult.ERROR);
         }
+
+        final CompletableFuture<IPPlayer> responsibleResult =
+            responsible == null ? playerFactory.create(doorOpt.get().getPrimeOwner()) : responsible;
+
+        return responsibleResult.thenComposeAsync(actualResponsible -> execute(doorOpt, actualResponsible));
+    }
+
+    private CompletableFuture<DoorToggleResult> execute(Optional<AbstractDoor> doorOpt, IPPlayer responsible)
+    {
+        if (doorOpt.isEmpty())
+        {
+            log.at(Level.INFO).log("Toggle failure (no door found): %s", this);
+            return CompletableFuture.completedFuture(DoorToggleResult.ERROR);
+        }
         final AbstractDoor door = doorOpt.get();
-        final IPPlayer actualResponsible = getActualResponsible(door);
 
         if (executor.isMainThread())
-            return CompletableFuture.completedFuture(execute(door, actualResponsible));
-        return executor.scheduleOnMainThread(() -> execute(door, actualResponsible));
+            return CompletableFuture.completedFuture(execute(door, responsible));
+        return executor.scheduleOnMainThread(() -> execute(door, responsible));
     }
 
     private DoorToggleResult execute(AbstractDoor door, IPPlayer responsible)
@@ -105,28 +130,12 @@ public class DoorToggleRequest
         return door.toggle(doorActionCause, messageReceiver, responsible, time, skipAnimation, doorActionType);
     }
 
-    /**
-     * Gets the player responsible for this toggle. When {@link #responsible} is provided, this will be the responsible
-     * player.
-     * <p>
-     * If {@link #responsible} is null, the prime owner will be used as responsible player.
-     *
-     * @param door
-     *     The door for which to find the responsible player.
-     * @return The player responsible for toggling the door.
-     */
-    private IPPlayer getActualResponsible(AbstractDoor door)
-    {
-        if (responsible != null)
-            return responsible;
-        return playerFactory.create(door.getPrimeOwner().pPlayerData());
-    }
-
     @AssistedFactory
     public interface IFactory
     {
         DoorToggleRequest create(
             DoorRetriever doorRetriever, DoorActionCause doorActionCause, IMessageable messageReceiver,
-            @Nullable IPPlayer responsible, double time, boolean skipAnimation, DoorActionType doorActionType);
+            @Nullable CompletableFuture<IPPlayer> responsible, double time, boolean skipAnimation,
+            DoorActionType doorActionType);
     }
 }

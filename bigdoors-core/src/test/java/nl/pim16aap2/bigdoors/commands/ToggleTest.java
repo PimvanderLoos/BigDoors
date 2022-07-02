@@ -13,6 +13,7 @@ import nl.pim16aap2.bigdoors.events.dooraction.DoorActionType;
 import nl.pim16aap2.bigdoors.localization.ILocalizer;
 import nl.pim16aap2.bigdoors.util.doorretriever.DoorRetriever;
 import nl.pim16aap2.bigdoors.util.doorretriever.DoorRetrieverFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,10 +25,12 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static nl.pim16aap2.bigdoors.commands.CommandTestingUtil.initCommandSenderPermissions;
+import static org.mockito.ArgumentMatchers.eq;
 
 class ToggleTest
 {
@@ -45,6 +48,9 @@ class ToggleTest
     @Mock(answer = Answers.CALLS_REAL_METHODS)
     private Toggle.IFactory factory;
 
+    @Mock
+    private IPPlayerFactory playerFactory;
+
     private DoorToggleRequestBuilder doorToggleRequestBuilder;
 
     @Mock
@@ -53,10 +59,13 @@ class ToggleTest
     @Mock
     private DoorToggleRequest doorToggleRequest;
 
-    @SneakyThrows @BeforeEach
+    private AutoCloseable openMocks;
+
+    @SneakyThrows
+    @BeforeEach
     void init()
     {
-        MockitoAnnotations.openMocks(this);
+        this.openMocks = MockitoAnnotations.openMocks(this);
 
         initCommandSenderPermissions(commandSender, true, true);
 
@@ -71,8 +80,8 @@ class ToggleTest
                                                      Mockito.anyDouble(), Mockito.anyBoolean(), Mockito.any()))
                .thenReturn(doorToggleRequest);
 
-        doorToggleRequestBuilder = new DoorToggleRequestBuilder(doorToggleRequestFactory, messageableServer,
-                                                                Mockito.mock(IPPlayerFactory.class));
+        doorToggleRequestBuilder =
+            new DoorToggleRequestBuilder(doorToggleRequestFactory, messageableServer, playerFactory);
 
         Mockito.when(factory.newToggle(Mockito.any(ICommandSender.class), Mockito.any(DoorActionType.class),
                                        Mockito.anyDouble(), Mockito.any()))
@@ -80,14 +89,20 @@ class ToggleTest
                    invoc ->
                    {
                        final DoorRetriever[] retrievers =
-                           UnitTestUtil.arrayFromCapturedVarArgs(DoorRetriever.class, invoc,
-                                                                 3);
+                           UnitTestUtil.arrayFromCapturedVarArgs(DoorRetriever.class, invoc, 3);
 
                        return new Toggle(invoc.getArgument(0, ICommandSender.class), localizer,
                                          invoc.getArgument(1, DoorActionType.class),
                                          invoc.getArgument(2, Double.class), doorToggleRequestBuilder,
                                          messageableServer, retrievers);
                    });
+    }
+
+    @AfterEach
+    void cleanup()
+        throws Exception
+    {
+        openMocks.close();
     }
 
     @Test
@@ -97,14 +112,15 @@ class ToggleTest
         final Toggle toggle = factory.newToggle(commandSender, Toggle.DEFAULT_DOOR_ACTION_TYPE,
                                                 Toggle.DEFAULT_SPEED_MULTIPLIER, doorRetriever);
         toggle.executeCommand(new PermissionsStatus(true, true)).get(1, TimeUnit.SECONDS);
-        Mockito.verify(doorToggleRequestFactory).create(doorRetriever, DoorActionCause.PLAYER, commandSender,
-                                                        commandSender, 0.0D, false, DoorActionType.TOGGLE);
+        Mockito.verify(doorToggleRequestFactory)
+               .create(eq(doorRetriever), eq(DoorActionCause.PLAYER), eq(commandSender),
+                       futureWrappedPlayer(commandSender), eq(0.0D), eq(false), eq(DoorActionType.TOGGLE));
 
         Mockito.when(door.getDoorOwner(commandSender)).thenReturn(Optional.of(CommandTestingUtil.doorOwner0));
         toggle.executeCommand(new PermissionsStatus(true, false)).get(1, TimeUnit.SECONDS);
-        Mockito.verify(doorToggleRequestFactory, Mockito.times(2)).create(doorRetriever, DoorActionCause.PLAYER,
-                                                                          commandSender, commandSender,
-                                                                          0.0D, false, DoorActionType.TOGGLE);
+        Mockito.verify(doorToggleRequestFactory, Mockito.times(2))
+               .create(eq(doorRetriever), eq(DoorActionCause.PLAYER), eq(commandSender),
+                       futureWrappedPlayer(commandSender), eq(0.0D), eq(false), eq(DoorActionType.TOGGLE));
     }
 
     @Test
@@ -143,31 +159,33 @@ class ToggleTest
         Mockito.when(door.isCloseable()).thenReturn(true);
         Mockito.when(door.isOpenable()).thenReturn(true);
 
-        Assertions.assertTrue(factory.newToggle(commandSender, doorRetriever).run().get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(
+            factory.newToggle(commandSender, doorRetriever).run().get(1, TimeUnit.SECONDS));
         Mockito.verify(doorToggleRequestFactory, Mockito.times(1))
-               .create(doorRetriever, DoorActionCause.PLAYER, commandSender, commandSender,
-                       Toggle.DEFAULT_SPEED_MULTIPLIER, false, DoorActionType.TOGGLE);
+               .create(eq(doorRetriever), eq(DoorActionCause.PLAYER), eq(commandSender),
+                       futureWrappedPlayer(commandSender),
+                       eq(Toggle.DEFAULT_SPEED_MULTIPLIER), eq(false), eq(DoorActionType.TOGGLE));
 
-
-        Assertions.assertTrue(factory.newToggle(commandSender, 3.141592653589793D, doorRetriever).run()
-                                     .get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(
+            factory.newToggle(commandSender, 3.141592653589793D, doorRetriever).run().get(1, TimeUnit.SECONDS));
         Mockito.verify(doorToggleRequestFactory, Mockito.times(1))
-               .create(doorRetriever, DoorActionCause.PLAYER, commandSender, commandSender,
-                       3.141592653589793D, false, DoorActionType.TOGGLE);
+               .create(eq(doorRetriever), eq(DoorActionCause.PLAYER), eq(commandSender),
+                       futureWrappedPlayer(commandSender),
+                       eq(3.141592653589793D), eq(false), eq(DoorActionType.TOGGLE));
 
 
         Assertions.assertTrue(
             factory.newToggle(commandSender, DoorActionType.CLOSE, doorRetriever).run().get(1, TimeUnit.SECONDS));
         Mockito.verify(doorToggleRequestFactory, Mockito.times(1))
-               .create(doorRetriever, DoorActionCause.PLAYER, commandSender, commandSender,
-                       Toggle.DEFAULT_SPEED_MULTIPLIER, false, DoorActionType.CLOSE);
+               .create(eq(doorRetriever), eq(DoorActionCause.PLAYER), eq(commandSender),
+                       futureWrappedPlayer(commandSender),
+                       eq(Toggle.DEFAULT_SPEED_MULTIPLIER), eq(false), eq(DoorActionType.CLOSE));
 
-
-        Assertions.assertTrue(factory.newToggle(commandSender, DoorActionType.OPEN, 42, doorRetriever).run()
-                                     .get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(
+            factory.newToggle(commandSender, DoorActionType.OPEN, 42.0D, doorRetriever).run().get(1, TimeUnit.SECONDS));
         Mockito.verify(doorToggleRequestFactory, Mockito.times(1))
-               .create(doorRetriever, DoorActionCause.PLAYER, commandSender,
-                       commandSender, 42, false, DoorActionType.OPEN);
+               .create(eq(doorRetriever), eq(DoorActionCause.PLAYER), eq(commandSender),
+                       futureWrappedPlayer(commandSender), eq(42.0D), eq(false), eq(DoorActionType.OPEN));
     }
 
     @Test
@@ -211,5 +229,10 @@ class ToggleTest
         Assertions.assertTrue(factory.newToggle(commandSender, DoorActionType.CLOSE, doorRetriever).run()
                                      .get(1, TimeUnit.SECONDS));
         verifyNoOpenerCalls();
+    }
+
+    private CompletableFuture<IPPlayer> futureWrappedPlayer(IPPlayer player)
+    {
+        return Mockito.argThat(futureSender -> futureSender.isDone() && futureSender.join().equals(player));
     }
 }

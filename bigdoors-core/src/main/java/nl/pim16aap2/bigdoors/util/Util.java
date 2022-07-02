@@ -287,8 +287,8 @@ public final class Util
      *     The search predicate to use.
      * @param <T>
      *     The type of objects stored in the {@link Iterable}.
-     * @return The value in the {@link Iterable} object for which the search function returns true, otherwise {@link
-     * Optional#empty()}.
+     * @return The value in the {@link Iterable} object for which the search function returns true, otherwise
+     * {@link Optional#empty()}.
      */
     public <T> Optional<T> searchIterable(Iterable<T> iterable, Predicate<T> searchPred)
     {
@@ -319,8 +319,8 @@ public final class Util
      *
      * @param pBlockFace
      *     The {@link PBlockFace}.
-     * @return The {@link RotateDirection} equivalent of a {@link PBlockFace} if it exists and otherwise {@link
-     * RotateDirection#NONE}.
+     * @return The {@link RotateDirection} equivalent of a {@link PBlockFace} if it exists and otherwise
+     * {@link RotateDirection#NONE}.
      */
     public static RotateDirection getRotateDirection(PBlockFace pBlockFace)
     {
@@ -332,8 +332,8 @@ public final class Util
      *
      * @param rotateDirection
      *     The {@link RotateDirection}.
-     * @return The {@link PBlockFace} equivalent of a {@link RotateDirection} if it exists and otherwise {@link
-     * PBlockFace#NONE}.
+     * @return The {@link PBlockFace} equivalent of a {@link RotateDirection} if it exists and otherwise
+     * {@link PBlockFace#NONE}.
      */
     public static PBlockFace getPBlockFace(RotateDirection rotateDirection)
     {
@@ -787,15 +787,13 @@ public final class Util
     public static <T> CompletableFuture<List<T>> getAllCompletableFutureResults(CompletableFuture<T>... futures)
     {
         final CompletableFuture<Void> result = CompletableFuture.allOf(futures);
-        return result.thenApply(ignored ->
-                                {
-                                    final List<T> ret = new ArrayList<>(futures.length);
-                                    for (final CompletableFuture<T> future : futures)
-                                    {
-                                        ret.add(future.join());
-                                    }
-                                    return ret;
-                                }).exceptionally(throwable -> exceptionally(throwable, Collections.emptyList()));
+        return result.thenApplyAsync(ignored ->
+                                     {
+                                         final List<T> ret = new ArrayList<>(futures.length);
+                                         for (final CompletableFuture<T> future : futures)
+                                             ret.add(future.join());
+                                         return ret;
+                                     }).exceptionally(throwable -> exceptionally(throwable, Collections.emptyList()));
     }
 
     /**

@@ -16,8 +16,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -32,9 +32,10 @@ public class DoorToggleRequestBuilder
     private final IPPlayerFactory playerFactory;
 
     @Inject
-    public DoorToggleRequestBuilder(DoorToggleRequest.IFactory doorToggleRequestFactory,
-                                    @Named("MessageableServer") IMessageable messageableServer,
-                                    IPPlayerFactory playerFactory)
+    public DoorToggleRequestBuilder(
+        DoorToggleRequest.IFactory doorToggleRequestFactory,
+        @Named("MessageableServer") IMessageable messageableServer,
+        IPPlayerFactory playerFactory)
     {
         this.doorToggleRequestFactory = doorToggleRequestFactory;
         this.messageableServer = messageableServer;
@@ -64,7 +65,8 @@ public class DoorToggleRequestBuilder
         private DoorActionType doorActionType;
 
         private @Nullable IMessageable messageReceiver = null;
-        private @Nullable IPPlayer responsible = null;
+        private @Nullable UUID responsibleUUID = null;
+        private @Nullable CompletableFuture<IPPlayer> responsible = null;
         private double time = 0D;
         private boolean skipAnimation = false;
 
@@ -85,19 +87,31 @@ public class DoorToggleRequestBuilder
         @Override
         public IBuilder responsible(@Nullable IPPlayer responsible)
         {
-            this.responsible = responsible;
+            if (responsible == null)
+            {
+                this.responsible = null;
+            }
+            else
+            {
+                this.responsibleUUID = responsible.getUUID();
+                this.responsible = CompletableFuture.completedFuture(responsible);
+            }
             return this;
         }
 
         @Override
-        public IBuilder responsible(@Nullable PPlayerData playerData)
+        public IBuilder responsible(@Nullable PPlayerData responsible)
         {
-            if (playerData == null)
+            if (responsible == null)
             {
-                responsible = null;
-                return this;
+                this.responsible = null;
             }
-            return responsible(playerFactory.create(playerData));
+            else
+            {
+                this.responsibleUUID = responsible.getUUID();
+                this.responsible = playerFactory.create(responsible);
+            }
+            return this;
         }
 
         @Override
@@ -152,9 +166,9 @@ public class DoorToggleRequestBuilder
         public DoorToggleRequest build()
         {
             updateMessageReceiver();
-            return doorToggleRequestFactory.create(doorRetriever, doorActionCause,
-                                                   Util.requireNonNull(messageReceiver, "MessageReceiver"),
-                                                   responsible, time, skipAnimation, doorActionType);
+            return doorToggleRequestFactory.create(
+                doorRetriever, doorActionCause, Util.requireNonNull(messageReceiver, "MessageReceiver"),
+                responsible, time, skipAnimation, doorActionType);
         }
 
         /**
@@ -168,12 +182,17 @@ public class DoorToggleRequestBuilder
             if (messageReceiver != null)
                 return;
 
-            if (doorActionCause == DoorActionCause.PLAYER)
-                //noinspection ConstantConditions
-                messageReceiver = Objects.requireNonNull(
-                    responsible, "Responsible player must be set when the door action " + "is caused by a player!");
-            else
-                messageReceiver = messageableServer;
+            if (doorActionCause == DoorActionCause.PLAYER && responsibleUUID != null)
+            {
+                final @Nullable IMessageable player = playerFactory.wrapOnlinePlayer(responsibleUUID);
+                if (player != null)
+                {
+                    messageReceiver = player;
+                    return;
+                }
+            }
+
+            messageReceiver = messageableServer;
         }
     }
 

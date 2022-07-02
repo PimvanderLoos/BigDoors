@@ -31,9 +31,10 @@ public final class OfflinePPlayerSpigot implements IPPlayer
         this.spigotPlayer = spigotPlayer;
     }
 
-    public OfflinePPlayerSpigot(PPlayerData playerData)
+    public static CompletableFuture<OfflinePPlayerSpigot> of(PPlayerData playerData)
     {
-        this(playerData, Bukkit.getOfflinePlayer(playerData.getUUID()));
+        return CompletableFuture.supplyAsync(
+            () -> new OfflinePPlayerSpigot(playerData, Bukkit.getOfflinePlayer(playerData.getUUID())));
     }
 
     /**
