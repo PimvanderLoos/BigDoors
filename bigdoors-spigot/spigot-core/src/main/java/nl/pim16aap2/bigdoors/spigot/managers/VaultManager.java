@@ -231,22 +231,6 @@ public final class VaultManager implements IRestartable, IEconomyManager, IPermi
     }
 
     /**
-     * Withdraw a certain amount of money from a player's bank account in a certain world.
-     *
-     * @param player
-     *     The player.
-     * @param worldName
-     *     The name of the world.
-     * @param amount
-     *     The amount of money.
-     * @return True if the money was successfully withdrawn from the player's accounts.
-     */
-    private boolean withdrawPlayer(Player player, String worldName, double amount)
-    {
-        return withdrawPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()), worldName, amount);
-    }
-
-    /**
      * Checks if Vault is installed on this server.
      *
      * @return True if vault is installed on this server.
@@ -289,8 +273,8 @@ public final class VaultManager implements IRestartable, IEconomyManager, IPermi
     }
 
     /**
-     * Initialize the "permissions" dependency. Assumes Vault is installed on this server. See {@link
-     * #isVaultInstalled()}.
+     * Initialize the "permissions" dependency. Assumes Vault is installed on this server. See
+     * {@link #isVaultInstalled()}.
      *
      * @return True if the initialization process was successful.
      */
