@@ -2,7 +2,7 @@
 BigDoors is a plugin for the Minecraft server mod [Spigot](https://spigotmc.org). Its aim is to enhance your server with
 animated blocks that can be used to create, amongst other things, big (animated) doors.
 
-This is the repository for v1 of the BigDoors plugin for SpigotMC. A new v2 version is in development [here](https://github.com/PimvanderLoos/BigDoors).
+This is the repository for v1 of the BigDoors plugin for SpigotMC. A new v2 version is in development [here](https://github.com/PimvanderLoos/AnimatedArchitecture).
 
 If you have a problem with this plugin, please create an issue or join our [Discord](https://discord.gg/5ykb943).
 
