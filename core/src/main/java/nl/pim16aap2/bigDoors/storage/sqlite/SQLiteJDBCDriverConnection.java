@@ -331,7 +331,8 @@ public class SQLiteJDBCDriverConnection
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1000000;
         plugin.getMyLogger()
-            .warn("Database upgrade completed in " + duration + "ms! Please update BigDoors to v2 now!");
+            .warn("Database upgrade completed in " + duration + "ms! " +
+                      "Please upgrade to replace BigDoors with Animated Architecture now!");
     }
 
     /**

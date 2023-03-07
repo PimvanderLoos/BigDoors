@@ -214,9 +214,8 @@ final class V2ExportUtil
         switch (doorType)
         {
             case DOOR:
-                return "{}";
             case DRAWBRIDGE:
-                return "{\"modeUp\":true}";
+                return "{\"quarterCircles\":1}";
             case PORTCULLIS:
             case SLIDINGDOOR:
                 return "{\"blocksToMove\":" + blocksToMove + "}";
@@ -229,13 +228,13 @@ final class V2ExportUtil
         switch (doorType)
         {
             case DOOR:
-                return "bigdoors:bigdoor";
+                return "animatedarchitecture:bigdoor";
             case DRAWBRIDGE:
-                return "bigdoors:drawbridge";
+                return "animatedarchitecture:drawbridge";
             case PORTCULLIS:
-                return "bigdoors:portcullis";
+                return "animatedarchitecture:portcullis";
             case SLIDINGDOOR:
-                return "bigdoors:slidingdoor";
+                return "animatedarchitecture:slidingdoor";
         }
         throw new IllegalArgumentException("Received unexpected door type: " + doorType);
     }
