@@ -46,6 +46,17 @@ public class CustomCraftFallingBlock_V1_19_R2 extends CraftEntity implements Fal
     }
 
     @Override
+    public void setVisibleByDefault(boolean flag)
+    {
+    }
+
+    @Override
+    public boolean isVisibleByDefault()
+    {
+        return true;
+    }
+
+    @Override
     @Deprecated
     public @NotNull Material getMaterial()
     {
