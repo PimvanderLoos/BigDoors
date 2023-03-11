@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 
 public final class VaultManager implements IPermissionsManager
 {
@@ -108,9 +109,11 @@ public final class VaultManager implements IPermissionsManager
         return vaultEnabled && perms.playerHas(player.getWorld().getName(), player, permission);
     }
 
-    public boolean hasPermission(OfflinePlayer player, String permission, String worldName)
+    public CompletableFuture<Boolean> hasPermission(OfflinePlayer player, String permission, String worldName)
     {
-        return vaultEnabled && perms.playerHas(worldName, player, permission);
+        if (!vaultEnabled)
+            return CompletableFuture.completedFuture(false);
+        return CompletableFuture.supplyAsync(() -> perms.playerHas(worldName, player, permission));
     }
 
     private double evaluateFormula(String formula, int blockCount)
@@ -133,7 +136,7 @@ public final class VaultManager implements IPermissionsManager
             return 0;
 
         // Try cache first
-        long priceID = blockCount * 100 + DoorType.getValue(type);
+        long priceID = blockCount * 100L + DoorType.getValue(type);
         if (menu.containsKey(priceID))
             return menu.get(priceID);
 

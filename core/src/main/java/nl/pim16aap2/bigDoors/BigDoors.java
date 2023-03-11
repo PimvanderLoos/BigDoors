@@ -77,6 +77,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 // TODO: Drawbridges that were created when flat, should remember that direction for opening.
@@ -434,13 +435,13 @@ public class BigDoors extends JavaPlugin implements Listener
         return PACKAGE_VERSION;
     }
 
-    public String canBreakBlock(UUID playerUUID, String playerName, Location loc)
+    public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
         return protCompatMan.canBreakBlock(playerUUID, playerName, loc);
     }
 
-    public String canBreakBlocksBetweenLocs(UUID playerUUID, String playerName, World world, Location loc1,
-                                            Location loc2)
+    public CompletableFuture<@Nullable String> canBreakBlocksBetweenLocs(
+        UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
         return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2);
     }
