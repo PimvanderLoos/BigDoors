@@ -1,11 +1,12 @@
 package nl.pim16aap2.bigDoors.toolUsers;
 
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Util;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class SlidingDoorCreator extends ToolUser
 {
@@ -22,7 +23,7 @@ public class SlidingDoorCreator extends ToolUser
     @Override
     protected void triggerGiveTool()
     {
-        giveToolToPlayer(messages.getString("CREATOR.SLIDINGDOOR.StickLore"    ).split("\n"),
+        giveToolToPlayer(messages.getString("CREATOR.SLIDINGDOOR.StickLore").split("\n"),
                          messages.getString("CREATOR.SLIDINGDOOR.StickReceived").split("\n"));
     }
 
@@ -57,16 +58,8 @@ public class SlidingDoorCreator extends ToolUser
         return true;
     }
 
-    // Take care of the selection points.
-    @Override
-    public void selector(Location loc)
+    private void selector(Location loc, @Nullable String canBreakBlock)
     {
-        if (name == null)
-        {
-            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
-            return;
-        }
-        final String canBreakBlock = plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc);
         if (canBreakBlock != null)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
@@ -89,5 +82,18 @@ public class SlidingDoorCreator extends ToolUser
             setEngine();
             setIsDone(true);
         }
+    }
+
+    // Take care of the selection points.
+    @Override
+    public void selector(Location loc)
+    {
+        if (name == null)
+        {
+            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
+            return;
+        }
+        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
+              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
     }
 }

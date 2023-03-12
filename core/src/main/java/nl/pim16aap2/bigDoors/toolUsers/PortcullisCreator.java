@@ -1,12 +1,13 @@
 package nl.pim16aap2.bigDoors.toolUsers;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Util;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class PortcullisCreator extends ToolUser
 {
@@ -48,16 +49,8 @@ public class PortcullisCreator extends ToolUser
         engine = new Location(one.getWorld(), xMid, yMin, zMid);
     }
 
-    // Take care of the selection points.
-    @Override
-    public void selector(Location loc)
+    private void selector(Location loc, @Nullable String canBreakBlock)
     {
-        if (name == null)
-        {
-            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
-            return;
-        }
-        String canBreakBlock = plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc);
         if (canBreakBlock != null)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
@@ -78,5 +71,18 @@ public class PortcullisCreator extends ToolUser
             setEngine();
             setIsDone(true);
         }
+    }
+
+    // Take care of the selection points.
+    @Override
+    public void selector(Location loc)
+    {
+        if (name == null)
+        {
+            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
+            return;
+        }
+        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
+              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
     }
 }

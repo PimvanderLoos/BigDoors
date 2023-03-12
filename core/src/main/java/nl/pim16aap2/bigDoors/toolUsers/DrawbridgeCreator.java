@@ -1,14 +1,15 @@
 package nl.pim16aap2.bigDoors.toolUsers;
 
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
-
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 /*
  * This class represents players in the process of creating doors.
@@ -213,16 +214,8 @@ public class DrawbridgeCreator extends ToolUser
         return xDepth != 0 ^ zDepth != 0;
     }
 
-    // Take care of the selection points.
-    @Override
-    public void selector(Location loc)
+    private void selector(Location loc, @Nullable String canBreakBlock)
     {
-        if (name == null)
-        {
-            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
-            return;
-        }
-        String canBreakBlock = plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc);
         if (canBreakBlock != null)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
@@ -287,5 +280,18 @@ public class DrawbridgeCreator extends ToolUser
         }
         else
             setIsDone(true);
+    }
+
+    // Take care of the selection points.
+    @Override
+    public void selector(Location loc)
+    {
+        if (name == null)
+        {
+            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
+            return;
+        }
+        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
+              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
     }
 }
