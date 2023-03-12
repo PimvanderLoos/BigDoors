@@ -173,7 +173,8 @@ public class ProtectionCompatManager implements Listener
                 }
                 catch (InterruptedException e)
                 {
-                    e.printStackTrace();
+                    plugin.getMyLogger().log(
+                        "Interrupted while checking permissions for offline player: " + fakePlayer, e);
                     Thread.currentThread().interrupt();
                 }
                 catch (TimeoutException e)
@@ -185,7 +186,7 @@ public class ProtectionCompatManager implements Listener
                     plugin.getMyLogger().log("Failed to check permissions for offline player: " + fakePlayer, e);
                 }
                 return "ERROR";
-            });
+            }).exceptionally(throwable -> Util.exceptionally(throwable, "ERROR!"));
     }
 
     public int registeredCompatsCount()
@@ -220,7 +221,8 @@ public class ProtectionCompatManager implements Listener
         if (fakePlayer == null)
             return CompletableFuture.completedFuture("InvalidFakePlayer");
 
-        return checkForPlayer(fakePlayer, () -> function.apply(fakePlayer));
+        return checkForPlayer(fakePlayer, () -> function.apply(fakePlayer))
+            .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }
 
     /**

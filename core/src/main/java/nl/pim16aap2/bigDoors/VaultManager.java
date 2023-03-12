@@ -113,7 +113,9 @@ public final class VaultManager implements IPermissionsManager
     {
         if (!vaultEnabled)
             return CompletableFuture.completedFuture(false);
-        return CompletableFuture.supplyAsync(() -> perms.playerHas(worldName, player, permission));
+        return CompletableFuture
+            .supplyAsync(() -> perms.playerHas(worldName, player, permission))
+            .exceptionally(throwable -> Util.exceptionally(throwable, false));
     }
 
     private double evaluateFormula(String formula, int blockCount)

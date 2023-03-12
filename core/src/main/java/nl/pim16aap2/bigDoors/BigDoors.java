@@ -439,13 +439,15 @@ public class BigDoors extends JavaPlugin implements Listener
 
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
-        return protCompatMan.canBreakBlock(playerUUID, playerName, loc);
+        return protCompatMan.canBreakBlock(playerUUID, playerName, loc)
+            .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }
 
     public CompletableFuture<@Nullable String> canBreakBlocksBetweenLocs(
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
-        return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2);
+        return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2)
+            .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }
 
     public ProtectionCompatManager getProtectionCompatManager()
