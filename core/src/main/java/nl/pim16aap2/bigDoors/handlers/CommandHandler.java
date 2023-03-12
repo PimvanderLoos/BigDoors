@@ -92,7 +92,7 @@ public class CommandHandler implements CommandExecutor
             final CompletableFuture<DoorOpenResult> futureResult =
                 opener == null ?
                 CompletableFuture.completedFuture(DoorOpenResult.TYPEDISABLED) :
-                opener.openDoor(newDoor, time, instant);
+                opener.openDoorFuture(newDoor, time, instant);
 
             futureResult.thenAccept(
                 result ->

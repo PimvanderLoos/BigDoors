@@ -24,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,40 +79,40 @@ public interface Opener
      * @param bypassProtectionHooks Whether to bypass the protection hooks when trying to toggle the door.
      * @return The result of the toggle attempt.
      */
-    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+    default @NotNull CompletableFuture<DoorOpenResult> openDoorFuture(
         @NotNull Door door, boolean bypassProtectionHooks)
     {
-        return openDoor(door, 0.0, false, false, getChunkLoadMode(door), bypassProtectionHooks)
+        return openDoorFuture(door, 0.0, false, false, getChunkLoadMode(door), bypassProtectionHooks)
             .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
-     * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
+     * See {@link #openDoorFuture(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+    default @NotNull CompletableFuture<DoorOpenResult> openDoorFuture(
         @NotNull Door door, double time)
     {
-        return openDoor(door, time, false, false)
+        return openDoorFuture(door, time, false, false)
             .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
-     * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
+     * See {@link #openDoorFuture(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+    default @NotNull CompletableFuture<DoorOpenResult> openDoorFuture(
         @NotNull Door door, double time, boolean instantOpen)
     {
-        return openDoor(door, time, instantOpen, false)
+        return openDoorFuture(door, time, instantOpen, false)
             .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
-     * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
+     * See {@link #openDoorFuture(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+    default @NotNull CompletableFuture<DoorOpenResult> openDoorFuture(
         @NotNull Door door, double time, boolean instantOpen, boolean silent)
     {
-        return openDoor(door, time, instantOpen, silent, getChunkLoadMode(door))
+        return openDoorFuture(door, time, instantOpen, silent, getChunkLoadMode(door))
             .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
@@ -137,12 +138,12 @@ public interface Opener
     }
 
     /**
-     * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
+     * See {@link #openDoorFuture(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+    default @NotNull CompletableFuture<DoorOpenResult> openDoorFuture(
         @NotNull Door door, double time, boolean instantOpen, boolean silent, @NotNull ChunkLoadMode mode)
     {
-        return openDoor(door, time, instantOpen, silent, mode, false)
+        return openDoorFuture(door, time, instantOpen, silent, mode, false)
             .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
@@ -162,7 +163,7 @@ public interface Opener
      * @param bypassProtectionHooks Whether to bypass the protection hooks when trying to toggle the door.
      * @return The result of the toggle attempt.
      */
-    @NotNull CompletableFuture<DoorOpenResult> openDoor(
+    @NotNull CompletableFuture<DoorOpenResult> openDoorFuture(
         @NotNull Door door, double time, boolean instantOpen, boolean silent,
         @NotNull ChunkLoadMode mode, boolean bypassProtectionHooks);
 
@@ -177,7 +178,94 @@ public interface Opener
     }
 
     /**
-     * Gets the number of blocks between this door and the world limit
+     * Attempts to get the result stored in a CompletableFuture that contains a DoorOpenResult.
+     * </p>
+     * Because most steps of the toggle process are performed on the main thread, the resulting CompletableFuture will
+     * often contain the actual value.
+     * </p>
+     * However, in certain circumstances the CompletableFuture may actually include asynchronous steps. When this
+     * happens, this method is unable to retrieve the real value.
+     *
+     * @param result The future result of attempting to toggle a door.
+     * @return The DoorOpenResult in the {@link CompletableFuture} if it is available. When it is not (yet) available,
+     * {@link DoorOpenResult#ERROR} is returned instead.
+     */
+    static DoorOpenResult processFutureResult(CompletableFuture<DoorOpenResult> result)
+    {
+        return result.getNow(DoorOpenResult.ERROR);
+    }
+
+    /**
+     * @deprecated Use {@link #openDoorFuture(Door, double, boolean, boolean, ChunkLoadMode, boolean)} instead.
+     * </p>
+     * This method may not return to real result; see {@link #processFutureResult(CompletableFuture)}.
+     */
+    @Deprecated
+    default @Nonnull DoorOpenResult openDoor(
+        @Nonnull Door door, double time, boolean instantOpen, boolean silent, @Nonnull ChunkLoadMode mode,
+        boolean bypassProtectionHooks)
+    {
+        return processFutureResult(openDoorFuture(door, time, instantOpen, silent, mode, bypassProtectionHooks));
+    }
+
+    /**
+     * @deprecated Use {@link #openDoorFuture(Door, double, boolean, boolean, ChunkLoadMode)} instead.
+     * </p>
+     * This method may not return to real result; see {@link #processFutureResult(CompletableFuture)}.
+     */
+    @Deprecated
+    default @Nonnull DoorOpenResult openDoor(
+        @Nonnull Door door, double time, boolean instantOpen, boolean silent, @Nonnull ChunkLoadMode mode)
+    {
+        return openDoor(door, time, instantOpen, silent, mode, false);
+    }
+
+    /**
+     * @deprecated Use {@link #openDoorFuture(Door, boolean)} instead.
+     * </p>
+     * This method may not return to real result; see {@link #processFutureResult(CompletableFuture)}.
+     */
+    @Deprecated
+    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, boolean bypassProtectionHooks)
+    {
+        return openDoor(door, 0.0, false, false, getChunkLoadMode(door), bypassProtectionHooks);
+    }
+
+    /**
+     * @deprecated Use {@link #openDoorFuture(Door, double)} instead.
+     * </p>
+     * This method may not return to real result; see {@link #processFutureResult(CompletableFuture)}.
+     */
+    @Deprecated
+    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time)
+    {
+        return openDoor(door, time, false, false);
+    }
+
+    /**
+     * @deprecated Use {@link #openDoorFuture(Door, double, boolean)} instead.
+     * </p>
+     * This method may not return to real result; see {@link #processFutureResult(CompletableFuture)}.
+     */
+    @Deprecated
+    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen)
+    {
+        return openDoor(door, time, instantOpen, false);
+    }
+
+    /**
+     * @deprecated Use {@link #openDoorFuture(Door, double, boolean, boolean)} instead.
+     * </p>
+     * This method may not return to real result; see {@link #processFutureResult(CompletableFuture)}.
+     */
+    @Deprecated
+    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent)
+    {
+        return openDoor(door, time, instantOpen, silent, getChunkLoadMode(door));
+    }
+
+    /**
+     * Gets the number of blocks between this door and the world limit.
      *
      * @param door               The door for which to find the distances to the world limits.
      * @param worldHeightManager The world height manager.

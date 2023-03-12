@@ -1,10 +1,10 @@
 package nl.pim16aap2.bigDoors;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AutoCloseScheduler
 {
@@ -70,7 +70,7 @@ public class AutoCloseScheduler
                     }
                     else
                         plugin.getDoorOpener(door.getType())
-                            .openDoor(plugin.getCommander().getDoor(null, door.getDoorUID()), time, instantOpen, false);
+                            .openDoorFuture(plugin.getCommander().getDoor(null, door.getDoorUID()), time, instantOpen, false);
                 }
                 deleteTimer(door.getDoorUID());
             }

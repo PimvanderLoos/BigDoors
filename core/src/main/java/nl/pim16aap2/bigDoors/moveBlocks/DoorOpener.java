@@ -255,7 +255,7 @@ public class DoorOpener implements Opener
     }
 
     @Override
-    public @Nonnull CompletableFuture<DoorOpenResult> openDoor(
+    public @Nonnull CompletableFuture<DoorOpenResult> openDoorFuture(
         @Nonnull Door door, double time, boolean instantOpen, boolean silent,
         @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
     {

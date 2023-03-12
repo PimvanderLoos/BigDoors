@@ -914,7 +914,7 @@ public class BigDoors extends JavaPlugin implements Listener
         final Opener opener = getDoorOpener(door.getType());
         return opener == null ?
                CompletableFuture.completedFuture(DoorOpenResult.TYPEDISABLED) :
-               opener.openDoor(door, time, instantOpen);
+               opener.openDoorFuture(door, time, instantOpen);
     }
 
     private CompletableFuture<Boolean> toggleDoorFuture0(Door door, double time, boolean instantOpen)
@@ -975,11 +975,6 @@ public class BigDoors extends JavaPlugin implements Listener
         return toggleDoorFuture0(getCommander().getDoor(null, doorUID), 0.0, false);
     }
 
-    private DoorOpenResult processFutureResult(CompletableFuture<DoorOpenResult> result)
-    {
-        return result.getNow(DoorOpenResult.ERROR);
-    }
-
     /**
      * @deprecated Use {@link #toggleDoorFuture(Door, double, boolean)} instead.
      * </p>
@@ -990,7 +985,7 @@ public class BigDoors extends JavaPlugin implements Listener
     {
         Opener opener = getDoorOpener(door.getType());
         return opener == null ? DoorOpenResult.TYPEDISABLED :
-               processFutureResult(opener.openDoor(door, time, instantOpen));
+               Opener.processFutureResult(opener.openDoorFuture(door, time, instantOpen));
     }
 
     /**
