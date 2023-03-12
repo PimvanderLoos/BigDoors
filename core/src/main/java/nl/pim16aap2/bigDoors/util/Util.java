@@ -824,6 +824,16 @@ public final class Util
     }
 
     /**
+     * See {@link #exceptionally(Throwable, Object)} with a null fallback value.
+     *
+     * @return Always null
+     */
+    public static @Nullable <T> T exceptionally(Throwable throwable)
+    {
+        return exceptionally(throwable, null);
+    }
+
+    /**
      * Maps a group of CompletableFutures to a single CompletableFuture with a list of results.
      * <p>
      * The result will wait for each of the futures to complete and once all of them have completed gather the results

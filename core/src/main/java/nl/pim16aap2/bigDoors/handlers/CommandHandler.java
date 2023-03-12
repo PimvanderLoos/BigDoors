@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 public class CommandHandler implements CommandExecutor
@@ -87,13 +88,20 @@ public class CommandHandler implements CommandExecutor
                                                 plugin.getMessages().getString("GENERAL.DoorIsLocked"));
         else
         {
-            Opener opener = plugin.getDoorOpener(newDoor.getType());
-            DoorOpenResult result = opener == null ? DoorOpenResult.TYPEDISABLED :
-                                    opener.openDoor(newDoor, time, instant);
+            final Opener opener = plugin.getDoorOpener(newDoor.getType());
+            final CompletableFuture<DoorOpenResult> futureResult =
+                opener == null ?
+                CompletableFuture.completedFuture(DoorOpenResult.TYPEDISABLED) :
+                opener.openDoor(newDoor, time, instant);
 
-            if (result != DoorOpenResult.SUCCESS)
-                plugin.getMyLogger().returnToSender(sender, Level.INFO, ChatColor.RED,
-                                                    plugin.getMessages().getString(DoorOpenResult.getMessage(result)));
+            futureResult.thenAccept(
+                result ->
+                {
+                    if (result != DoorOpenResult.SUCCESS)
+                        plugin.getMyLogger().returnToSender(
+                            sender, Level.INFO, ChatColor.RED,
+                            plugin.getMessages().getString(DoorOpenResult.getMessage(result)));
+                }).exceptionally(Util::exceptionally);
         }
     }
 
@@ -107,7 +115,7 @@ public class CommandHandler implements CommandExecutor
         openDoorCommand(player, door, 0.0, false);
     }
 
-    // Get the number of doors owned by player player with name doorName (or any
+    // Get the number of doors owned by player 'player' with name doorName (or any
     // name, if doorName == null)
     public long countDoors(Player player, String doorName)
     {

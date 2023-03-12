@@ -3,7 +3,6 @@ package nl.pim16aap2.bigDoors.handlers;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.ConfigLoader;
-import nl.pim16aap2.bigDoors.util.DoorOpenResult;
 import nl.pim16aap2.bigDoors.util.Util;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -20,11 +19,11 @@ public class RedstoneHandler implements Listener
         this.plugin = plugin;
     }
 
-    public boolean checkDoor(Location loc)
+    public void checkDoor(Location loc)
     {
         Door door = plugin.getCommander().doorFromPowerBlockLoc(loc);
-        return door != null && !door.isLocked() &&
-               plugin.getDoorOpener(door.getType()).openDoor(door, 0.0, false, true) == DoorOpenResult.SUCCESS;
+        if (door != null && !door.isLocked())
+            plugin.getDoorOpener(door.getType()).openDoor(door, 0.0, false, true).exceptionally(Util::exceptionally);
     }
 
     // When redstone changes, check if there's a power block on any side of it (just
@@ -70,7 +69,6 @@ public class RedstoneHandler implements Listener
         {
             plugin.getMyLogger().logMessage("Exception thrown while handling redstone event!", true, false);
             plugin.getMyLogger().logMessageToLogFile(Util.throwableToString(e));
-            BigDoors.get().getConfigLoader();
             if (ConfigLoader.DEBUG)
                 e.printStackTrace();
         }
