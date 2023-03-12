@@ -12,16 +12,20 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -29,6 +33,8 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -788,5 +794,54 @@ public final class Util
     public static boolean between(int value, int start, int end)
     {
         return value <= end && value >= start;
+    }
+
+    /**
+     * Logs a throwable and returns a fallback value.
+     * <p>
+     * Mostly useful for {@link CompletableFuture#exceptionally(Function)}.
+     *
+     * @param throwable
+     *     The throwable to send to the logger.
+     * @param fallback
+     *     The fallback value to return.
+     * @param <T>
+     *     The type of the fallback value.
+     * @return The fallback value.
+     */
+    @Contract("_, !null -> !null")
+    public static <T> T exceptionally(Throwable throwable, @Nullable T fallback)
+    {
+        BigDoors.get().getMyLogger().log(throwable);
+        return fallback;
+    }
+
+    /**
+     * Maps a group of CompletableFutures to a single CompletableFuture with a list of results.
+     * <p>
+     * The result will wait for each of the futures to complete and once all of them have completed gather the results
+     * and return the list.
+     * <p>
+     * Each entry in the list maps to the result of a single future.
+     *
+     * @param futures
+     *     The completable futures whose results to collect into a list.
+     * @param <T>
+     *     The type of data.
+     * @return The list of results obtained from the CompletableFutures in the same order as provided. The list will
+     * have a size that matches the number of input futures.
+     */
+    @SafeVarargs
+    public static <T> CompletableFuture<List<T>> getAllCompletableFutureResults(CompletableFuture<T>... futures)
+    {
+        final CompletableFuture<Void> result = CompletableFuture.allOf(futures);
+        return result.thenApply(
+            ignored ->
+            {
+                final List<T> ret = new ArrayList<>(futures.length);
+                for (final CompletableFuture<T> future : futures)
+                    ret.add(future.join());
+                return ret;
+            }).exceptionally(throwable -> exceptionally(throwable, Collections.emptyList()));
     }
 }
