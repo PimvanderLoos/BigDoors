@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class SlidingDoorOpener implements Opener
@@ -186,14 +188,15 @@ public class SlidingDoorOpener implements Opener
     }
 
     @Override
-    public @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent,
-                                            @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
+    public @Nonnull CompletableFuture<DoorOpenResult> openDoor(
+        @Nonnull Door door, double time, boolean instantOpen, boolean silent,
+        @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
     {
         if (!plugin.getCommander().canGo())
         {
             plugin.getMyLogger()
                   .info("Failed to toggle: " + door.toSimpleString() + ", as door toggles are currently disabled!");
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         if (plugin.getCommander().isDoorBusyRegisterIfNot(door.getDoorUID()))
@@ -201,7 +204,7 @@ public class SlidingDoorOpener implements Opener
             if (!silent)
                 plugin.getMyLogger()
                       .myLogger(Level.INFO, "Sliding Door " + door.toSimpleString() + " is not available right now!");
-            return abort(DoorOpenResult.BUSY, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.BUSY, door.getDoorUID()));
         }
 
         final ChunkLoadResult chunkLoadResult = chunksLoaded(door, mode);
@@ -209,7 +212,7 @@ public class SlidingDoorOpener implements Opener
         {
             plugin.getMyLogger()
                   .logMessage("Chunks for sliding door " + door.toSimpleString() + " are not loaded!", true, false);
-            return abort(DoorOpenResult.CHUNKSNOTLOADED, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.CHUNKSNOTLOADED, door.getDoorUID()));
         }
         if (chunkLoadResult == ChunkLoadResult.REQUIRED_LOAD)
             instantOpen = true;
@@ -222,7 +225,7 @@ public class SlidingDoorOpener implements Opener
             plugin.getMyLogger()
                   .logMessage("Sliding Door " + door.toSimpleString() + " Exceeds the size limit: " + maxDoorSize,
                               true, false);
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         if (door.getBlocksToMove() > BigDoors.get().getConfigLoader().getMaxBlocksToMove())
@@ -230,13 +233,13 @@ public class SlidingDoorOpener implements Opener
             plugin.getMyLogger().logMessage("Sliding Door " + door.toSimpleString() + " Exceeds blocksToMove limit: "
                                                 + door.getBlocksToMove() + ". Limit = " +
                                                 BigDoors.get().getConfigLoader().getMaxBlocksToMove(), true, false);
-            return abort(DoorOpenResult.BLOCKSTOMOVEINVALID, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.BLOCKSTOMOVEINVALID, door.getDoorUID()));
         }
 
         final MovementSpecification blocksToMove = getBlocksToMove(door);
 
         if (blocksToMove.getBlocks() == 0)
-            return abort(DoorOpenResult.NODIRECTION, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.NODIRECTION, door.getDoorUID()));
 
         if (!isRotateDirectionValid(door))
         {
@@ -261,12 +264,25 @@ public class SlidingDoorOpener implements Opener
         Location newMax = door.getMaximum();
         getNewCoords(newMin, newMax, blocksToMove);
 
-        if (!bypassProtectionHooks && !hasAccessToLocations(door, newMin, newMax))
-            return abort(DoorOpenResult.NOPERMISSION, door.getDoorUID());
-
         if (fireDoorEventTogglePrepare(door, instantOpen))
-            return abort(DoorOpenResult.CANCELLED, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.CANCELLED, door.getDoorUID()));
 
+        if (bypassProtectionHooks)
+            return CompletableFuture.completedFuture(openDoor0(door, time, instantOpen, blocksToMove));
+
+        final boolean instantOpen0 = instantOpen;
+        return hasAccessToLocations(door, newMin, newMax).thenCompose(
+            hasAccess ->
+            {
+                if (!hasAccess)
+                    return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
+                return Util.runSync(() -> openDoor0(door, time, instantOpen0, blocksToMove),
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
+            }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
+    }
+
+    private DoorOpenResult openDoor0(Door door, double time, boolean instantOpen, MovementSpecification blocksToMove)
+    {
         plugin.getCommander()
               .addBlockMover(new SlidingMover(plugin, door.getWorld(), time, door, instantOpen,
                                               blocksToMove.getBlocks(), blocksToMove.getRotateDirection(),

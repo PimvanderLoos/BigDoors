@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class PortcullisOpener implements Opener
@@ -88,14 +90,15 @@ public class PortcullisOpener implements Opener
     }
 
     @Override
-    public @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent,
-                                            @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
+    public @Nonnull CompletableFuture<DoorOpenResult> openDoor(
+        @Nonnull Door door, double time, boolean instantOpen, boolean silent,
+        @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
     {
         if (!plugin.getCommander().canGo())
         {
             plugin.getMyLogger()
                   .info("Failed to toggle: " + door.toSimpleString() + ", as door toggles are currently disabled!");
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         if (plugin.getCommander().isDoorBusyRegisterIfNot(door.getDoorUID()))
@@ -103,7 +106,7 @@ public class PortcullisOpener implements Opener
             if (!silent)
                 plugin.getMyLogger()
                       .myLogger(Level.INFO, "Portcullis " + door.toSimpleString() + " is not available right now!");
-            return abort(DoorOpenResult.BUSY, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.BUSY, door.getDoorUID()));
         }
 
         final ChunkLoadResult chunkLoadResult = chunksLoaded(door, mode);
@@ -111,20 +114,20 @@ public class PortcullisOpener implements Opener
         {
             plugin.getMyLogger()
                   .logMessage("Chunks for portcullis " + door.toSimpleString() + " are not loaded!", true, false);
-            return abort(DoorOpenResult.CHUNKSNOTLOADED, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.CHUNKSNOTLOADED, door.getDoorUID()));
         }
         if (chunkLoadResult == ChunkLoadResult.REQUIRED_LOAD)
             instantOpen = true;
 
         // Make sure the doorSize does not exceed the total doorSize.
         // If it does, open the door instantly.
-        int maxDoorSize = getSizeLimit(door);
+        final int maxDoorSize = getSizeLimit(door);
         if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
         {
             plugin.getMyLogger()
                   .logMessage("Portcullis " + door.toSimpleString() + " Exceeds the size limit: " + maxDoorSize,
                               true, false);
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         if (door.getBlocksToMove() > BigDoors.get().getConfigLoader().getMaxBlocksToMove())
@@ -132,20 +135,35 @@ public class PortcullisOpener implements Opener
             plugin.getMyLogger().logMessage("Portcullis " + door.toSimpleString() + " Exceeds blocksToMove limit: "
                                                 + door.getBlocksToMove() + ". Limit = " +
                                                 BigDoors.get().getConfigLoader().getMaxBlocksToMove(), true, false);
-            return abort(DoorOpenResult.BLOCKSTOMOVEINVALID, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.BLOCKSTOMOVEINVALID, door.getDoorUID()));
         }
 
-        int blocksToMove = getBlocksToMove(door);
-
+        final int blocksToMove = getBlocksToMove(door);
         if (blocksToMove == 0)
-            return abort(DoorOpenResult.NODIRECTION, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.NODIRECTION, door.getDoorUID()));
 
-        Location newMin = door.getMinimum().add(0, blocksToMove, 0);
-        Location newMax = door.getMaximum().add(0, blocksToMove, 0);
+        final Location newMin = door.getMinimum().add(0, blocksToMove, 0);
+        final Location newMax = door.getMaximum().add(0, blocksToMove, 0);
 
-        if (!bypassProtectionHooks && !hasAccessToLocations(door, newMin, newMax))
-            return abort(DoorOpenResult.NOPERMISSION, door.getDoorUID());
+        if (fireDoorEventTogglePrepare(door, instantOpen))
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.CANCELLED, door.getDoorUID()));
 
+        if (bypassProtectionHooks)
+            return CompletableFuture.completedFuture(openDoor0(door, blocksToMove, instantOpen, time));
+
+        final boolean instantOpen0 = instantOpen;
+        return hasAccessToLocations(door, newMin, newMax).thenCompose(
+            hasAccess ->
+            {
+                if (!hasAccess)
+                    return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
+                return Util.runSync(() -> openDoor0(door, blocksToMove, instantOpen0, time),
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
+            }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
+    }
+
+    private DoorOpenResult openDoor0(Door door, int blocksToMove, boolean instantOpen, double time)
+    {
         if (!isRotateDirectionValid(door))
         {
             RotateDirection openDirection = door.isOpen() ?
@@ -156,9 +174,6 @@ public class PortcullisOpener implements Opener
                                                 ". If this is undesired, change it via the GUI.", true, false);
             plugin.getCommander().updateDoorOpenDirection(door.getDoorUID(), openDirection);
         }
-
-        if (fireDoorEventTogglePrepare(door, instantOpen))
-            return abort(DoorOpenResult.CANCELLED, door.getDoorUID());
 
         plugin.getCommander()
               .addBlockMover(new VerticalMover(plugin, door.getWorld(), time, door, instantOpen, blocksToMove,

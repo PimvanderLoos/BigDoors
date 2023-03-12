@@ -401,6 +401,7 @@ public class BigDoors extends JavaPlugin implements Listener
      *
      * @return True if this plugin was enabled successfully.
      */
+    @SuppressWarnings("unused")
     public boolean isEnabledSuccessfully()
     {
         return isEnabled;
@@ -413,6 +414,7 @@ public class BigDoors extends JavaPlugin implements Listener
      *
      * @return The id of the current build.
      */
+    @SuppressWarnings("unused")
     public int getBuild()
     {
         return buildNumber;
@@ -444,6 +446,11 @@ public class BigDoors extends JavaPlugin implements Listener
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
         return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2);
+    }
+
+    public ProtectionCompatManager getProtectionCompatManager()
+    {
+        return protCompatMan;
     }
 
     public void restart()
@@ -876,34 +883,144 @@ public class BigDoors extends JavaPlugin implements Listener
      * @param door The door for which to check which chunks it could interact with.
      * @return True if all chunks the door could interact with are currently loaded.
      */
+    @SuppressWarnings("unused")
     public boolean areChunksLoadedForDoor(Door door)
     {
-        Opener opener = getDoorOpener(door.getType());
-        return opener == null ? false : opener.chunksLoaded(door, ChunkLoadMode.VERIFY_LOADED) == ChunkLoadResult.PASS;
+        final Opener opener = getDoorOpener(door.getType());
+        return opener != null && opener.chunksLoaded(door, ChunkLoadMode.VERIFY_LOADED) == ChunkLoadResult.PASS;
     }
 
-    // (Instantly?) Toggle a door with a given time.
+    /**
+     * Attempts to toggle a door.
+     *
+     * @param door
+     *     The door to toggle. If it is currently open, it will be closed. If it is currently closed, it will be opened.
+     * @param time
+     *     The amount of time the animation should (try to) take to complete. This will not be the actual amount of time
+     *     the full toggle will take because 1) some parts of the animation are not included in this timing value and 2)
+     *     There are some limits that cannot be exceeded. Setting this value to 0 will result in the default time value
+     *     being used.
+     * @param instantOpen
+     *     True if the door should be toggled instantly, skipping the animation and moving the blocks to their final
+     *     position immediately.
+     * @return The result of the toggle attempt. Note that this is likely to be executed on the main thread, so you must
+     * not use get or join on it, or you will end up with a deadlock!
+     */
+    @SuppressWarnings("unused")
+    public CompletableFuture<DoorOpenResult> toggleDoorFuture(Door door, double time, boolean instantOpen)
+    {
+        final Opener opener = getDoorOpener(door.getType());
+        return opener == null ?
+               CompletableFuture.completedFuture(DoorOpenResult.TYPEDISABLED) :
+               opener.openDoor(door, time, instantOpen);
+    }
+
+    private CompletableFuture<Boolean> toggleDoorFuture0(Door door, double time, boolean instantOpen)
+    {
+        return toggleDoorFuture(door, time, instantOpen).thenApply(result -> result == DoorOpenResult.SUCCESS);
+    }
+    /**
+     * Attempts to toggle a door.
+     *
+     * @param doorUID
+     *     The UID of the door to toggle. If it is currently open, it will be closed. If it is currently closed, it will
+     *     be opened.
+     * @param instantOpen
+     *     True if the door should be toggled instantly, skipping the animation and moving the blocks to their final
+     *     position immediately.
+     * @return The result of the toggle attempt. Note that this is likely to be executed on the main thread, so you must
+     * not use get or join on it, or you will end up with a deadlock!
+     */
+    @SuppressWarnings("unused")
+    public CompletableFuture<Boolean> toggleDoorFuture(long doorUID, boolean instantOpen)
+    {
+        final Door door = getCommander().getDoor(null, doorUID);
+        return toggleDoorFuture0(door, 0.0, instantOpen);
+    }
+
+    /**
+     * Attempts to toggle a door.
+     *
+     * @param doorUID
+     *     The UID of the door to toggle. If it is currently open, it will be closed. If it is currently closed, it will
+     *     be opened.
+     * @param time
+     *     The amount of time the animation should (try to) take to complete. This will not be the actual amount of time
+     *     the full toggle will take because 1) some parts of the animation are not included in this timing value and 2)
+     *     There are some limits that cannot be exceeded. Setting this value to 0 will result in the default time value
+     *     being used.
+     * @return The result of the toggle attempt. Note that this is likely to be executed on the main thread, so you must
+     * not use get or join on it, or you will end up with a deadlock!
+     */
+    @SuppressWarnings("unused")
+    public CompletableFuture<Boolean> toggleDoorFuture(long doorUID, double time)
+    {
+        return toggleDoorFuture0(getCommander().getDoor(null, doorUID), time, false);
+    }
+
+    /**
+     * Attempts to toggle a door.
+     *
+     * @param doorUID
+     *     The UID of the door to toggle. If it is currently open, it will be closed. If it is currently closed, it will
+     *     be opened.
+     * @return The result of the toggle attempt. Note that this is likely to be executed on the main thread, so you must
+     * not use get or join on it, or you will end up with a deadlock!
+     */
+    @SuppressWarnings("unused")
+    public CompletableFuture<Boolean> toggleDoorFuture(long doorUID)
+    {
+        return toggleDoorFuture0(getCommander().getDoor(null, doorUID), 0.0, false);
+    }
+
+    private DoorOpenResult processFutureResult(CompletableFuture<DoorOpenResult> result)
+    {
+        return result.getNow(DoorOpenResult.ERROR);
+    }
+
+    /**
+     * @deprecated Use {@link #toggleDoorFuture(Door, double, boolean)} instead.
+     * </p>
+     * This method may return {@link DoorOpenResult#ERROR} even when the eventual result will be a success.
+     */
+    @Deprecated
     public DoorOpenResult toggleDoor(Door door, double time, boolean instantOpen)
     {
         Opener opener = getDoorOpener(door.getType());
-        return opener == null ? DoorOpenResult.TYPEDISABLED : opener.openDoor(door, time, instantOpen);
+        return opener == null ? DoorOpenResult.TYPEDISABLED :
+               processFutureResult(opener.openDoor(door, time, instantOpen));
     }
 
-    // Toggle a door from a doorUID and instantly or not.
+    /**
+     * @deprecated Use {@link #toggleDoorFuture(long, boolean)} instead.
+     * </p>
+     * This method may return false even when the eventual result will be a success.
+     */
+    @Deprecated
     public boolean toggleDoor(long doorUID, boolean instantOpen)
     {
         final Door door = getCommander().getDoor(null, doorUID);
         return toggleDoor(door, 0.0, instantOpen) == DoorOpenResult.SUCCESS;
     }
 
-    // Toggle a door from a doorUID and a given time.
+    /**
+     * @deprecated Use {@link #toggleDoorFuture(long, double)} instead.
+     * </p>
+     * This method may return false even when the eventual result will be a success.
+     */
+    @Deprecated
     public boolean toggleDoor(long doorUID, double time)
     {
         final Door door = getCommander().getDoor(null, doorUID);
         return toggleDoor(door, time, false) == DoorOpenResult.SUCCESS;
     }
 
-    // Toggle a door from a doorUID using default values.
+    /**
+     * @deprecated Use {@link #toggleDoorFuture(long)} instead.
+     * </p>
+     * This method may return false even when the eventual result will be a success.
+     */
+    @Deprecated
     public boolean toggleDoor(long doorUID)
     {
         final Door door = getCommander().getDoor(null, doorUID);
@@ -917,12 +1034,14 @@ public class BigDoors extends JavaPlugin implements Listener
     }
 
     // Check the open-status of a door from a doorUID.
+    @SuppressWarnings("unused")
     public boolean isOpen(long doorUID)
     {
         final Door door = getCommander().getDoor(null, doorUID);
         return this.isOpen(door);
     }
 
+    @SuppressWarnings("unused")
     public int getMinimumDoorDelay()
     {
         return MINIMUMDOORDELAY;
@@ -940,9 +1059,6 @@ public class BigDoors extends JavaPlugin implements Listener
         }
     }
 
-    /**
-     * @return
-     */
     public RedstoneHandler getRedstoneHandler()
     {
         return redstoneHandler;

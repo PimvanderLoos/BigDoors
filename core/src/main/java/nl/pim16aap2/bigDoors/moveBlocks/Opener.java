@@ -21,12 +21,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface Opener
 {
@@ -77,33 +78,41 @@ public interface Opener
      * @param bypassProtectionHooks Whether to bypass the protection hooks when trying to toggle the door.
      * @return The result of the toggle attempt.
      */
-    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, boolean bypassProtectionHooks)
+    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+        @NotNull Door door, boolean bypassProtectionHooks)
     {
-        return openDoor(door, 0.0, false, false, getChunkLoadMode(door), bypassProtectionHooks);
+        return openDoor(door, 0.0, false, false, getChunkLoadMode(door), bypassProtectionHooks)
+            .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
      * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time)
+    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+        @NotNull Door door, double time)
     {
-        return openDoor(door, time, false, false);
+        return openDoor(door, time, false, false)
+            .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
      * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen)
+    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+        @NotNull Door door, double time, boolean instantOpen)
     {
-        return openDoor(door, time, instantOpen, false);
+        return openDoor(door, time, instantOpen, false)
+            .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
      * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent)
+    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+        @NotNull Door door, double time, boolean instantOpen, boolean silent)
     {
-        return openDoor(door, time, instantOpen, silent, getChunkLoadMode(door));
+        return openDoor(door, time, instantOpen, silent, getChunkLoadMode(door))
+            .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
@@ -114,7 +123,7 @@ public interface Opener
      * @param door The door for which to get the {@link ChunkLoadMode}.
      * @return The {@link ChunkLoadMode} to use for the door.
      */
-    default @Nonnull ChunkLoadMode getChunkLoadMode(@Nonnull Door door)
+    default @NotNull ChunkLoadMode getChunkLoadMode(@NotNull Door door)
     {
         ChunkLoadMode mode = BigDoors.get().getConfigLoader().getChunkLoadMode();
 
@@ -130,10 +139,11 @@ public interface Opener
     /**
      * See {@link #openDoor(Door, double, boolean, boolean, ChunkLoadMode, boolean)}.
      */
-    default @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent,
-                                             @Nonnull ChunkLoadMode mode)
+    default @NotNull CompletableFuture<DoorOpenResult> openDoor(
+        @NotNull Door door, double time, boolean instantOpen, boolean silent, @NotNull ChunkLoadMode mode)
     {
-        return openDoor(door, time, instantOpen, silent, mode, false);
+        return openDoor(door, time, instantOpen, silent, mode, false)
+            .exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     /**
@@ -152,8 +162,9 @@ public interface Opener
      * @param bypassProtectionHooks Whether to bypass the protection hooks when trying to toggle the door.
      * @return The result of the toggle attempt.
      */
-    @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent,
-                                     @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks);
+    @NotNull CompletableFuture<DoorOpenResult> openDoor(
+        @NotNull Door door, double time, boolean instantOpen, boolean silent,
+        @NotNull ChunkLoadMode mode, boolean bypassProtectionHooks);
 
     default DoorOpenResult abort(DoorOpenResult reason, long doorUID)
     {
@@ -194,7 +205,7 @@ public interface Opener
         return getValidRotateDirections().contains(rotateDirection);
     }
 
-    default boolean isRotateDirectionValid(@Nonnull Door door)
+    default boolean isRotateDirectionValid(@NotNull Door door)
     {
         return isValidOpenDirection(door.getOpenDir());
     }
@@ -223,7 +234,7 @@ public interface Opener
      * @return The new minimum and maximum coordinates the door would take up if it were toggled now.
      */
     @SuppressWarnings("unused")
-    @Nonnull Optional<Pair<Location, Location>> getNewCoordinates(@Nonnull Door door);
+    @NotNull Optional<Pair<Location, Location>> getNewCoordinates(@NotNull Door door);
 
     default int getSizeLimit(final Door door)
     {
@@ -245,7 +256,7 @@ public interface Opener
      * air). If any blocks are in the way or if the locations are out of range of the
      * {@link WorldHeightManager#getWorldHeightLimits(World)}, this method will return false.
      */
-    default boolean isPosFree(long doorUID, @Nonnull World world, @Nonnull Location min, @Nonnull Location max)
+    default boolean isPosFree(long doorUID, @NotNull World world, @NotNull Location min, @NotNull Location max)
     {
         final WorldHeightLimits worldLimits = BigDoors.get().getWorldHeightManager().getWorldHeightLimits(world);
         if (min.getBlockY() < worldLimits.getLowerLimit() || max.getBlockY() > worldLimits.getUpperLimit())
@@ -277,7 +288,7 @@ public interface Opener
      *
      * @param locations The min and max locations respectively.
      */
-    default boolean isPosFree(long doorUID, @Nonnull World world, @Nonnull Pair<Location, Location> locations)
+    default boolean isPosFree(long doorUID, @NotNull World world, @NotNull Pair<Location, Location> locations)
     {
         return isPosFree(doorUID, world, locations.first, locations.second);
     }
@@ -293,29 +304,42 @@ public interface Opener
      * @return True if the owner of the door has access to both the current area of the door and the new area of the
      * door.
      */
-    default boolean hasAccessToLocations(@Nonnull Door door, @Nonnull Location newMin, @Nonnull Location newMax)
+    default CompletableFuture<Boolean> hasAccessToLocations(
+        @NotNull Door door, @NotNull Location newMin, @NotNull Location newMax)
     {
-        String protectionBlocker = BigDoors.get().canBreakBlocksBetweenLocs(door.getPlayerUUID(), door.getPlayerName(),
-                                                                            door.getWorld(), newMin, newMax);
-        if (protectionBlocker != null)
-        {
-            BigDoors.get().getMyLogger().logMessageToLogFile(
-                "Toggle denied because access to new location was prevented by " + protectionBlocker + " for door: " +
-                    door);
-            return false;
-        }
+        if (BigDoors.get().getProtectionCompatManager().registeredCompatsCount() == 0)
+            return CompletableFuture.completedFuture(true);
 
-        protectionBlocker = BigDoors.get().canBreakBlocksBetweenLocs(door.getPlayerUUID(), door.getPlayerName(),
-                                                                     door.getWorld(), door.getMinimum(),
-                                                                     door.getMaximum());
-        if (protectionBlocker != null)
-        {
-            BigDoors.get().getMyLogger().logMessageToLogFile(
-                "Toggle denied because access to old location was prevented by " + protectionBlocker + " for door: " +
-                    door);
-            return false;
-        }
-        return true;
+        final CompletableFuture<@Nullable String> oldLoc =
+            BigDoors.get().canBreakBlocksBetweenLocs(
+                door.getPlayerUUID(), door.getPlayerName(), door.getWorld(), door.getMinimum(), door.getMaximum());
+
+        final CompletableFuture<@Nullable String> newLoc =
+            BigDoors.get().canBreakBlocksBetweenLocs(
+                door.getPlayerUUID(), door.getPlayerName(), door.getWorld(), newMin, newMax);
+
+        return Util.getAllCompletableFutureResults(oldLoc, newLoc).thenApply(
+            lst ->
+            {
+                final @Nullable String canBreakOldBlocks = lst.get(0);
+                if (canBreakOldBlocks != null)
+                {
+                    BigDoors.get().getMyLogger().logMessageToLogFile(
+                        "Toggle denied because access to new location was prevented by " + canBreakOldBlocks +
+                            " for door: " + door);
+                    return false;
+                }
+
+                final @Nullable String canBreakNewBlocks = lst.get(1);
+                if (canBreakNewBlocks != null)
+                {
+                    BigDoors.get().getMyLogger().logMessageToLogFile(
+                        "Toggle denied because access to old location was prevented by " + canBreakNewBlocks +
+                            " for door: " + door);
+                    return false;
+                }
+                return true;
+            }).exceptionally(throwable -> Util.exceptionally(throwable, false));
     }
 
     /**
@@ -349,5 +373,5 @@ public interface Opener
      *
      * @return A list with all valid {@link RotateDirection}s for this opener.
      */
-    @Nonnull List<RotateDirection> getValidRotateDirections();
+    @NotNull List<RotateDirection> getValidRotateDirections();
 }

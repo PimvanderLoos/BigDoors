@@ -12,13 +12,14 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -34,7 +35,7 @@ public class ProtectionCompatManager implements Listener
     private static final String BYPASS_PERMISSION = "bigdoors.admin.bypasscompat";
 
     private final Map<String, IProtectionCompatDefinition> registeredDefinitions;
-    private final ArrayList<IProtectionCompat> protectionCompats;
+    private final List<IProtectionCompat> protectionCompats;
     private final FakePlayerCreator fakePlayerCreator;
     private final BigDoors plugin;
 
@@ -49,7 +50,7 @@ public class ProtectionCompatManager implements Listener
         this.plugin = plugin;
         registeredDefinitions = registerDefaultProtectionCompatDefinitions();
         fakePlayerCreator = plugin.getFakePlayerCreator();
-        protectionCompats = new ArrayList<>();
+        protectionCompats = new CopyOnWriteArrayList<>();
         restart();
     }
 
@@ -174,19 +175,22 @@ public class ProtectionCompatManager implements Listener
                 {
                     e.printStackTrace();
                     Thread.currentThread().interrupt();
-                    return "ERROR";
                 }
                 catch (TimeoutException e)
                 {
-                    plugin.getMyLogger().severe("Timed out checking permissions for offline player: " + fakePlayer);
-                    throw new RuntimeException(e);
+                    plugin.getMyLogger().log("Timed out checking permissions for offline player: " + fakePlayer, e);
                 }
                 catch (Exception e)
                 {
-                    plugin.getMyLogger().severe("Failed to check permissions for offline player: " + fakePlayer);
-                    throw new RuntimeException(e);
+                    plugin.getMyLogger().log("Failed to check permissions for offline player: " + fakePlayer, e);
                 }
+                return "ERROR";
             });
+    }
+
+    public int registeredCompatsCount()
+    {
+        return protectionCompats.size();
     }
 
     /**
