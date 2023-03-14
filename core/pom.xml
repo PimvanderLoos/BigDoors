@@ -152,6 +152,13 @@
         </dependency>
 
         <dependency>
+            <groupId>nl.pim16aap2.BigDoors</groupId>
+            <artifactId>v1_19_R3</artifactId>
+            <version>0.1.8.44-ALPHA</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>${dependency.xseries.groupid}</groupId>
             <artifactId>XSeries</artifactId>
             <version>${dependency.xseries.version}</version>
