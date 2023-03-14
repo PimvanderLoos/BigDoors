@@ -375,7 +375,7 @@ final class NMSBlockClassGenerator extends ClassGenerator
 
                 invoke(methodSetTypeAndData)
                     .onMethodCall(worldCast)
-                    .withMethodCall(construct(cTorBlockPosition)
+                    .withMethodCall(invoke(methodNewBlockPosition)
                                         .withMethodCall(invoke(methodLocationGetX).onField(FIELD_LOCATION))
                                         .withMethodCall(invoke(methodLocationGetY).onField(FIELD_LOCATION))
                                         .withMethodCall(invoke(methodLocationGetZ).onField(FIELD_LOCATION)))

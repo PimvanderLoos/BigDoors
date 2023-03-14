@@ -111,7 +111,7 @@ public class FallingBlockFactoryClassGenerator extends ClassGenerator
         final MethodCall getNMSWorld = (MethodCall)
             invoke(methodGetNMSWorld).onArgument(0).withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
-        final MethodCall createBlockPosition = construct(cTorBlockPosition).withArgument(1, 2, 3);
+        final MethodCall createBlockPosition = invoke(methodNewBlockPosition).withArgument(1, 2, 3);
 
         final MethodCall getType = invoke(methodGetTypeFromBlockPosition)
             .onMethodCall(getNMSWorld).withMethodCall(createBlockPosition);
