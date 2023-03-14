@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class BridgeOpener implements Opener
@@ -324,14 +326,15 @@ public class BridgeOpener implements Opener
     }
 
     @Override
-    public @Nonnull DoorOpenResult openDoor(@Nonnull Door door, double time, boolean instantOpen, boolean silent,
-                                            @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
+    public @Nonnull CompletableFuture<DoorOpenResult> openDoorFuture(
+        @Nonnull Door door, double time, boolean instantOpen, boolean silent,
+        @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
     {
         if (!plugin.getCommander().canGo())
         {
             plugin.getMyLogger()
                   .info("Failed to toggle: " + door.toSimpleString() + ", as door toggles are currently disabled!");
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         if (plugin.getCommander().isDoorBusyRegisterIfNot(door.getDoorUID()))
@@ -339,7 +342,7 @@ public class BridgeOpener implements Opener
             if (!silent)
                 plugin.getMyLogger().myLogger(Level.INFO,
                                               "Bridge " + door.toSimpleString() + " is not available right now!");
-            return abort(DoorOpenResult.BUSY, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.BUSY, door.getDoorUID()));
         }
 
         final ChunkLoadResult chunkLoadResult = chunksLoaded(door, mode);
@@ -347,7 +350,7 @@ public class BridgeOpener implements Opener
         {
             plugin.getMyLogger().logMessage("Chunks for bridge " + door.toSimpleString() + " are not loaded!", true,
                                             false);
-            return abort(DoorOpenResult.CHUNKSNOTLOADED, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.CHUNKSNOTLOADED, door.getDoorUID()));
         }
         if (chunkLoadResult == ChunkLoadResult.REQUIRED_LOAD)
             instantOpen = true;
@@ -357,7 +360,7 @@ public class BridgeOpener implements Opener
         {
             plugin.getMyLogger().logMessage("Current direction is null for bridge " + door.toSimpleString() + "!", true,
                                             false);
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         RotateDirection upDown = getUpDown(door);
@@ -365,14 +368,14 @@ public class BridgeOpener implements Opener
         {
             plugin.getMyLogger().logMessage("UpDown direction is null for bridge " + door.toSimpleString() + "!", true,
                                             false);
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
         final OpeningSpecification openingSpecification = getOpeningSpecification(door, upDown, currentDirection);
         if (openingSpecification == null)
         {
             plugin.getMyLogger().warn("Could not determine opening direction for door: " + door + "!");
-            return abort(DoorOpenResult.NODIRECTION, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.NODIRECTION, door.getDoorUID()));
         }
 
         if (!isRotateDirectionValid(door))
@@ -395,17 +398,31 @@ public class BridgeOpener implements Opener
         int maxDoorSize = getSizeLimit(door);
         if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
         {
-            plugin.getMyLogger().logMessage("Door " + door.toSimpleString() + " Exceeds the size limit: " + maxDoorSize,
-                                            true, false);
-            return abort(DoorOpenResult.ERROR, door.getDoorUID());
+            plugin.getMyLogger().logMessage(
+                "Door " + door.toSimpleString() + " Exceeds the size limit: " + maxDoorSize, true, false);
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
         }
 
-        if (!bypassProtectionHooks && !hasAccessToLocations(door, openingSpecification.min, openingSpecification.max))
-            return abort(DoorOpenResult.NOPERMISSION, door.getDoorUID());
-
         if (fireDoorEventTogglePrepare(door, instantOpen))
-            return abort(DoorOpenResult.CANCELLED, door.getDoorUID());
+            return CompletableFuture.completedFuture(abort(DoorOpenResult.CANCELLED, door.getDoorUID()));
 
+        if (bypassProtectionHooks)
+            return CompletableFuture.completedFuture(openDoor0(door, time, upDown, instantOpen, openingSpecification));
+
+        final boolean instantOpen0 = instantOpen;
+        return hasAccessToLocations(door, openingSpecification.min, openingSpecification.max).thenCompose(
+            hasAccess ->
+            {
+                if (!hasAccess)
+                    return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
+                return Util.runSync(() -> openDoor0(door, time, upDown, instantOpen0, openingSpecification),
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
+            }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
+    }
+
+    private DoorOpenResult openDoor0(
+        Door door, double time, RotateDirection upDown, boolean instantOpen, OpeningSpecification openingSpecification)
+    {
         plugin.getCommander().addBlockMover(new BridgeMover(plugin, door.getWorld(), time, door, upDown,
                                                             openingSpecification.openDirection, instantOpen,
                                                             plugin.getConfigLoader().dbMultiplier()));

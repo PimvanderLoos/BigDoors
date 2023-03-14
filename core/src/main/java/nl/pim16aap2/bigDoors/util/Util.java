@@ -12,16 +12,22 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -29,6 +35,13 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -788,5 +801,138 @@ public final class Util
     public static boolean between(int value, int start, int end)
     {
         return value <= end && value >= start;
+    }
+
+    /**
+     * Logs a throwable and returns a fallback value.
+     * <p>
+     * Mostly useful for {@link CompletableFuture#exceptionally(Function)}.
+     *
+     * @param throwable
+     *     The throwable to send to the logger.
+     * @param fallback
+     *     The fallback value to return.
+     * @param <T>
+     *     The type of the fallback value.
+     * @return The fallback value.
+     */
+    @Contract("_, !null -> !null")
+    public static <T> T exceptionally(Throwable throwable, @Nullable T fallback)
+    {
+        BigDoors.get().getMyLogger().log(throwable);
+        return fallback;
+    }
+
+    /**
+     * See {@link #exceptionally(Throwable, Object)} with a null fallback value.
+     *
+     * @return Always null
+     */
+    public static @Nullable <T> T exceptionally(Throwable throwable)
+    {
+        return exceptionally(throwable, null);
+    }
+
+    /**
+     * Maps a group of CompletableFutures to a single CompletableFuture with a list of results.
+     * <p>
+     * The result will wait for each of the futures to complete and once all of them have completed gather the results
+     * and return the list.
+     * <p>
+     * Each entry in the list maps to the result of a single future.
+     *
+     * @param futures
+     *     The completable futures whose results to collect into a list.
+     * @param <T>
+     *     The type of data.
+     * @return The list of results obtained from the CompletableFutures in the same order as provided. The list will
+     * have a size that matches the number of input futures.
+     */
+    @SafeVarargs
+    public static <T> CompletableFuture<List<T>> getAllCompletableFutureResults(CompletableFuture<T>... futures)
+    {
+        final CompletableFuture<Void> result = CompletableFuture.allOf(futures);
+        return result.thenApply(
+            ignored ->
+            {
+                final List<T> ret = new ArrayList<>(futures.length);
+                for (final CompletableFuture<T> future : futures)
+                    ret.add(future.join());
+                return ret;
+            }).exceptionally(throwable -> exceptionally(throwable, Collections.emptyList()));
+    }
+
+    /**
+     * Converts a {@link Future} into a {@link CompletableFuture} by waiting for it asynchronously.
+     *
+     * @param fut
+     *     The future to convert.
+     * @param timeout
+     *     The amount of time to wait for the future. See {@link Future#get(long, TimeUnit)}. If this value <= 0, no
+     *     timeout is used at all.
+     * @param unit
+     *     The unit of the timeout value. Only used when timeout > 0.
+     * @param fallback
+     *     The fallback value to return in case an error was encountered while getting the future. This includes
+     *     timeouts and interrupts.
+     * @return The CompletableFuture waiting for the Future to complete.
+     * @param <T> The type of the data in the (completable) future.
+     */
+    public static <T> CompletableFuture<T> futureToCompletableFuture(
+        Future<T> fut, long timeout, TimeUnit unit, @Nullable T fallback)
+    {
+        return CompletableFuture.supplyAsync(
+            () ->
+            {
+                try
+                {
+                    if (timeout > 0)
+                        return fut.get(timeout, unit);
+                    return fut.get();
+                }
+                catch (ExecutionException e)
+                {
+                    BigDoors.get().getMyLogger().log("Ran into error while getting future result!", e);
+                    throw new RuntimeException(e);
+                }
+                catch (InterruptedException e)
+                {
+                    BigDoors.get().getMyLogger().log("Thread was interrupted waiting for future result!", e);
+                    Thread.currentThread().interrupt();
+                }
+                catch (TimeoutException e)
+                {
+                    BigDoors.get().getMyLogger().log(
+                        "Timed out after " + timeout + " " + unit.name() + " for future!", e);
+                    throw new RuntimeException(e);
+                }
+                return fallback;
+            }).exceptionally(throwable -> exceptionally(throwable, fallback));
+    }
+
+    /**
+     * Runs a task on the main thread.
+     * </p>
+     * See {@link BukkitScheduler#callSyncMethod(Plugin, Callable)} and
+     * {@link #futureToCompletableFuture(Future, long, TimeUnit, Object)}.
+     *
+     * @param callable
+     *     The function to run on the main thread.
+     * @param timeout
+     *     The amount of time to wait for the future. See {@link Future#get(long, TimeUnit)}. If this value <= 0, no
+     *     timeout is used at all.
+     * @param unit
+     *     The unit of the timeout value. Only used when timeout > 0.
+     * @param fallback
+     *     The fallback value to return in case an error was encountered while getting the result. This includes
+     *     timeouts and interrupts.
+     * @return The CompletableFuture waiting for the callable to complete.
+     * @param <T> The type of the data provided by the callable.
+     */
+    public static <T> CompletableFuture<T> runSync(
+        Callable<T> callable, long timeout, TimeUnit unit, @Nullable T fallback)
+    {
+        return futureToCompletableFuture(
+            Bukkit.getScheduler().callSyncMethod(BigDoors.get(), callable), timeout, unit, fallback);
     }
 }

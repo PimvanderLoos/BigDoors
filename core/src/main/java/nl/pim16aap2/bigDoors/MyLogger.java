@@ -147,4 +147,14 @@ public class MyLogger
     {
         Bukkit.getLogger().log(level, "[" + pluginName + "] " + message);
     }
+
+    public void log(Throwable throwable)
+    {
+        severe(Util.throwableToString(throwable));
+    }
+
+    public void log(String message, Throwable throwable)
+    {
+        severe(message + "\n" + Util.throwableToString(throwable));
+    }
 }
