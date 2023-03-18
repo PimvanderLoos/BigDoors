@@ -26,9 +26,14 @@ public enum RotateDirection
         this.nameKey = nameKey;
     }
 
+    public int getVal()
+    {
+        return val;
+    }
+
     public static int getValue(RotateDirection dir)
     {
-        return dir.val;
+        return dir.getVal();
     }
 
     public static RotateDirection valueOf(int dir)
