@@ -84,4 +84,9 @@ public enum DoorDirection
     {
         return blockFace;
     }
+
+    public int getVal()
+    {
+        return val;
+    }
 }

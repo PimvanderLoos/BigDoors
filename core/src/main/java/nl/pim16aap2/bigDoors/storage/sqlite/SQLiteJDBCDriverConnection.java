@@ -262,7 +262,12 @@ public class SQLiteJDBCDriverConnection
         final File v2File = new File(plugin.getDataFolder(), "structures.db");
         try
         {
-            if (!dbFile.exists() && !dbFile.createNewFile())
+            if (v2File.exists())
+            {
+                plugin.getMyLogger().severe("File already exists: '" + v2File + "'! Database cannot be exported!");
+                return;
+            }
+            if (!v2File.createNewFile())
             {
                 plugin.getMyLogger().severe("Failed to create file: '" + v2File + "'! Database cannot be exported!");
                 return;

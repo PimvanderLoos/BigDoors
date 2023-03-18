@@ -1,12 +1,14 @@
 package nl.pim16aap2.bigDoors.storage.sqlite;
 
 import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.DoorType;
+import nl.pim16aap2.bigDoors.util.RotateDirection;
+import nl.pim16aap2.bigDoors.util.Vector3D;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -70,11 +72,9 @@ final class V2ExportUtil
                 try (PreparedStatement ps = connV2.prepareStatement(insertStr))
                 {
                     int idx = 0;
-
                     ps.setInt(++idx, permission * 100);
                     ps.setLong(++idx, playerID);
                     ps.setLong(++idx, doorUid);
-
                     ps.executeUpdate();
                 }
             }
@@ -96,12 +96,6 @@ final class V2ExportUtil
             while (rs.next())
             {
                 final String uuidStr = rs.getString("playerUUID");
-                final OfflinePlayer player = Bukkit.getPlayer(UUID.fromString(uuidStr));
-
-                if (player == null)
-                {
-                    plugin.getMyLogger().severe("Failed to export player: " + uuidStr);
-                }
                 final long uid = remapper.getRemappedId(rs.getInt("id"));
 
                 try (PreparedStatement ps = connV2.prepareStatement(insertStr))
@@ -139,23 +133,26 @@ final class V2ExportUtil
             {
                 final DoorType doorType = DoorType.valueOf(rs.getInt("type"));
                 final long originalUid = rs.getLong("id");
+                final long uid = remapper.getRemappedId(originalUid);
+
                 if (doorType == null)
                 {
                     plugin.getMyLogger().severe("Failed to export door '" + originalUid + "': Type does not exist");
-                    return;
+                    remapper.invalidate(originalUid);
+                    continue;
                 }
 
-                final World world = Bukkit.getWorld(UUID.fromString(rs.getString("world")));
+                final UUID worldUuid = UUID.fromString(rs.getString("world"));
+                final @Nullable World world = Bukkit.getWorld(worldUuid);
                 if (world == null)
                 {
-                    plugin.getMyLogger().severe("Failed to export door '" + originalUid + "': World does not exist");
+                    plugin.getMyLogger().severe(String.format(
+                        "Failed to export door '%d': World '%s' does not exist!", originalUid, worldUuid));
+                    remapper.invalidate(originalUid);
                     continue;
                 }
 
                 final String name = rs.getString("name");
-
-                final long uid = remapper.getRemappedId(originalUid);
-
                 try (PreparedStatement insert = connV2.prepareStatement(insertStr))
                 {
                     int idx = 0;
@@ -164,25 +161,32 @@ final class V2ExportUtil
                     insert.setString(++idx, name);
                     insert.setString(++idx, world.getName());
 
-                    insert.setInt(++idx, rs.getInt("xMin"));
-                    insert.setInt(++idx, rs.getInt("yMin"));
-                    insert.setInt(++idx, rs.getInt("zMin"));
+                    Vector3D min = new Vector3D(rs.getInt("xMin"), rs.getInt("yMin"), rs.getInt("zMin"));
+                    Vector3D max = new Vector3D(rs.getInt("xMax"), rs.getInt("yMax"), rs.getInt("zMax"));
+                    Vector3D eng = new Vector3D(rs.getInt("engineX"), rs.getInt("engineY"), rs.getInt("engineZ"));
 
-                    insert.setInt(++idx, rs.getInt("xMax"));
-                    insert.setInt(++idx, rs.getInt("yMax"));
-                    insert.setInt(++idx, rs.getInt("zMax"));
+                    insert.setInt(++idx, min.getX());
+                    insert.setInt(++idx, min.getY());
+                    insert.setInt(++idx, min.getZ());
 
-                    insert.setInt(++idx, rs.getInt("engineX"));
-                    insert.setInt(++idx, rs.getInt("engineY"));
-                    insert.setInt(++idx, rs.getInt("engineZ"));
-                    insert.setLong(++idx, getV2ChunkId(rs.getInt("engineX"), rs.getInt("engineZ")));
+                    insert.setInt(++idx, max.getX());
+                    insert.setInt(++idx, max.getY());
+                    insert.setInt(++idx, max.getZ());
+
+                    insert.setInt(++idx, eng.getX());
+                    insert.setInt(++idx, eng.getY());
+                    insert.setInt(++idx, eng.getZ());
+
+                    insert.setLong(++idx, getV2ChunkId(eng.getX(), eng.getZ()));
 
                     insert.setInt(++idx, rs.getInt("powerBlockX"));
                     insert.setInt(++idx, rs.getInt("powerBlockY"));
                     insert.setInt(++idx, rs.getInt("powerBlockZ"));
                     insert.setLong(++idx, getV2ChunkId(rs.getInt("powerBlockX"), rs.getInt("powerBlockZ")));
 
-                    insert.setInt(++idx, rs.getInt("openDirection"));
+                    final int engineSide = rs.getInt("engineSide");
+                    final int currentOpenDirection = rs.getInt("openDirection");
+                    insert.setInt(++idx, remapOpenDirection(uid, currentOpenDirection, doorType, min, max, engineSide));
 
                     int flag = 0;
                     if (rs.getBoolean("isOpen"))
@@ -200,6 +204,79 @@ final class V2ExportUtil
             }
             plugin.getMyLogger().info("All doors have been processed! Onto the next step!");
         }
+    }
+
+    private int remapOpenDirection(
+        long uid, int currentOpenDirection, DoorType doorType, Vector3D min, Vector3D max, int engineSide)
+    {
+        if (doorType == DoorType.DOOR)
+        {
+            if (currentOpenDirection == RotateDirection.CLOCKWISE.getVal() ||
+                currentOpenDirection == RotateDirection.COUNTERCLOCKWISE.getVal())
+                return currentOpenDirection;
+            return RotateDirection.CLOCKWISE.getVal();
+        }
+
+        if (doorType == DoorType.DRAWBRIDGE)
+        {
+            if (currentOpenDirection == RotateDirection.NORTH.getVal() ||
+                currentOpenDirection == RotateDirection.EAST.getVal() ||
+                currentOpenDirection == RotateDirection.SOUTH.getVal() ||
+                currentOpenDirection == RotateDirection.WEST.getVal())
+                return currentOpenDirection;
+            return findNewDrawbridgeOpenDirection(uid, min, max, engineSide);
+        }
+
+        if (doorType == DoorType.PORTCULLIS)
+        {
+            if (currentOpenDirection == RotateDirection.UP.getVal() ||
+                currentOpenDirection == RotateDirection.DOWN.getVal())
+                return currentOpenDirection;
+            return RotateDirection.UP.getVal();
+        }
+
+        if (doorType == DoorType.SLIDINGDOOR)
+        {
+            if (currentOpenDirection == RotateDirection.NORTH.getVal() ||
+                currentOpenDirection == RotateDirection.EAST.getVal() ||
+                currentOpenDirection == RotateDirection.SOUTH.getVal() ||
+                currentOpenDirection == RotateDirection.WEST.getVal())
+                return currentOpenDirection;
+            return RotateDirection.NORTH.getVal();
+        }
+
+        plugin.getMyLogger().severe(
+            "Failed to remap open direction of door " + uid + " (remapped)! Type: " +
+                doorType.name() + ", old open direction: " + currentOpenDirection);
+        return RotateDirection.NONE.getVal();
+    }
+
+    private int findNewDrawbridgeOpenDirection(long uid, Vector3D min, Vector3D max, int engineSide)
+    {
+        final boolean isUp = min.getY() < max.getY();
+        if (isUp)
+        {
+            final boolean alongNorthSouthAxis = (max.getZ() - min.getZ()) > 0;
+            if (alongNorthSouthAxis)
+                return RotateDirection.EAST.getVal();
+            return RotateDirection.NORTH.getVal();
+        }
+        else
+        {
+            if (engineSide == DoorDirection.NORTH.getVal())
+                return RotateDirection.SOUTH.getVal();
+            else if (engineSide == DoorDirection.EAST.getVal())
+                return RotateDirection.WEST.getVal();
+            else if (engineSide == DoorDirection.SOUTH.getVal())
+                return RotateDirection.NORTH.getVal();
+            else if (engineSide == DoorDirection.WEST.getVal())
+                return RotateDirection.EAST.getVal();
+        }
+
+        plugin.getMyLogger().severe(
+            "Failed to find new open direction of flat drawbridge " + uid + " (remapped)! " +
+                "engine side: " + engineSide + "!");
+        return RotateDirection.NONE.getVal();
     }
 
     private long getV2ChunkId(int x, int z)
@@ -220,7 +297,7 @@ final class V2ExportUtil
             case SLIDINGDOOR:
                 return "{\"blocksToMove\":" + blocksToMove + "}";
         }
-        throw new IllegalArgumentException("Received unexpected door type: " + doorType);
+        throw new IllegalArgumentException("Received unexpected door type: '" + doorType + "'");
     }
 
     private String getV2TypeName(DoorType doorType)
@@ -236,7 +313,7 @@ final class V2ExportUtil
             case SLIDINGDOOR:
                 return "animatedarchitecture:slidingdoor";
         }
-        throw new IllegalArgumentException("Received unexpected door type: " + doorType);
+        throw new IllegalArgumentException("Received unexpected door type: '" + doorType + "'");
     }
 
     private void createV2Tables(Connection conn)
@@ -297,6 +374,8 @@ final class V2ExportUtil
 
     private static final class IndexRemapper
     {
+        private static final Long INVALID_VALUE = -1L;
+
         private final BigDoors plugin;
         private final long seq;
         private final String typeName;
@@ -319,19 +398,31 @@ final class V2ExportUtil
                 return input;
 
             final long output = seq + (++offset);
-            plugin.getMyLogger().severe("Changed UID of " + typeName + " " + input + " to new UID " + output);
+            plugin.getMyLogger().warn(String.format("Remapped %s UID: %3d -> %3d", typeName, input, output));
             map.put(input, output);
             return output;
         }
 
         static @Nullable Long findRemappedId(BigDoors plugin, Map<Long, Long> map, long input, String typeName)
         {
+            final @Nullable Long result = map.get(input);
+            if (INVALID_VALUE.equals(result))
+            {
+                plugin.getMyLogger().severe(String.format(
+                    "Found invalid key for %s '%d'! Was it exported successfully?", typeName, input));
+                return null;
+            }
+
             if (input > 10)
                 return input;
-            final @Nullable Long result = map.get(input);
             if (result == null)
-                plugin.getMyLogger().severe("Could not find remapped ID for " + typeName + " : " + input);
+                plugin.getMyLogger().severe(String.format("Could not find remapped ID for %s '%d'!", typeName, input));
             return result;
+        }
+
+        public void invalidate(long originalUid)
+        {
+            map.put(originalUid, -1L);
         }
     }
 }
