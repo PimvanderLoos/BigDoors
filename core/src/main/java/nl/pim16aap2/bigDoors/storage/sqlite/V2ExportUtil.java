@@ -186,7 +186,9 @@ final class V2ExportUtil
 
                     final int engineSide = rs.getInt("engineSide");
                     final int currentOpenDirection = rs.getInt("openDirection");
-                    insert.setInt(++idx, remapOpenDirection(uid, currentOpenDirection, doorType, min, max, engineSide));
+                    final int remappedOpenDirection =
+                        remapOpenDirection(uid, currentOpenDirection, doorType, min, max, engineSide);
+                    insert.setInt(++idx, remappedOpenDirection);
 
                     int flag = 0;
                     if (rs.getBoolean("isOpen"))
@@ -197,7 +199,9 @@ final class V2ExportUtil
 
                     insert.setString(++idx, getV2TypeName(doorType));
                     insert.setInt(++idx, 1);
-                    insert.setString(++idx, getV2TypeData(doorType, rs.getInt("blocksToMove")));
+                    insert.setString(++idx,
+                         getV2TypeData(uid, doorType, min, max, RotateDirection.valueOf(remappedOpenDirection),
+                                       rs.getInt("blocksToMove")));
 
                     insert.executeUpdate();
                 }
@@ -286,7 +290,8 @@ final class V2ExportUtil
         return (((long) chunkX) << 32) | (chunkZ & 0xffffffffL);
     }
 
-    private String getV2TypeData(DoorType doorType, int blocksToMove)
+    private String getV2TypeData(
+        long uid, DoorType doorType, Vector3D min, Vector3D max, RotateDirection rotateDirection, int blocksToMove)
     {
         switch (doorType)
         {
@@ -295,9 +300,26 @@ final class V2ExportUtil
                 return "{\"quarterCircles\":1}";
             case PORTCULLIS:
             case SLIDINGDOOR:
-                return "{\"blocksToMove\":" + blocksToMove + "}";
+                return "{\"blocksToMove\":" + getBlocksToMove(uid, rotateDirection, min, max, blocksToMove) + "}";
         }
-        throw new IllegalArgumentException("Received unexpected door type: '" + doorType + "'");
+        throw new IllegalArgumentException("Received unexpected door type: '" + doorType + "' for door '" + uid + "'");
+    }
+
+    private int getBlocksToMove(long uid, RotateDirection rotateDirection, Vector3D min, Vector3D max, int currentValue)
+    {
+        if (currentValue > 0)
+            return currentValue;
+        if (rotateDirection == RotateDirection.UP || rotateDirection == RotateDirection.DOWN)
+            return 1 + max.getY() - min.getY();
+        if (rotateDirection == RotateDirection.NORTH || rotateDirection == RotateDirection.SOUTH)
+            return 1 + max.getZ() - min.getZ();
+        if (rotateDirection == RotateDirection.EAST || rotateDirection == RotateDirection.WEST)
+            return 1 + max.getX() - min.getX();
+
+        BigDoors.get().getMyLogger().severe(
+            "Failed to determine blocksToMove for door '" + uid +
+                "' from open direction '" + rotateDirection.name() + "'!");
+        return 0;
     }
 
     private String getV2TypeName(DoorType doorType)
