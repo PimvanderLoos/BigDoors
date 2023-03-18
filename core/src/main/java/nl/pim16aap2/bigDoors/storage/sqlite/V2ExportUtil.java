@@ -6,10 +6,9 @@ import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Vector3D;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,11 +72,9 @@ final class V2ExportUtil
                 try (PreparedStatement ps = connV2.prepareStatement(insertStr))
                 {
                     int idx = 0;
-
                     ps.setInt(++idx, permission * 100);
                     ps.setLong(++idx, playerID);
                     ps.setLong(++idx, doorUid);
-
                     ps.executeUpdate();
                 }
             }
@@ -99,12 +96,6 @@ final class V2ExportUtil
             while (rs.next())
             {
                 final String uuidStr = rs.getString("playerUUID");
-                final OfflinePlayer player = Bukkit.getPlayer(UUID.fromString(uuidStr));
-
-                if (player == null)
-                {
-                    plugin.getMyLogger().severe("Failed to export player: " + uuidStr);
-                }
                 final long uid = remapper.getRemappedId(rs.getInt("id"));
 
                 try (PreparedStatement ps = connV2.prepareStatement(insertStr))
@@ -142,23 +133,26 @@ final class V2ExportUtil
             {
                 final DoorType doorType = DoorType.valueOf(rs.getInt("type"));
                 final long originalUid = rs.getLong("id");
+                final long uid = remapper.getRemappedId(originalUid);
+
                 if (doorType == null)
                 {
                     plugin.getMyLogger().severe("Failed to export door '" + originalUid + "': Type does not exist");
-                    return;
+                    remapper.invalidate(originalUid);
+                    continue;
                 }
 
-                final World world = Bukkit.getWorld(UUID.fromString(rs.getString("world")));
+                final UUID worldUuid = UUID.fromString(rs.getString("world"));
+                final @Nullable World world = Bukkit.getWorld(worldUuid);
                 if (world == null)
                 {
-                    plugin.getMyLogger().severe("Failed to export door '" + originalUid + "': World does not exist");
+                    plugin.getMyLogger().severe(String.format(
+                        "Failed to export door '%d': World '%s' does not exist!", originalUid, worldUuid));
+                    remapper.invalidate(originalUid);
                     continue;
                 }
 
                 final String name = rs.getString("name");
-
-                final long uid = remapper.getRemappedId(originalUid);
-
                 try (PreparedStatement insert = connV2.prepareStatement(insertStr))
                 {
                     int idx = 0;
@@ -303,7 +297,7 @@ final class V2ExportUtil
             case SLIDINGDOOR:
                 return "{\"blocksToMove\":" + blocksToMove + "}";
         }
-        throw new IllegalArgumentException("Received unexpected door type: " + doorType);
+        throw new IllegalArgumentException("Received unexpected door type: '" + doorType + "'");
     }
 
     private String getV2TypeName(DoorType doorType)
@@ -319,7 +313,7 @@ final class V2ExportUtil
             case SLIDINGDOOR:
                 return "animatedarchitecture:slidingdoor";
         }
-        throw new IllegalArgumentException("Received unexpected door type: " + doorType);
+        throw new IllegalArgumentException("Received unexpected door type: '" + doorType + "'");
     }
 
     private void createV2Tables(Connection conn)
@@ -380,6 +374,8 @@ final class V2ExportUtil
 
     private static final class IndexRemapper
     {
+        private static final Long INVALID_VALUE = -1L;
+
         private final BigDoors plugin;
         private final long seq;
         private final String typeName;
@@ -402,19 +398,31 @@ final class V2ExportUtil
                 return input;
 
             final long output = seq + (++offset);
-            plugin.getMyLogger().severe("Changed UID of " + typeName + " " + input + " to new UID " + output);
+            plugin.getMyLogger().warn(String.format("Remapped %s UID: %3d -> %3d", typeName, input, output));
             map.put(input, output);
             return output;
         }
 
         static @Nullable Long findRemappedId(BigDoors plugin, Map<Long, Long> map, long input, String typeName)
         {
+            final @Nullable Long result = map.get(input);
+            if (INVALID_VALUE.equals(result))
+            {
+                plugin.getMyLogger().severe(String.format(
+                    "Found invalid key for %s '%d'! Was it exported successfully?", typeName, input));
+                return null;
+            }
+
             if (input > 10)
                 return input;
-            final @Nullable Long result = map.get(input);
             if (result == null)
-                plugin.getMyLogger().severe("Could not find remapped ID for " + typeName + " : " + input);
+                plugin.getMyLogger().severe(String.format("Could not find remapped ID for %s '%d'!", typeName, input));
             return result;
+        }
+
+        public void invalidate(long originalUid)
+        {
+            map.put(originalUid, -1L);
         }
     }
 }
