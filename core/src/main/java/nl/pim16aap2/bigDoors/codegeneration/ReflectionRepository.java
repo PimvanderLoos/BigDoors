@@ -22,6 +22,8 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static nl.pim16aap2.bigDoors.reflection.ReflectionBuilder.*;
 
@@ -68,12 +70,12 @@ final class ReflectionRepository
 
     public static final Constructor<?> cTorPublicNMSFallingBlockEntity;
     public static final Constructor<?> cTorPrivateNMSFallingBlockEntity;
-    public static final Constructor<?> cTorBlockPosition;
     public static final Constructor<?> cTorVec3D;
     public static final Constructor<?> ctorCraftEntity;
     public static final Constructor<?> ctorBlockBase;
     public static final Constructor<?> ctorLocation;
 
+    public static final Method methodNewBlockPosition;
     public static final Method methodGetBlockData;
     public static final Method methodSetBlockData;
     public static final Method methodGetBlockMaterial;
@@ -213,8 +215,6 @@ final class ReflectionRepository
         cTorPublicNMSFallingBlockEntity =
             findConstructor().inClass(classEntityFallingBlock)
                              .withParameters(classEntityTypes, classNMSWorld).get();
-        cTorBlockPosition = findConstructor().inClass(classBlockPosition)
-                                             .withParameters(double.class, double.class, double.class).get();
         cTorVec3D = findConstructor().inClass(classVec3D)
                                      .withParameters(double.class, double.class, double.class).get();
         ctorCraftEntity = findConstructor().inClass(classCraftEntity)
@@ -226,6 +226,9 @@ final class ReflectionRepository
                                         .get();
 
 
+        methodNewBlockPosition = findMethod().inClass(classBlockPosition).withReturnType(classBlockPosition)
+                                             .withParameters(double.class, double.class, double.class)
+                                             .withModifiers(Modifier.STATIC, Modifier.PUBLIC).get();
         methodGetBlockData = findMethod().inClass(Block.class).withName("getBlockData").withoutParameters().get();
         methodSetBlockData = findMethod().inClass(Block.class).withName("setBlockData")
                                          .withParameters(BlockData.class).get();
@@ -241,8 +244,7 @@ final class ReflectionRepository
                                         .withoutParameters().withModifiers(Modifier.PUBLIC).get();
         methodGetEntityHandle = findMethod().inClass(classCraftEntity).withName("getHandle")
                                             .withoutParameters().withModifiers(Modifier.PUBLIC).get();
-        methodTick = findMethod().inClass(classEntityFallingBlock).withReturnType(void.class)
-                                 .withModifiers(Modifier.PUBLIC).withoutParameters().get();
+        methodTick = findTickMethod();
         methodHurtEntities = findMethod().inClass(classEntityFallingBlock).withReturnType(boolean.class)
                                          .withParameters(parameterBuilder()
                                                              .withRequiredParameters(float.class, float.class)
@@ -389,6 +391,25 @@ final class ReflectionRepository
             ReflectionBuilder.findField().inClass(classVec3D).allOfType(double.class)
                              .withModifiers(Modifier.PUBLIC, Modifier.FINAL)
                              .exactCount(3).get());
+    }
+
+    private static Method findTickMethod()
+    {
+        final Set<String> baseMethods =
+            findMethod().inClass(classNMSEntity).findMultiple().withReturnType(void.class)
+                        .withModifiers(Modifier.PUBLIC).withoutParameters().atLeast(1).get()
+                        .stream().map(Method::getName).collect(Collectors.toSet());
+        final List<Method> fbMethods =
+            findMethod().inClass(classEntityFallingBlock).findMultiple().withReturnType(void.class)
+                        .withModifiers(Modifier.PUBLIC).withoutParameters().atLeast(1).get();
+
+        final List<Method> filtered =
+            fbMethods.stream().filter(method -> baseMethods.contains(method.getName())).collect(Collectors.toList());
+
+        if (filtered.size() != 1)
+            throw new IllegalStateException("Found " + filtered.size() +
+                                                " methods that could be the tick method: " + filtered);
+        return filtered.get(0);
     }
 
     private ReflectionRepository()
