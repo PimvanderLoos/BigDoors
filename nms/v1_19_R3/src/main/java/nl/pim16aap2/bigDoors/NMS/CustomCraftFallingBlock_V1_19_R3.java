@@ -92,6 +92,28 @@ public class CustomCraftFallingBlock_V1_19_R3 extends CraftEntity implements Fal
     }
 
     @Override
+    public float getDamagePerBlock()
+    {
+        return 0;
+    }
+
+    @Override
+    public void setDamagePerBlock(float damage)
+    {
+    }
+
+    @Override
+    public int getMaxDamage()
+    {
+        return 0;
+    }
+
+    @Override
+    public void setMaxDamage(int damage)
+    {
+    }
+
+    @Override
     public void setTicksLived(final int value)
     {
         super.setTicksLived(value);
