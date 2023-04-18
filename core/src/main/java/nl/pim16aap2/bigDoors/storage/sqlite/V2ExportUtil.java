@@ -14,7 +14,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 final class V2ExportUtil
@@ -23,6 +25,7 @@ final class V2ExportUtil
     private final long seqPlayers;
 
     private final Map<Long, Long> remappedPlayers = new HashMap<>();
+    private final Set<Long> skippedDoors = new HashSet<>();
 
     V2ExportUtil(BigDoors plugin, long seqPlayers)
     {
@@ -60,10 +63,10 @@ final class V2ExportUtil
             {
                 final @Nullable Long playerID =
                     IndexRemapper.findRemappedId(plugin, remappedPlayers, rs.getLong("playerID"), "Player");
-                if (playerID == null)
-                    continue;
-
                 final long doorUid = rs.getLong("doorUID");
+
+                if (playerID == null || skippedDoors.contains(doorUid))
+                    continue;
 
                 final int permission = rs.getInt("permission");
                 try (PreparedStatement ps = connV2.prepareStatement(insertStr))
@@ -132,6 +135,7 @@ final class V2ExportUtil
                 if (doorType == null)
                 {
                     plugin.getMyLogger().severe("Failed to export door '" + uid + "': Type does not exist");
+                    skippedDoors.add(uid);
                     continue;
                 }
 
@@ -141,6 +145,7 @@ final class V2ExportUtil
                 {
                     plugin.getMyLogger().severe(String.format(
                         "Failed to export door '%d': World '%s' does not exist!", uid, worldUuid));
+                    skippedDoors.add(uid);
                     continue;
                 }
 
