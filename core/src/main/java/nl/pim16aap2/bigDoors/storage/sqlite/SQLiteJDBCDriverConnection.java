@@ -300,6 +300,9 @@ public class SQLiteJDBCDriverConnection
         try (Connection connV1 = getConnectionUnsafe();
              Connection connV2 = getConnectionUnsafe(v2Url))
         {
+            plugin.getMyLogger().warn("Optimizing database!");
+            optimizeDatabase(connV1);
+
             plugin.getMyLogger().warn("Upgrading database!");
 
             final int seqPlayers;
@@ -328,6 +331,15 @@ public class SQLiteJDBCDriverConnection
         plugin.getMyLogger()
             .warn("Database upgrade completed in " + duration + "ms! " +
                       "Please upgrade to replace BigDoors with Animated Architecture now!");
+    }
+
+    static void optimizeDatabase(Connection conn)
+        throws SQLException
+    {
+        conn.prepareStatement("VACUUM;").execute();
+        conn.prepareStatement("PRAGMA integrity_check(1);").execute();
+        conn.prepareStatement("PRAGMA foreign_key_check;").execute();
+        conn.prepareStatement("PRAGMA analysis_limit=0; PRAGMA optimize;").execute();
     }
 
     /**

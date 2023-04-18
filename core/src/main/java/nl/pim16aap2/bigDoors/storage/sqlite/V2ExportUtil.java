@@ -40,6 +40,7 @@ final class V2ExportUtil
             exportUnion(connV1, connV2);
 
             connV2.prepareStatement("PRAGMA user_version = 100;").execute();
+            SQLiteJDBCDriverConnection.optimizeDatabase(connV2);
         }
         catch (Exception e)
         {
