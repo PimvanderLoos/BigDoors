@@ -303,28 +303,18 @@ public class SQLiteJDBCDriverConnection
             plugin.getMyLogger().warn("Upgrading database!");
 
             final int seqPlayers;
-            final int seqDoors;
-
             try(ResultSet seqPlayersRs = connV1
-                    .prepareStatement("SELECT * FROM sqlite_sequence WHERE name = 'players'").executeQuery();
-                ResultSet seqDoorsRs = connV1
-                    .prepareStatement("SELECT * FROM sqlite_sequence WHERE name = 'doors'").executeQuery())
+                    .prepareStatement("SELECT * FROM sqlite_sequence WHERE name = 'players'").executeQuery())
             {
                 if (!seqPlayersRs.next())
                 {
                     plugin.getMyLogger().severe("Could not find sequence for player table!");
                     return;
                 }
-                if (!seqDoorsRs.next())
-                {
-                    plugin.getMyLogger().severe("Could not find sequence for doors table!");
-                    return;
-                }
                 seqPlayers = Math.max(10, seqPlayersRs.getInt("seq"));
-                seqDoors = Math.max(10, seqDoorsRs.getInt("seq"));
             }
 
-            new V2ExportUtil(plugin, seqPlayers, seqDoors).export(connV1, connV2);
+            new V2ExportUtil(plugin, seqPlayers).export(connV1, connV2);
         }
         catch (SQLException | NullPointerException e)
         {

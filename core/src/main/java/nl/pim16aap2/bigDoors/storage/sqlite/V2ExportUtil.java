@@ -21,16 +21,13 @@ final class V2ExportUtil
 {
     private final BigDoors plugin;
     private final long seqPlayers;
-    private final long seqDoors;
 
-    private final Map<Long, Long> remappedDoors = new HashMap<>();
     private final Map<Long, Long> remappedPlayers = new HashMap<>();
 
-    V2ExportUtil(BigDoors plugin, long seqPlayers, long seqDoors)
+    V2ExportUtil(BigDoors plugin, long seqPlayers)
     {
         this.plugin = plugin;
         this.seqPlayers = seqPlayers;
-        this.seqDoors = seqDoors;
     }
 
     public void export(Connection connV1, Connection connV2)
@@ -62,11 +59,10 @@ final class V2ExportUtil
             {
                 final @Nullable Long playerID =
                     IndexRemapper.findRemappedId(plugin, remappedPlayers, rs.getLong("playerID"), "Player");
-                final @Nullable Long doorUid =
-                    IndexRemapper.findRemappedId(plugin, remappedDoors, rs.getLong("doorUID"), "Door");
-
-                if (playerID == null || doorUid == null)
+                if (playerID == null)
                     continue;
+
+                final long doorUid = rs.getLong("doorUID");
 
                 final int permission = rs.getInt("permission");
                 try (PreparedStatement ps = connV2.prepareStatement(insertStr))
@@ -125,20 +121,16 @@ final class V2ExportUtil
                 "bitflag, type, typeVersion, typeData) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
-        final IndexRemapper remapper = new IndexRemapper(plugin, seqDoors, "Door", remappedDoors);
-
         try (ResultSet rs = connV1.prepareStatement("SELECT * FROM doors;").executeQuery())
         {
             while (rs.next())
             {
                 final DoorType doorType = DoorType.valueOf(rs.getInt("type"));
-                final long originalUid = rs.getLong("id");
-                final long uid = remapper.getRemappedId(originalUid);
+                final long uid = rs.getLong("id");
 
                 if (doorType == null)
                 {
-                    plugin.getMyLogger().severe("Failed to export door '" + originalUid + "': Type does not exist");
-                    remapper.invalidate(originalUid);
+                    plugin.getMyLogger().severe("Failed to export door '" + uid + "': Type does not exist");
                     continue;
                 }
 
@@ -147,8 +139,7 @@ final class V2ExportUtil
                 if (world == null)
                 {
                     plugin.getMyLogger().severe(String.format(
-                        "Failed to export door '%d': World '%s' does not exist!", originalUid, worldUuid));
-                    remapper.invalidate(originalUid);
+                        "Failed to export door '%d': World '%s' does not exist!", uid, worldUuid));
                     continue;
                 }
 
