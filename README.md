@@ -64,6 +64,17 @@ open doors based on conditions such as player proximity, player permissions, or 
 * **How can I control doors from the console/command blocks?**  
   *- When issuing commands from the console/command blocks, you cannot use the door name. Instead, you'll have to use doorUIDs.*
 
+# Resource pack:
+The plugin comes with an <ins>**optional**</ins> resource pack that only contains sounds that are played during the
+animation of the doors. It is not used for the animations themselves.
+
+If you don't want to use the resource pack, you can disable it in the config. Look for the `resourcePackEnabled` option.
+You should always disable it if you already have a resource pack installed on your server, as it may otherwise override
+your existing pack or cause other issues. Because the resource pack only contains sounds, disabling it only means that
+the sounds will not be played. Everything else will still work as intended.
+
+The config also has a list of URLs to the resource packs there for each supported version of Minecraft. You can use
+these to download the resource pack manually if you want to either host it yourself or merge it with your existing pack.
 
 # Translations:
 * (0.1.8.35+) [German](https://minecraft.zockerstation.com/bigdoors/), provided by ZockerStation.
