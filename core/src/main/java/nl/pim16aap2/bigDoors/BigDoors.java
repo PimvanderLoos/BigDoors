@@ -81,7 +81,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
-// TODO: Drawbridges that were created when flat, should remember that direction for opening.
 
 public class BigDoors extends JavaPlugin implements Listener
 {
@@ -93,7 +92,6 @@ public class BigDoors extends JavaPlugin implements Listener
 
     public static final int MINIMUMDOORDELAY = 15;
 
-    // TODO: Maybe use a whitelist instead?
     private static final Set<String> BLACKLISTED_SERVERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
         "CatServer", "Mohist", "Magma", "Glowstone", "Akarin", "ArcLight")));
 
