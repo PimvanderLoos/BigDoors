@@ -165,20 +165,29 @@ public class SlidingDoorOpener implements Opener
     public @Nonnull Optional<Pair<Location, Location>> getNewCoordinates(@Nonnull Door door)
     {
         if (door.getBlocksToMove() > plugin.getConfigLoader().getMaxBlocksToMove())
+        {
+            plugin.getMyLogger().warn("blocksToMove value of " + door.getBlocksToMove() +
+                                          " exceeds limit of " + plugin.getConfigLoader().getMaxBlocksToMove() +
+                                          " for sliding door: " + door);
             return Optional.empty();
+        }
 
         final int maxDoorSize = getSizeLimit(door);
         if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
         {
-            plugin.getMyLogger().warn("Size " + door.getBlockCount() + " exceeds limit of " +
-                                          maxDoorSize + " for sliding door: " + door);
+            plugin.getMyLogger().warn("Size " + door.getBlockCount() +
+                                          " exceeds limit of " + maxDoorSize +
+                                          " for sliding door: " + door);
             return Optional.empty();
         }
 
         final MovementSpecification blocksToMove = getBlocksToMove(door);
 
         if (blocksToMove.getBlocks() == 0)
+        {
+            plugin.getMyLogger().warn("Received invalid blocksToMove value of 0 for sliding door: " + door);
             return Optional.empty();
+        }
 
         Location newMin = door.getMinimum();
         Location newMax = door.getMaximum();

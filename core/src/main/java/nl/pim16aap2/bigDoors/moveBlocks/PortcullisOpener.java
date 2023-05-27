@@ -71,19 +71,28 @@ public class PortcullisOpener implements Opener
     @Nonnull public Optional<Pair<Location, Location>> getNewCoordinates(@Nonnull Door door)
     {
         if (door.getBlocksToMove() > plugin.getConfigLoader().getMaxBlocksToMove())
+        {
+            plugin.getMyLogger().warn("blocksToMove value of " + door.getBlocksToMove() +
+                                          " exceeds limit of " + plugin.getConfigLoader().getMaxBlocksToMove() +
+                                          " for portcullis: " + door);
             return Optional.empty();
+        }
 
         final int maxDoorSize = getSizeLimit(door);
         if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
         {
-            plugin.getMyLogger().warn("Size " + door.getBlockCount() + " exceeds limit of " +
-                                          maxDoorSize + " for portcullis: " + door);
+            plugin.getMyLogger().warn("Size " + door.getBlockCount() +
+                                          " exceeds limit of " + maxDoorSize +
+                                          " for portcullis: " + door);
             return Optional.empty();
         }
 
         final int blocksToMove = getBlocksToMove(door);
         if (blocksToMove == 0)
+        {
+            plugin.getMyLogger().warn("Received invalid blocksToMove value of 0 for portcullis: " + door);
             return Optional.empty();
+        }
 
         return Optional.of(new Pair<>(door.getMinimum().add(0, blocksToMove, 0),
                                       door.getMaximum().add(0, blocksToMove, 0)));
