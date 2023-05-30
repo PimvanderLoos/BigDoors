@@ -559,10 +559,9 @@ public final class Util
     // Certain materials can rotate, but they don't rotate in exactly the same way.
     public static int canRotate(Material mat)
     {
-        if (mat.toString().endsWith("STAIRS"))
-            return 2;
         if (mat.toString().endsWith("_WALL"))
             return 5;
+
         if (mat.toString().endsWith("BUTTON") || mat.toString().endsWith("RAIL") ||
             mat.toString().endsWith("DOOR") || mat.toString().endsWith("_HEAD") ||
             mat.toString().endsWith("_SIGN") || mat.toString().endsWith("_BANNER") ||
@@ -576,6 +575,20 @@ public final class Util
         final @Nullable XMaterial xmat = matchXMaterial(mat);
         if (xmat == null)
             return 0;
+
+        // All the pre-1.13 stairs: (new stairs are handled differently)
+        if (!BigDoors.isOnFlattenedVersion() &&
+            (xmat.equals(XMaterial.OAK_STAIRS) || xmat.equals(XMaterial.COBBLESTONE_STAIRS) ||
+             xmat.equals(XMaterial.BRICK_STAIRS) || xmat.equals(XMaterial.STONE_BRICK_STAIRS) ||
+             xmat.equals(XMaterial.NETHER_BRICK_STAIRS) || xmat.equals(XMaterial.SANDSTONE_STAIRS) ||
+             xmat.equals(XMaterial.SPRUCE_STAIRS) || xmat.equals(XMaterial.BIRCH_STAIRS) ||
+             xmat.equals(XMaterial.JUNGLE_STAIRS) || xmat.equals(XMaterial.QUARTZ_STAIRS) ||
+             xmat.equals(XMaterial.ACACIA_STAIRS) || xmat.equals(XMaterial.DARK_OAK_STAIRS) ||
+             xmat.equals(XMaterial.RED_SANDSTONE_STAIRS) || xmat.equals(XMaterial.PURPUR_STAIRS)))
+            return 2;
+
+        if (mat.toString().endsWith("STAIRS"))
+            return 9;
 
         if (xmat.equals(XMaterial.ACACIA_LOG) || xmat.equals(XMaterial.BIRCH_LOG) ||
             xmat.equals(XMaterial.DARK_OAK_LOG) || xmat.equals(XMaterial.JUNGLE_LOG) ||
