@@ -144,7 +144,7 @@ public class CylindricalMover extends BlockMover
 
                             if (BigDoors.isOnFlattenedVersion())
                             {
-                                if (canRotate == 6 || canRotate == 8)
+                                if (canRotate == 6 || canRotate == 8 || canRotate == 9)
                                 {
                                     block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
                                     block2.rotateCylindrical(this.rotDirection);

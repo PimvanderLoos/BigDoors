@@ -1,3 +1,6 @@
+Alpha 0.1.8.46
+- Fix modern (1.13+) stairs not being rotated correctly. Thanks, Tuchan, for the bug report!
+
 Alpha 0.1.8.45
 - Improve the process to export the database to the new format used by AnimatedArchitecture (v2).
 
