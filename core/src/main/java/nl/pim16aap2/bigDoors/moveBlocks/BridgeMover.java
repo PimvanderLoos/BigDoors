@@ -238,12 +238,11 @@ public class BridgeMover extends BlockMover
 
                         canRotate = Util.canRotate(mat);
                         // Rotate blocks here so they don't interrupt the rotation animation.
-                        if (canRotate == 1 || canRotate == 2 || canRotate == 3 ||
-                            canRotate == 6 || canRotate == 7 || canRotate == 8)
+                        if (canRotate != 4 && canRotate != 5)
                         {
                             if (canRotate == 7)
                                 rotateEndRotBlockData(matData);
-                            if (canRotate != 6 && canRotate != 8)
+                            if (canRotate != 6 && canRotate < 8)
                                 matByte = canRotate == 7 ? rotateEndRotBlockData(matData) : rotateBlockData(matData);
                             Block b = world.getBlockAt(xAxis, yAxis, zAxis);
                             materialData.setData(matByte);
@@ -255,7 +254,7 @@ public class BridgeMover extends BlockMover
                                     block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
                                     block2.rotateBlockUpDown(NS);
                                 }
-                                else if (canRotate == 8)
+                                else if (canRotate == 8 || canRotate == 9)
                                 {
                                     block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
                                     block2.rotateVerticallyInDirection(openDirection);
