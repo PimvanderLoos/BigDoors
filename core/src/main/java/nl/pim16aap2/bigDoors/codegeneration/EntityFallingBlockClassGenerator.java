@@ -129,7 +129,7 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
 
     private DynamicType.Builder<?> addCTor(DynamicType.Builder<?> builder)
     {
-        final MethodCall worldCast = (MethodCall) invoke(methodGetNMSWorld)
+        final MethodCall worldCast = (MethodCall) invoke(methodGetWorldHandle)
             .onArgument(0).withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
         final FieldLocator.Factory entityTypeLocatorFactory =
@@ -223,7 +223,9 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
         {
             Objects.requireNonNull(methodWorldReaderHolderLookup);
             deserializedInvocation = invoke(methodIBlockDataDeserializer)
-                .withMethodCall(invoke(methodWorldReaderHolderLookup).onField(fieldNMSWorld).with(objectRegistryBlock))
+                .withMethodCall(invoke(methodWorldReaderHolderLookup)
+                                    .onMethodCall(invoke(methodGetNMSWorld))
+                                    .with(objectRegistryBlock))
                 .withMethodCall(invoke(methodNBTTagCompoundGetCompound).onArgument(0).with("BlockState"));
         }
         else

@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.codegeneration;
 
 import nl.pim16aap2.bigDoors.reflection.asm.ASMUtil;
+import org.bukkit.Location;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
 import java.lang.reflect.Constructor;
@@ -22,7 +23,7 @@ final class ReflectionASMAnalyzers
     static Method[] getEntityLocationMethods(Class<?> classCraftEntity, Class<?> classNMSEntity)
     {
         final Method methodLocation = findMethod().inClass(classCraftEntity).withName("getLocation")
-                                                  .withoutParameters().get();
+                                                  .withParameters(Location.class).get();
         final String[] names = ASMUtil.getMethodNamesFromMethodCall(methodLocation, 3, classNMSEntity, double.class);
 
         final Method[] ret = new Method[names.length];

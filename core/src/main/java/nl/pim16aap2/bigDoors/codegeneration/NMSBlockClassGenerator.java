@@ -361,7 +361,7 @@ final class NMSBlockClassGenerator extends ClassGenerator
 
     private DynamicType.Builder<?> addPutBlockMethod(DynamicType.Builder<?> builder)
     {
-        final MethodCall worldCast = (MethodCall) invoke(methodGetNMSWorld)
+        final MethodCall worldCast = (MethodCall) invoke(methodGetWorldHandle)
             .onMethodCall(invoke(methodLocationGetWorld).onField(FIELD_LOCATION))
             .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
