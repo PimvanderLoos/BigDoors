@@ -87,7 +87,7 @@ final class ReflectionRepository
     public static final Method methodLocationGetZ;
     public static final Method methodTick;
     public static final Method methodDie;
-    public static final Method methodGetNMSWorld;
+    public static final Method methodGetWorldHandle;
     public static final Method methodGetEntityHandle;
     public static final Method methodSetPosition;
     public static final Method methodSetNoGravity;
@@ -95,6 +95,7 @@ final class ReflectionRepository
     public static final Method methodSetMotVec;
     public static final Method methodHurtEntities;
     public static final Method methodMove;
+    public static final Method methodGetNMSWorld;
     public static final Method methodSaveData;
     public static final Method methodLoadData;
     public static final Method methodEntityFallingBlockGetBlock;
@@ -144,7 +145,6 @@ final class ReflectionRepository
 
     public static final Field fieldTileEntityData;
     public static final Field fieldTicksLived;
-    public static final Field fieldNMSWorld;
     public static final Field fieldBlockRotatableAxis;
     public static final Field fieldEntityTypeFallingBlock;
 
@@ -240,8 +240,8 @@ final class ReflectionRepository
         methodLocationGetX = findMethod().inClass(Location.class).withName("getX").withoutParameters().get();
         methodLocationGetY = findMethod().inClass(Location.class).withName("getY").withoutParameters().get();
         methodLocationGetZ = findMethod().inClass(Location.class).withName("getZ").withoutParameters().get();
-        methodGetNMSWorld = findMethod().inClass(classCraftWorld).withName("getHandle")
-                                        .withoutParameters().withModifiers(Modifier.PUBLIC).get();
+        methodGetWorldHandle = findMethod().inClass(classCraftWorld).withName("getHandle")
+                                           .withoutParameters().withModifiers(Modifier.PUBLIC).get();
         methodGetEntityHandle = findMethod().inClass(classCraftEntity).withName("getHandle")
                                             .withoutParameters().withModifiers(Modifier.PUBLIC).get();
         methodTick = findTickMethod();
@@ -251,6 +251,8 @@ final class ReflectionRepository
                                                              .withOptionalParameters(classNMSDamageSource)).get();
         methodMove = findMethod().inClass(classNMSEntity).withReturnType(void.class)
                                  .withParameters(classEnumMoveType, classVec3D).get();
+        methodGetNMSWorld = findMethod().inClass(classNMSEntity).findMultiple().withReturnType(classNMSWorld)
+                                        .withoutParameters().withModifiers(Modifier.PUBLIC).get().get(0);
         methodEntityFallingBlockGetBlock = findMethod().inClass(classEntityFallingBlock).withReturnType(classIBlockData)
                                                        .withoutParameters().get();
         methodSetStartPos = findMethod().inClass(classEntityFallingBlock).withReturnType(void.class)
@@ -382,8 +384,7 @@ final class ReflectionRepository
                                          .withModifiers(Modifier.PUBLIC).get();
         fieldTicksLived = findField().inClass(classEntityFallingBlock).ofType(int.class)
                                      .withModifiers(Modifier.PUBLIC).get();
-        fieldNMSWorld = findField().inClass(classNMSEntity).ofType(classNMSWorld)
-                                   .withModifiers(Modifier.PUBLIC).get();
+
         fieldBlockRotatableAxis = findField().inClass(classBlockRotatable).ofType(classEnumBlockState)
                                              .withModifiers(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC).get();
 

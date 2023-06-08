@@ -109,7 +109,7 @@ public class FallingBlockFactoryClassGenerator extends ClassGenerator
     private DynamicType.Builder<?> addNMSBlockFactoryMethod(DynamicType.Builder<?> builder)
     {
         final MethodCall getNMSWorld = (MethodCall)
-            invoke(methodGetNMSWorld).onArgument(0).withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+            invoke(methodGetWorldHandle).onArgument(0).withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
         final MethodCall createBlockPosition = invoke(methodNewBlockPosition).withArgument(1, 2, 3);
 
