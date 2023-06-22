@@ -179,14 +179,14 @@ public class ProtectionCompatManager implements Listener
                 }
                 catch (TimeoutException e)
                 {
-                    plugin.getMyLogger().log("Timed out checking permissions for offline player: " + fakePlayer, e);
+                    throw new RuntimeException("Timed out checking permissions for offline player: " + fakePlayer, e);
                 }
                 catch (Exception e)
                 {
-                    plugin.getMyLogger().log("Failed to check permissions for offline player: " + fakePlayer, e);
+                    throw new RuntimeException("Failed to check permissions for offline player: " + fakePlayer, e);
                 }
                 return "ERROR";
-            }).exceptionally(throwable -> Util.exceptionally(throwable, "ERROR!"));
+            });
     }
 
     public int registeredCompatsCount()
@@ -221,8 +221,7 @@ public class ProtectionCompatManager implements Listener
         if (fakePlayer == null)
             return CompletableFuture.completedFuture("InvalidFakePlayer");
 
-        return checkForPlayer(fakePlayer, () -> function.apply(fakePlayer))
-            .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
+        return checkForPlayer(fakePlayer, () -> function.apply(fakePlayer));
     }
 
     /**
@@ -239,7 +238,15 @@ public class ProtectionCompatManager implements Listener
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
         return checkForPlayer(
-            playerUUID, playerName, loc.getWorld(), fakePlayer -> canBreakBlockSync(fakePlayer, loc));
+            playerUUID, playerName, loc.getWorld(), fakePlayer -> canBreakBlockSync(fakePlayer, loc))
+            .exceptionally(
+                ex ->
+                {
+                    plugin.getMyLogger().log(
+                        "Failed to check if player '" + playerName + "' could break the block at location: " + loc +
+                        ", With active protection hooks: " + getActiveHookNames(), ex);
+                    return "ERROR";
+                });
     }
 
     /**
@@ -259,7 +266,15 @@ public class ProtectionCompatManager implements Listener
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
         return checkForPlayer(
-            playerUUID, playerName, world, fakePlayer -> canBreakBlocksBetweenLocsSync(fakePlayer, world, loc1, loc2));
+            playerUUID, playerName, world, fakePlayer -> canBreakBlocksBetweenLocsSync(fakePlayer, world, loc1, loc2))
+            .exceptionally(
+                ex ->
+                {
+                    plugin.getMyLogger().log(
+                        "Failed to check if player '" + playerName + "' could break the blocks between location " +
+                        loc1 + " and " + loc2 + ", With active protection hooks: " + getActiveHookNames(), ex);
+                    return "ERROR";
+                });
     }
 
     /**
@@ -361,5 +376,16 @@ public class ProtectionCompatManager implements Listener
     public void registerProtectionCompatDefinition(IProtectionCompatDefinition compatDefinition)
     {
         registeredDefinitions.put(compatDefinition.getName(), compatDefinition);
+    }
+
+    private String getActiveHookNames()
+    {
+        if (protectionCompats.isEmpty())
+            return "[]";
+
+        final StringBuilder sb = new StringBuilder("[");
+        for (IProtectionCompat compat : protectionCompats)
+            sb.append(compat.getName()).append(", ");
+        return sb.substring(0, sb.length() - 2) + "]";
     }
 }
