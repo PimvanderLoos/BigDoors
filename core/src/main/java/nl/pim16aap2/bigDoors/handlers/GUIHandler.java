@@ -1,12 +1,11 @@
 package nl.pim16aap2.bigDoors.handlers;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.GUI.GUI;
@@ -42,7 +41,7 @@ public class GUIHandler implements Listener
         if (gui != null)
         {
             // Slight delay, so that we get the "next" inventory, not the current one that is being closed.
-            new BukkitRunnable()
+            new UniversalRunnable()
             {
                 @Override
                 public void run()

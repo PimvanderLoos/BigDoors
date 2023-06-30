@@ -1,7 +1,7 @@
 package nl.pim16aap2.bigDoors;
 
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 public class AutoCloseScheduler
 {
     private final BigDoors plugin;
-    private Map<Long, BukkitTask> timers;
+    private Map<Long, MyScheduledTask> timers;
 
     public AutoCloseScheduler(final BigDoors plugin)
     {
@@ -56,7 +56,7 @@ public class AutoCloseScheduler
         deleteTimer(door.getDoorUID());
         int delay = Math.max(plugin.getMinimumDoorDelay(), door.getAutoClose() * 20);
 
-        timers.put(door.getDoorUID(), new BukkitRunnable()
+        timers.put(door.getDoorUID(), new UniversalRunnable()
         {
             @Override
             public void run()

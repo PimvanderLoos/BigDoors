@@ -111,7 +111,7 @@ public abstract class ToolUser extends Abortable
             final Location max = new Location(world, two.getBlockX(), two.getBlockY(), two.getBlockZ());
 
             plugin.canBreakBlocksBetweenLocs(player.getUniqueId(), player.getName(), world, min, max)
-                  .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(
+                  .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(
                       plugin, () -> finishUp(message, world, min, max, canBreakBlock)));
         }
         else
