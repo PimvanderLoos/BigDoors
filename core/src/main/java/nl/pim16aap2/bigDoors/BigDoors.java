@@ -1,5 +1,7 @@
 package nl.pim16aap2.bigDoors;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.schedulers.TaskScheduler;
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R1;
@@ -97,6 +99,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Objects.requireNonNull(Semver.coerce(Bukkit.getServer().getBukkitVersion())).withClearedPreReleaseAndBuild();
 
     private static BigDoors instance;
+    private static TaskScheduler scheduler;
     public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
 
@@ -153,6 +156,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @Override
     public void onEnable()
     {
+        scheduler = UniversalScheduler.getScheduler(this);
         try
         {
             onEnable0();
@@ -580,6 +584,10 @@ public class BigDoors extends JavaPlugin implements Listener
                 output.put(DoorType.getFriendlyName(type), stats.getOrDefault(type, 0));
             return output;
         }));
+    }
+
+    public static TaskScheduler getScheduler() {
+        return scheduler;
     }
 
     public String getLoginMessage()

@@ -1,5 +1,6 @@
 package nl.pim16aap2.bigDoors.moveBlocks;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
@@ -14,14 +15,13 @@ import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.material.MaterialData;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class BridgeMover extends BlockMover
     private final int xMin, yMin, zMin;
     private final int xMax, yMax, zMax;
     private int endCount;
-    private BukkitRunnable animationRunnable;
+    private UniversalRunnable animationRunnable;
 
     @SuppressWarnings("deprecation")
     public BridgeMover(BigDoors plugin, World world, double time, Door door, RotateDirection upDown,
@@ -186,7 +186,7 @@ public class BridgeMover extends BlockMover
 
         endStepSum = upDown.equals(RotateDirection.UP) ? 0 : Math.PI / 2 * stepMultiplier;
         startStepSum = upDown.equals(RotateDirection.DOWN) ? 0 : startStepSum;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
+        BigDoors.getScheduler().scheduleSyncDelayedTask(this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
@@ -197,8 +197,6 @@ public class BridgeMover extends BlockMover
         final List<NMSBlock> edges =
             new ArrayList<>(Math.min(door.getBlockCount(),
                                      (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
-
-        final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
 
         int xAxis = turningPoint.getBlockX();
         do
@@ -225,67 +223,73 @@ public class BridgeMover extends BlockMover
                     Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
 
                     Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
-                    Material mat = vBlock.getType();
-                    if (Util.isAllowedBlock(mat))
-                    {
-                        byte matData = vBlock.getData();
-                        BlockState bs = vBlock.getState();
-                        MaterialData materialData = bs.getData();
-
-                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-                        NMSBlock block2 = null;
-
-                        int canRotate = 0;
-                        byte matByte = matData;
-
-                        canRotate = Util.canRotate(mat);
-                        // Rotate blocks here so they don't interrupt the rotation animation.
-                        if (canRotate != 4 && canRotate != 5)
+                    int finalYAxis = yAxis;
+                    int finalZAxis = zAxis;
+                    int finalXAxis = xAxis;
+                    double finalRadius = radius;
+                    BigDoors.getScheduler().runTask(vBlock.getLocation(), () -> {
+                        Material mat = vBlock.getType();
+                        if (Util.isAllowedBlock(mat))
                         {
-                            if (canRotate == 7)
-                                rotateEndRotBlockData(matData);
-                            if (canRotate != 6 && canRotate < 8)
-                                matByte = canRotate == 7 ? rotateEndRotBlockData(matData) : rotateBlockData(matData);
-                            Block b = world.getBlockAt(xAxis, yAxis, zAxis);
-                            materialData.setData(matByte);
+                            byte matData = vBlock.getData();
+                            BlockState bs = vBlock.getState();
+                            MaterialData materialData = bs.getData();
 
-                            if (BigDoors.isOnFlattenedVersion())
+                            NMSBlock block = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
+                            NMSBlock block2 = null;
+
+                            int canRotate = 0;
+                            byte matByte = matData;
+
+                            canRotate = Util.canRotate(mat);
+                            // Rotate blocks here so they don't interrupt the rotation animation.
+                            if (canRotate != 4 && canRotate != 5)
                             {
-                                if (canRotate == 6)
+                                if (canRotate == 7)
+                                    rotateEndRotBlockData(matData);
+                                if (canRotate != 6 && canRotate < 8)
+                                    matByte = canRotate == 7 ? rotateEndRotBlockData(matData) : rotateBlockData(matData);
+                                Block b = world.getBlockAt(finalXAxis, finalYAxis, finalZAxis);
+                                materialData.setData(matByte);
+
+                                if (BigDoors.isOnFlattenedVersion())
                                 {
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-                                    block2.rotateBlockUpDown(NS);
-                                }
-                                else if (canRotate == 8 || canRotate == 9)
-                                {
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-                                    block2.rotateVerticallyInDirection(openDirection);
-                                }
-                                else
-                                {
-                                    b.setType(mat);
-                                    BlockState bs2 = b.getState();
-                                    bs2.setData(materialData);
-                                    bs2.update();
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                                    if (canRotate == 6)
+                                    {
+                                        block2 = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
+                                        block2.rotateBlockUpDown(NS);
+                                    }
+                                    else if (canRotate == 8 || canRotate == 9)
+                                    {
+                                        block2 = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
+                                        block2.rotateVerticallyInDirection(openDirection);
+                                    }
+                                    else
+                                    {
+                                        b.setType(mat);
+                                        BlockState bs2 = b.getState();
+                                        bs2.setData(materialData);
+                                        bs2.update();
+                                        block2 = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
+                                    }
                                 }
                             }
+                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+                                vBlock.setType(Material.AIR);
+
+                            CustomCraftFallingBlock fBlock = null;
+                            if (!instantOpen)
+                                fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+
+                            savedBlocks.add(new MyBlockData(mat, matByte, fBlock, finalRadius, materialData,
+                                    block2 == null ? block : block2, canRotate, startLocation));
+
+                            if (finalXAxis == xMin || finalXAxis == xMax ||
+                                    finalYAxis == yMin || finalYAxis == yMax ||
+                                    finalZAxis == zMin || finalZAxis == zMax)
+                                edges.add(block);
                         }
-                        if (!BigDoors.isOnFlattenedVersion())
-                            vBlock.setType(Material.AIR);
-
-                        CustomCraftFallingBlock fBlock = null;
-                        if (!instantOpen)
-                            fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
-
-                        savedBlocks.add(new MyBlockData(mat, matByte, fBlock, radius, materialData,
-                                                        block2 == null ? block : block2, canRotate, startLocation));
-
-                        if (xAxis == xMin || xAxis == xMax ||
-                            yAxis == yMin || yAxis == yMax ||
-                            zAxis == zMin || zAxis == zMax)
-                            edges.add(block);
-                    }
+                    });
                 }
                 zAxis += dz;
             }
@@ -347,8 +351,7 @@ public class BridgeMover extends BlockMover
     private void rotateEntities()
     {
         endCount = (int) (20.0f / tickRate * time);
-
-        animationRunnable = new BukkitRunnable()
+        animationRunnable = new UniversalRunnable()
         {
             final Location center = new Location(world, turningPoint.getBlockX() + 0.5, yMin, turningPoint.getBlockZ() + 0.5);
             boolean replace = false;
@@ -387,7 +390,7 @@ public class BridgeMover extends BlockMover
                     for (MyBlockData savedBlock : savedBlocks)
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
-                    Bukkit.getScheduler().callSyncMethod(plugin, () ->
+                    BigDoors.getScheduler().callSyncMethod(() ->
                     {
                         putBlocks(false);
                         return null;
@@ -401,10 +404,8 @@ public class BridgeMover extends BlockMover
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
                     {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+                        BigDoors.getScheduler().scheduleSyncDelayedTask(() ->
                         {
-                            final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
-
                             for (MyBlockData block : savedBlocks)
                             {
                                 if (block.canRot() != 0 && block.canRot() != 4)
@@ -417,7 +418,7 @@ public class BridgeMover extends BlockMover
                                     CustomCraftFallingBlock fBlock;
                                     // Because the block in savedBlocks is already rotated where applicable, just
                                     // use that block now.
-                                    fBlock = fabf.createFallingBlockWithMetadata(spec, loc, block.getBlock(), matData, mat);
+                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
 
                                     block.getFBlock().remove();
                                     block.setFBlock(fBlock);

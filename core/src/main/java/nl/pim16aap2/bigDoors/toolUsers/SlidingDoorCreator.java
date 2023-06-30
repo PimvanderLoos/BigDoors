@@ -94,6 +94,6 @@ public class SlidingDoorCreator extends ToolUser
             return;
         }
         plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+              .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
     }
 }
