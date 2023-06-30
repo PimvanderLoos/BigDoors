@@ -63,6 +63,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.schedulers.TaskScheduler;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -132,6 +135,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private boolean isEnabled = false;
     private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
+    private static TaskScheduler scheduler;
 
     public BigDoors()
     {
@@ -162,6 +166,7 @@ public class BigDoors extends JavaPlugin implements Listener
         updateManager = new UpdateManager(this);
         buildNumber = readBuildNumber();
         overrideVersion();
+        scheduler = UniversalScheduler.getScheduler(this);
 
         try
         {
@@ -240,7 +245,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadHandler(this), this);
 
         // No need to put these in init, as they should not be reloaded.
-        pbCache = new TimedCache<>(this, config.cacheTimeout());
+        pbCache = new TimedCache<>(config.cacheTimeout());
         protCompatMan = new ProtectionCompatManager(this);
         Bukkit.getPluginManager().registerEvents(protCompatMan, this);
         db = new SQLiteJDBCDriverConnection(this, config.dbFile());
@@ -254,6 +259,10 @@ public class BigDoors extends JavaPlugin implements Listener
         registerCommands(commandHandler);
 
         isEnabled = true;
+    }
+
+    public static TaskScheduler getScheduler() {
+            return scheduler;
     }
 
     public WorldHeightManager getWorldHeightManager()

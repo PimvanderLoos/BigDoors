@@ -5,7 +5,6 @@ import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -292,6 +291,6 @@ public class DrawbridgeCreator extends ToolUser
             return;
         }
         plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+              .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(() -> selector(loc, canBreakBlock)));
     }
 }

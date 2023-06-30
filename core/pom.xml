@@ -12,12 +12,31 @@
         <version>0.1.8.47-ALPHA</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>papermc</id>  
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.Anon8281</groupId>
+            <artifactId>UniversalScheduler</artifactId>
+            <version>0.1.3</version>
+            <scope>compile</scope>
+        </dependency>
+      <dependency>
+        <groupId>dev.folia</groupId>
+        <artifactId>folia-api</artifactId>
+        <version>1.20.1-R0.1-SNAPSHOT</version>
+        <scope>provided</scope>
+      </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>

@@ -3,6 +3,7 @@ main: nl.pim16aap2.bigDoors.BigDoors
 version: Alpha 0.1.8.47
 author: pim16aap2
 api-version: 1.13
+folia-supported: true
 loadbefore: [ PlotSquared ]
 softdepend: [ WorldGuard, Vault, GriefPrevention, Towny, Lands, RedProtect, Geyser-Spigot, ViaRewind, GriefDefender, MedievalFactions, mcMMO ]
 libraries:

@@ -56,9 +56,10 @@ public class Commander
 
     public void stopMovers(boolean onDisable)
     {
-        Iterator<BlockMover> it = busyDoors.values().iterator();
-        while (it.hasNext())
-            it.next().cancel(onDisable);
+        // Iterator<BlockMover> it = busyDoors.values().iterator();
+        // while (it.hasNext())
+        //     it.next().cancel(onDisable);
+        BigDoors.getScheduler().cancelTasks();
     }
 
     // Check if a door is busy

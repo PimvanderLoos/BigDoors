@@ -13,6 +13,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -349,12 +350,13 @@ public final class Util
     // Play sound at a location.
     public static void playSound(Location loc, String sound, float volume, float pitch)
     {
-
-        Bukkit.getScheduler().callSyncMethod(BigDoors.get(), () ->
-        {
+				BigDoors.getScheduler().runTask(loc, new BukkitRunnable() {
+					@Override
+					public void run()
+					{
             playSoundSync(loc, sound, volume, pitch);
-            return null;
-        });
+					}
+				});
     }
 
     public static int getMaxDoorsForPlayer(Player player)
@@ -923,6 +925,21 @@ public final class Util
             }).exceptionally(throwable -> exceptionally(throwable, fallback));
     }
 
+		public static <V> Runnable callableToRunnable(final Callable<V> callable)
+		{
+			return new Runnable() {
+				@Override
+				public void run()
+				{
+					try {
+						callable.call();
+					} catch (Exception e) {
+						
+					}
+				}
+			};
+		}
+
     /**
      * Runs a task on the main thread.
      * </p>
@@ -942,10 +959,17 @@ public final class Util
      * @return The CompletableFuture waiting for the callable to complete.
      * @param <T> The type of the data provided by the callable.
      */
-    public static <T> CompletableFuture<T> runSync(
-        Callable<T> callable, long timeout, TimeUnit unit, @Nullable T fallback)
+    public static <T> CompletableFuture<T> runSync(Callable<T> callable, long timeout, TimeUnit unit, @Nullable T fallback, Location loc)
     {
-        return futureToCompletableFuture(
-            Bukkit.getScheduler().callSyncMethod(BigDoors.get(), callable), timeout, unit, fallback);
+				Future<T> future = CompletableFuture.supplyAsync(() -> {
+						try {
+							return callable.call();
+						} catch (Exception e) {
+							Bukkit.getLogger().severe("Error " + e);
+							return null;
+						}
+				});
+
+				return futureToCompletableFuture(future, timeout, unit, fallback);
     }
 }

@@ -1,6 +1,5 @@
 package nl.pim16aap2.bigDoors.handlers;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,7 +41,7 @@ public class GUIHandler implements Listener
         if (gui != null)
         {
             // Slight delay, so that we get the "next" inventory, not the current one that is being closed.
-            new BukkitRunnable()
+            BukkitRunnable run = new BukkitRunnable()
             {
                 @Override
                 public void run()
@@ -52,7 +51,8 @@ public class GUIHandler implements Listener
                     if (!isInBigDoorsInventory(player))
                         gui.close();
                 }
-            }.runTaskLater(plugin, 1);
+            };
+            BigDoors.getScheduler().runTaskLater(run,1L);
         }
     }
 

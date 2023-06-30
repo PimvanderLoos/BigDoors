@@ -75,7 +75,7 @@ public class VerticalMover extends BlockMover
         }
 
         tickRate = Util.tickRateFromSpeed(speed);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
+        BigDoors.getScheduler().scheduleSyncDelayedTask(this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
@@ -208,10 +208,9 @@ public class VerticalMover extends BlockMover
                     for (MyBlockData savedBlock : savedBlocks)
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
-                    Bukkit.getScheduler().callSyncMethod(plugin, () ->
+                    BigDoors.getScheduler().runTask(() ->
                     {
                         putBlocks(false);
-                        return null;
                     });
                     cancel();
                 }
@@ -228,7 +227,7 @@ public class VerticalMover extends BlockMover
                 }
             }
         };
-        animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
+        BigDoors.getScheduler().runTaskTimerAsynchronously(animationRunnable, 14L, tickRate);
     }
 
     // Update the coordinates of a door based on its location, direction it's

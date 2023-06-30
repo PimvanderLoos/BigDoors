@@ -43,3 +43,5 @@ updateMirror.sh
 *dependency-reduced-pom.xml
 **/target/*
 */lib/*
+
+tmp/

@@ -28,6 +28,17 @@ public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements Fal
     }
 
     @Override
+    public void setCancelDrop(boolean var1)
+    {
+    }
+
+    @Override
+    public boolean getCancelDrop()
+    {
+        return false;
+    }
+
+    @Override
     public boolean isOnGround()
     {
         return false;

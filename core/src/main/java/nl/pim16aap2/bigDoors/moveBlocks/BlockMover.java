@@ -3,6 +3,7 @@ package nl.pim16aap2.bigDoors.moveBlocks;
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
+import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import nl.pim16aap2.bigDoors.events.DoorEventAutoToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
@@ -73,19 +74,26 @@ public abstract class BlockMover
                 continue;
 
             final Block block = newLocation.getBlock();
-            if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
-                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, block::breakNaturally, 1L);
-        }
+            BigDoors.getScheduler().runTask(block.getLocation(powerBlockLoc), new BukkitRunnable() {
+                @Override
+                public void run()
+                {
+                    if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
+                        BigDoors.getScheduler().runTaskLater(block::breakNaturally, 1L);
 
-        for (Entity entity : powerBlockLoc.getWorld().getNearbyEntities(powerBlockLoc, 1.1, 1.1, 1.1))
-        {
-            if (entity instanceof ItemFrame && Util.isPosInCuboid(entity.getLocation(), min, max))
-            {
-                final ItemFrame itemFrame = (ItemFrame) entity;
-                powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), itemFrame.getItem());
-                powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), XMaterial.ITEM_FRAME.parseItem());
-                itemFrame.remove();
-            }
+                    for (Entity entity : powerBlockLoc.getWorld().getNearbyEntities(powerBlockLoc, 1.1, 1.1, 1.1))
+                    {
+                        if (entity instanceof ItemFrame && Util.isPosInCuboid(entity.getLocation(), min, max))
+                        {
+                            final ItemFrame itemFrame = (ItemFrame) entity;
+                            powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), itemFrame.getItem());
+                            powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), XMaterial.ITEM_FRAME.parseItem());
+                            itemFrame.remove();
+                        }
+                    }
+                }
+            });
+
         }
     }
 
@@ -126,17 +134,25 @@ public abstract class BlockMover
             Location newPos = locationUpdater.apply(savedBlock.getRadius(), savedBlock.getStartX(),
                                                     savedBlock.getStartY(), savedBlock.getStartZ());
 
-            if (!instantOpen)
-                savedBlock.getFBlock().remove();
+            if (!instantOpen) {
+				CustomCraftFallingBlock fBlock = savedBlock.getFBlock();
+                
+                BigDoors.getScheduler().runTask(fBlock.getLocation(), () -> {
+                    fBlock.remove();
+                });
+			}
 
             if (!savedBlock.getMat().equals(Material.AIR))
             {
                 if (BigDoors.isOnFlattenedVersion())
                 {
-                    savedBlock.getBlock().putBlock(newPos);
-                    Block b = world.getBlockAt(newPos);
-                    BlockState bs = b.getState();
-                    bs.update();
+                    Location savedBlockLoc = savedBlock.getFBlock().getLocation();
+                    BigDoors.getScheduler().runTask(savedBlockLoc, () -> {
+                        savedBlock.getBlock().putBlock(newPos);
+                        Block b = world.getBlockAt(newPos);
+                        BlockState bs = b.getState();
+                        bs.update();
+                    });
                 }
                 else
                 {
@@ -158,7 +174,7 @@ public abstract class BlockMover
         if (onDisable)
             return;
 
-        new BukkitRunnable()
+        BukkitRunnable run = new BukkitRunnable()
         {
             @Override
             public void run()
@@ -171,7 +187,9 @@ public abstract class BlockMover
                 if (canAutoToggle(door))
                     plugin.getAutoCloseScheduler().scheduleAutoClose(door, time, instantOpen);
             }
-        }.runTaskLater(plugin, getDelay(endCount));
+        };
+
+        BigDoors.getScheduler().runTaskLater(run,getDelay(endCount));
     }
 
     private int getDelay(int endCount)

@@ -44,12 +44,12 @@
             <version>0.1.8.47-ALPHA</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>hook-plotsquared-7</artifactId>
             <version>0.1.8.47-ALPHA</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
@@ -105,12 +105,12 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>hook-medieval-factions</artifactId>
             <version>0.1.8.47-ALPHA</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>

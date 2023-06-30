@@ -28,9 +28,9 @@ public class LoginMessageHandler implements Listener
         // The "version" node is a bit random, but just "bigdoors.admin" wouldn't
         // work and I don't really want to create a custom node.
         // Because it's part of "bigdoors.admin.*", it'll suffice.
-        if (player.hasPermission("bigdoors.admin.version") || player.isOp())
+        if (player.hasPermission("bigdoors.admin.version") || player.isOp()) {
             // Slight delay so the player actually receives the message;
-            new BukkitRunnable()
+            BukkitRunnable run = new BukkitRunnable()
             {
                 @Override
                 public void run()
@@ -39,6 +39,8 @@ public class LoginMessageHandler implements Listener
                     if (!loginString.isEmpty())
                         player.sendMessage(ChatColor.AQUA + plugin.getLoginMessage());
                 }
-            }.runTaskLater(plugin, 75);
+            };
+            BigDoors.getScheduler().runTaskLater(run,75L);
+        }
     }
 }

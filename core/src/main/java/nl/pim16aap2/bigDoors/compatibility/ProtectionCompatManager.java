@@ -166,9 +166,9 @@ public class ProtectionCompatManager implements Listener
 
                 try
                 {
-                    return Bukkit
+                    return BigDoors
                         .getScheduler()
-                        .callSyncMethod(plugin, callable)
+                        .callSyncMethod(callable)
                         .get(1, TimeUnit.SECONDS);
                 }
                 catch (InterruptedException e)

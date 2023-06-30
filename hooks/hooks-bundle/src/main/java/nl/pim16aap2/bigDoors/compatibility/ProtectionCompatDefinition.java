@@ -42,8 +42,8 @@ public abstract class ProtectionCompatDefinition implements IProtectionCompatDef
                 return PlotSquared5ProtectionCompat.class;
             case "6.":
                 return PlotSquared6ProtectionCompat.class;
-            case "7.":
-                return PlotSquared7ProtectionCompat.class;
+            // case "7.":
+            //     return PlotSquared7ProtectionCompat.class;
             default:
                 logUnsupportedVersion("PlotSquared", version);
                 return null;
@@ -89,12 +89,12 @@ public abstract class ProtectionCompatDefinition implements IProtectionCompatDef
         }
     };
 
-    public static final IProtectionCompatDefinition MEDIEVAL_FACTIONS = new ProtectionCompatDefinition("MedievalFactions") {
-        @Override public Class<? extends IProtectionCompat> getClass(String version)
-        {
-            return MedievalFactionsProtectionCompat.class;
-        }
-    };
+    // public static final IProtectionCompatDefinition MEDIEVAL_FACTIONS = new ProtectionCompatDefinition("MedievalFactions") {
+    //     @Override public Class<? extends IProtectionCompat> getClass(String version)
+    //     {
+    //         return MedievalFactionsProtectionCompat.class;
+    //     }
+    // };
 
     public static final IProtectionCompatDefinition REDPROTECT = new ProtectionCompatDefinition("RedProtect")
     {
@@ -132,7 +132,7 @@ public abstract class ProtectionCompatDefinition implements IProtectionCompatDef
     };
 
     public static final List<IProtectionCompatDefinition> DEFAULT_COMPAT_DEFINITIONS = Collections.unmodifiableList(
-        Arrays.asList(TOWNY, PLOTSQUARED, WORLDGUARD, GRIEFPREVENTION, LANDS, MEDIEVAL_FACTIONS, REDPROTECT, GRIEF_DEFENDER, KONQUEST));
+        Arrays.asList(TOWNY, PLOTSQUARED, WORLDGUARD, GRIEFPREVENTION, LANDS, REDPROTECT, GRIEF_DEFENDER, KONQUEST)); // MEDIEVAL_FACTIONS
 
     private final String name;
 

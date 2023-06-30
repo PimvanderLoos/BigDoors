@@ -1,6 +1,8 @@
 package nl.pim16aap2.bigDoors.handlers;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
+
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.GUI.GUI;
@@ -32,7 +34,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -286,14 +287,16 @@ public class CommandHandler implements CommandExecutor
 
     public void startTimerForAbortable(Abortable abortable, int time)
     {
-        BukkitTask task = new BukkitRunnable()
+        BukkitRunnable run = new BukkitRunnable()
         {
             @Override
             public void run()
             {
                 abortable.abort(false);
             }
-        }.runTaskLater(plugin, time);
+        };
+
+        MyScheduledTask task = BigDoors.getScheduler().runTaskLater(run, time);
         abortable.setTask(task);
     }
 

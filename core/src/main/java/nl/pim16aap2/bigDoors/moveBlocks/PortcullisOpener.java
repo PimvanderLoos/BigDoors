@@ -167,7 +167,7 @@ public class PortcullisOpener implements Opener
                 if (!hasAccess)
                     return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
                 return Util.runSync(() -> openDoor0(door, blocksToMove, instantOpen0, time),
-                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR, door.getChunkCoords());
             }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 

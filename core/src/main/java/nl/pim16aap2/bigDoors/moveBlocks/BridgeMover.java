@@ -14,7 +14,6 @@ import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -186,7 +185,7 @@ public class BridgeMover extends BlockMover
 
         endStepSum = upDown.equals(RotateDirection.UP) ? 0 : Math.PI / 2 * stepMultiplier;
         startStepSum = upDown.equals(RotateDirection.DOWN) ? 0 : startStepSum;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
+        BigDoors.getScheduler().scheduleSyncDelayedTask(this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
@@ -385,10 +384,9 @@ public class BridgeMover extends BlockMover
                     for (MyBlockData savedBlock : savedBlocks)
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
-                    Bukkit.getScheduler().callSyncMethod(plugin, () ->
+                    BigDoors.getScheduler().runTask(() ->
                     {
                         putBlocks(false);
-                        return null;
                     });
                     cancel();
                 }
@@ -399,7 +397,7 @@ public class BridgeMover extends BlockMover
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
                     {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+                        BigDoors.getScheduler().runTask(() ->
                         {
                             for (MyBlockData block : savedBlocks)
                             {
@@ -421,7 +419,7 @@ public class BridgeMover extends BlockMover
                                     block.getFBlock().setVelocity(veloc);
                                 }
                             }
-                        }, 0);
+                        });
                     }
 
                     for (MyBlockData block : savedBlocks)
@@ -453,7 +451,7 @@ public class BridgeMover extends BlockMover
                 }
             }
         };
-        animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
+        BigDoors.getScheduler().runTaskTimerAsynchronously(animationRunnable, 14L, tickRate);
     }
 
     // Rotate blocks such a logs by modifying its material data.

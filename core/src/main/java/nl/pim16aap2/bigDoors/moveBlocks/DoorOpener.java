@@ -11,8 +11,11 @@ import nl.pim16aap2.bigDoors.util.Pair;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
 import nl.pim16aap2.bigDoors.util.Vector2D;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -363,7 +366,7 @@ public class DoorOpener implements Opener
                     return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
                 return Util.runSync(() -> openDoor0(door, oppositePoint, openingSpecification,
                                                     time, instantOpen0, currentDirection),
-                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR, door.getChunkCoords());
             }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
@@ -371,14 +374,24 @@ public class DoorOpener implements Opener
         Door door, Location oppositePoint, DoorOpener.OpeningSpecification openingSpecification, double time,
         boolean instantOpen, DoorDirection currentDirection)
     {
-        plugin.getCommander()
-              .addBlockMover(
-                  new CylindricalMover(plugin, oppositePoint.getWorld(), 1, openingSpecification.rotateDirection, time,
-                                       oppositePoint, currentDirection, door, instantOpen,
-                                       plugin.getConfigLoader().bdMultiplier()));
-        fireDoorEventToggleStart(door, instantOpen);
+        if (plugin.getCommander().canGo()) {
+            plugin.getCommander()
+                .addBlockMover(
+                    new CylindricalMover(plugin, oppositePoint.getWorld(), 1, openingSpecification.rotateDirection, time,
+                                        oppositePoint, currentDirection, door, instantOpen,
+                                        plugin.getConfigLoader().bdMultiplier()));
+            BigDoors.getScheduler().runTask(new BukkitRunnable() {
+                @Override
+                public void run()
+                {
+                    fireDoorEventToggleStart(door, instantOpen);
+                }
+            });
 
-        return DoorOpenResult.SUCCESS;
+            return DoorOpenResult.SUCCESS;
+        } else {
+            return DoorOpenResult.BUSY;
+        }
     }
 
     private static final class OpeningSpecification

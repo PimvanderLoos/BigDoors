@@ -3,7 +3,6 @@ package nl.pim16aap2.bigDoors.toolUsers;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -142,6 +141,6 @@ public class DoorCreator extends ToolUser
             return;
         }
         plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+              .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(() -> selector(loc, canBreakBlock)));
     }
 }
