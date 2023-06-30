@@ -2,20 +2,17 @@ package nl.pim16aap2.bigDoors.moveBlocks;
 
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.NMSBlock;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
+import nl.pim16aap2.bigDoors.util.SlidingMoverTask;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -109,28 +106,10 @@ public class SlidingMover extends BlockMover
                     Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
                     Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
                     Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
-                    Material mat = vBlock.getType();
-                    if (Util.isAllowedBlock(mat))
-                    {
-                        byte matData = vBlock.getData();
-                        BlockState bs = vBlock.getState();
-                        MaterialData materialData = bs.getData();
-                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-
-                        if (!BigDoors.isOnFlattenedVersion())
-                            vBlock.setType(Material.AIR);
-
-                        CustomCraftFallingBlock fBlock = null;
-                        if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
-                        savedBlocks
-                            .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
-
-                        if (xAxis == xMin || xAxis == xMax ||
-                            yAxis == yMin || yAxis == yMax ||
-                            zAxis == zMin || zAxis == zMax)
-                            edges.add(block);
-                    }
+                    BigDoors.getScheduler().runTask(vBlock.getLocation(),
+                            new SlidingMoverTask(savedBlocks, edges, yMax, zMin, zMax, xMin, xMax, yMin,
+                                    startLocation, newFBlockLocation, instantOpen, fabf, world,
+                                    vBlock, xAxis, yAxis, zAxis));
                 }
                 ++zAxis;
             }
@@ -140,11 +119,12 @@ public class SlidingMover extends BlockMover
         while (yAxis <= yMax);
 
         // This is only supported on 1.13
-        if (BigDoors.isOnFlattenedVersion())
-        {
-            savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
-            // Update the physics around the edges after we've removed all our blocks.
-            edges.forEach(block -> block.deleteOriginalBlock(true));
+        if (BigDoors.isOnFlattenedVersion()) {
+            BigDoors.getScheduler().runTask(door.getChunkCoords(), () -> {
+                savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
+                // Update the physics around the edges after we've removed all our blocks.
+                edges.forEach(block -> block.deleteOriginalBlock(true));
+            });
         }
 
         savedBlocks.trimToSize();
@@ -223,7 +203,7 @@ public class SlidingMover extends BlockMover
                     {
                         putBlocks(false);
                     });
-                    cancel();
+                    // cancel();
                 }
                 else
                 {

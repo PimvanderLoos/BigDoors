@@ -423,12 +423,18 @@ public class BridgeOpener implements Opener
     private DoorOpenResult openDoor0(
         Door door, double time, RotateDirection upDown, boolean instantOpen, OpeningSpecification openingSpecification)
     {
-        plugin.getCommander().addBlockMover(new BridgeMover(plugin, door.getWorld(), time, door, upDown,
-                                                            openingSpecification.openDirection, instantOpen,
-                                                            plugin.getConfigLoader().dbMultiplier()));
-        fireDoorEventToggleStart(door, instantOpen);
+        if (plugin.getCommander().canGo()) {
+            plugin.getCommander().addBlockMover(new BridgeMover(plugin, door.getWorld(), time, door, upDown,
+                                                                openingSpecification.openDirection, instantOpen,
+                                                                plugin.getConfigLoader().dbMultiplier()));
+            BigDoors.getScheduler().runTask(() -> {
+                fireDoorEventToggleStart(door, instantOpen);
+            });
 
-        return DoorOpenResult.SUCCESS;
+            return DoorOpenResult.SUCCESS;
+        } else {
+            return DoorOpenResult.BUSY;
+        }
     }
 
     private static final class OpeningSpecification

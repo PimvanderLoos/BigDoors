@@ -16,7 +16,6 @@ import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -214,21 +213,16 @@ public class CylindricalMover extends BlockMover {
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
 
-                    BigDoors.getScheduler().runTask(new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            putBlocks(false);
-                        }
+                    BigDoors.getScheduler().runTask(() -> {
+                        putBlocks(false);
                     });
+                    // cancel();
                 } else {
                     // It is not pssible to edit falling block blockdata (client won't update it),
                     // so delete the current fBlock and replace it by one that's been rotated.
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
-                        BigDoors.getScheduler().runTaskLater(new BukkitRunnable() {
-                            @Override
-                            public void run()
-                            {
+                        BigDoors.getScheduler().runTask(() -> {
                             for (MyBlockData block : savedBlocks)
                                 if (block.canRot() != 0 && block.canRot() != 5) {
                                     Material mat = block.getMat();
@@ -245,8 +239,7 @@ public class CylindricalMover extends BlockMover {
                                     block.setFBlock(fBlock);
                                     block.getFBlock().setVelocity(veloc);
                                 }
-                        }
-                        } , 0);
+                        });
 
                     double sin = Math.sin(stepSum);
                     double cos = Math.cos(stepSum);
