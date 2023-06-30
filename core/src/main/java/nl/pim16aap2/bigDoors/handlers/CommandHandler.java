@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.handlers;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.GUI.GUI;
@@ -31,8 +32,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -286,7 +286,7 @@ public class CommandHandler implements CommandExecutor
 
     public void startTimerForAbortable(Abortable abortable, int time)
     {
-        BukkitTask task = new BukkitRunnable()
+        MyScheduledTask task = new UniversalRunnable()
         {
             @Override
             public void run()
@@ -1162,7 +1162,7 @@ public class CommandHandler implements CommandExecutor
 
 //        plugin.getUpdateManager().checkForUpdates();
 //
-//        new BukkitRunnable()
+//        new UniversalRunnable()
 //        {
 //            @Override
 //            public void run()
@@ -1174,7 +1174,7 @@ public class CommandHandler implements CommandExecutor
 //        Location loc = new Location(player.getWorld(), 128, 75, 140);
 //        long toSecond = 1000000000L;
 //        long secondstToRun = 10L;
-//        new BukkitRunnable()
+//        new UniversalRunnable()
 //        {
 //            long startTime = System.nanoTime();
 //            long count = 0;

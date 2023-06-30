@@ -1,16 +1,16 @@
 package nl.pim16aap2.bigDoors.util;
 
-import org.bukkit.scheduler.BukkitTask;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 
 public abstract class Abortable
 {
-    private BukkitTask bukkitTask;
+    private MyScheduledTask universalTask;
 
     public abstract void abort(boolean onDisable);
 
     protected void cancelTask()
     {
-        bukkitTask.cancel();
+        universalTask.cancel();
     }
 
     public void abort()
@@ -18,8 +18,8 @@ public abstract class Abortable
         abort(false);
     }
 
-    public void setTask(BukkitTask task)
+    public void setTask(MyScheduledTask task)
     {
-        bukkitTask = task;
+        universalTask = task;
     }
 }

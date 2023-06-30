@@ -3,7 +3,7 @@ package nl.pim16aap2.bigDoors.moveBlocks;
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
+import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import nl.pim16aap2.bigDoors.events.DoorEventAutoToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
@@ -20,7 +20,7 @@ import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.material.MaterialData;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -74,20 +74,24 @@ public abstract class BlockMover
                 continue;
 
             final Block block = newLocation.getBlock();
-            if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
-                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, block::breakNaturally, 1L);
+            BigDoors.getScheduler().runTask(block.getLocation(), () -> {
+                if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
+                    BigDoors.getScheduler().runTaskLater(block.getLocation(), block::breakNaturally, 1L);
+            });
         }
 
-        for (Entity entity : powerBlockLoc.getWorld().getNearbyEntities(powerBlockLoc, 1.1, 1.1, 1.1))
-        {
-            if (entity instanceof ItemFrame && Util.isPosInCuboid(entity.getLocation(), min, max))
+        BigDoors.getScheduler().runTask(powerBlockLoc, () -> {
+            for (Entity entity : powerBlockLoc.getWorld().getNearbyEntities(powerBlockLoc, 1.1, 1.1, 1.1))
             {
-                final ItemFrame itemFrame = (ItemFrame) entity;
-                powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), itemFrame.getItem());
-                powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), XMaterial.ITEM_FRAME.parseItem());
-                itemFrame.remove();
+                if (entity instanceof ItemFrame && Util.isPosInCuboid(entity.getLocation(), min, max))
+                {
+                    final ItemFrame itemFrame = (ItemFrame) entity;
+                    powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), itemFrame.getItem());
+                    powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), XMaterial.ITEM_FRAME.parseItem());
+                    itemFrame.remove();
+                }
             }
-        }
+        });
     }
 
     // Put blocks in their final position.
@@ -126,31 +130,33 @@ public abstract class BlockMover
             byte matByte = savedBlock.getBlockByte();
             Location newPos = locationUpdater.apply(savedBlock.getRadius(), savedBlock.getStartX(),
                                                     savedBlock.getStartY(), savedBlock.getStartZ());
-
-            if (!instantOpen)
-                savedBlock.getFBlock().remove();
-
-            if (!savedBlock.getMat().equals(Material.AIR))
-            {
-                if (BigDoors.isOnFlattenedVersion())
-                {
-                    savedBlock.getBlock().putBlock(newPos);
-                    Block b = world.getBlockAt(newPos);
-                    BlockState bs = b.getState();
-                    bs.update();
+            BigDoors.getScheduler().runTask(newPos, () -> {
+                if (!instantOpen) {
+                    savedBlock.getFBlock().remove();
                 }
-                else
-                {
-                    Block b = world.getBlockAt(newPos);
-                    MaterialData matData = savedBlock.getMatData();
-                    matData.setData(matByte);
 
-                    b.setType(mat);
-                    BlockState bs = b.getState();
-                    bs.setData(matData);
-                    bs.update();
+                if (!savedBlock.getMat().equals(Material.AIR))
+                {
+                    if (BigDoors.isOnFlattenedVersion())
+                    {
+                        savedBlock.getBlock().putBlock(newPos);
+                        Block b = world.getBlockAt(newPos);
+                        BlockState bs = b.getState();
+                        bs.update();
+                    }
+                    else
+                    {
+                        Block b = world.getBlockAt(newPos);
+                        MaterialData matData = savedBlock.getMatData();
+                        matData.setData(matByte);
+
+                        b.setType(mat);
+                        BlockState bs = b.getState();
+                        bs.setData(matData);
+                        bs.update();
+                    }
                 }
-            }
+            });
         }
 
         coordinateUpdater.run();
@@ -159,7 +165,7 @@ public abstract class BlockMover
         if (onDisable)
             return;
 
-        new BukkitRunnable()
+        new UniversalRunnable()
         {
             @Override
             public void run()
@@ -204,21 +210,6 @@ public abstract class BlockMover
     public final List<MyBlockData> getSavedBlocks()
     {
         return publicSavedBlocks;
-    }
-
-    /**
-     * Creates a new instance of the falling block factory specification.
-     * <p>
-     * This is used to configure the falling block factory.
-     *
-     * @param plugin The BigDoors plugin instance.
-     * @return The falling block factory specification.
-     */
-    protected static FallingBlockFactory.Specification createBlockFactorySpec(BigDoors plugin)
-    {
-        return new FallingBlockFactory.Specification(
-            plugin.getConfigLoader().setCustomName()
-        );
     }
 
     @FunctionalInterface

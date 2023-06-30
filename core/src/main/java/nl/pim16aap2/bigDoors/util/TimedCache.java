@@ -7,16 +7,16 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Bukkit;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
+import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 public class TimedCache<K, V>
 {
     private final JavaPlugin plugin;
     private int timeout = -1;
     private Map<K, Value<V>> cache;
-    private BukkitTask verifyTask;
+    private MyScheduledTask verifyTask;
 
     public TimedCache(JavaPlugin plugin, int time)
     {
@@ -52,7 +52,7 @@ public class TimedCache<K, V>
     {
         if (timeout > 0)
             // Verify cache 1/2 the timeout time. Timeout is in minutes, task timer in ticks, so 1200 * timeout = timeout in ticks.
-            verifyTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> verifyCache(), 600 * timeout, 1200 * timeout);
+            verifyTask = BigDoors.getScheduler().runTaskTimerAsynchronously(this::verifyCache, 600 * timeout, 1200 * timeout);
     }
 
     // Take care of killing the async task (if needed).
