@@ -10,6 +10,7 @@ import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -21,6 +22,8 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 public class SlidingMover extends BlockMover
 {
@@ -92,34 +95,32 @@ public class SlidingMover extends BlockMover
     private void createAnimatedBlocks()
     {
         savedBlocks.ensureCapacity(door.getBlockCount());
+        Location loc = new Location(door.getWorld(), xMin, yMin, zMin);
 
-        // This will reserve a bit too much memory, but not enough to worry about.
-        final List<NMSBlock> edges =
-            new ArrayList<>(Math.min(door.getBlockCount(),
-                                     (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
+        BigDoors.getScheduler().runTask(loc, () -> {
+            // This will reserve a bit too much memory, but not enough to worry about.
+            final List<NMSBlock> edges =
+                    new ArrayList<>(Math.min(door.getBlockCount(),
+                            (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
-        int yAxis = yMin;
-        do
-        {
-            int zAxis = zMin;
+            int yAxis = yMin;
             do
             {
-                for (int xAxis = xMin; xAxis <= xMax; xAxis++)
+                int zAxis = zMin;
+                do
                 {
-                    Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
-                    Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
-                    Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
-                    int finalXAxis = xAxis;
-                    int finalYAxis = yAxis;
-                    int finalZAxis = zAxis;
-                    BigDoors.getScheduler().runTask(vBlock.getLocation(), () -> {
+                    for (int xAxis = xMin; xAxis <= xMax; xAxis++)
+                    {
+                        Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
+                        Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
+                        Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
+
                         Material mat = vBlock.getType();
-                        if (Util.isAllowedBlock(mat))
-                        {
+                        if (Util.isAllowedBlock(mat)) {
                             byte matData = vBlock.getData();
                             BlockState bs = vBlock.getState();
                             MaterialData materialData = bs.getData();
-                            NMSBlock block = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
+                            NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
 
                             if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
                                 vBlock.setType(Material.AIR);
@@ -130,34 +131,34 @@ public class SlidingMover extends BlockMover
                             savedBlocks
                                     .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
 
-                            if (finalXAxis == xMin || finalXAxis == xMax ||
-                                    finalYAxis == yMin || finalYAxis == yMax ||
-                                    finalZAxis == zMin || finalZAxis == zMax)
+                            if (xAxis == xMin || xAxis == xMax ||
+                                    yAxis == yMin || yAxis == yMax ||
+                                    zAxis == zMin || zAxis == zMax)
                                 edges.add(block);
                         }
-                    });
+                    }
+                    ++zAxis;
                 }
-                ++zAxis;
+                while (zAxis <= zMax);
+                ++yAxis;
             }
-            while (zAxis <= zMax);
-            ++yAxis;
-        }
-        while (yAxis <= yMax);
+            while (yAxis <= yMax);
 
-        // This is only supported on 1.13
-        if (BigDoors.isOnFlattenedVersion())
-        {
-            savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
-            // Update the physics around the edges after we've removed all our blocks.
-            edges.forEach(block -> block.deleteOriginalBlock(true));
-        }
+            // This is only supported on 1.13
+            if (BigDoors.isOnFlattenedVersion())
+            {
+                savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
+                // Update the physics around the edges after we've removed all our blocks.
+                edges.forEach(block -> block.deleteOriginalBlock(true));
+            }
 
-        savedBlocks.trimToSize();
+            savedBlocks.trimToSize();
 
-        if (!instantOpen)
-            rotateEntities();
-        else
-            putBlocks(false);
+            if (!instantOpen)
+                rotateEntities();
+            else
+                putBlocks(false);
+        });
     }
 
     @Override
@@ -190,13 +191,13 @@ public class SlidingMover extends BlockMover
         animationRunnable = new UniversalRunnable()
         {
             double counter = 0;
-            double step = ((double) blocksToMove) / ((double) endCount);
+            final double step = ((double) blocksToMove) / ((double) endCount);
             double stepSum = 0;
-            int totalTicks = (int) (endCount * 1.1);
+            final int totalTicks = (int) (endCount * 1.1);
             long startTime = System.nanoTime();
             long lastTime;
             long currentTime = System.nanoTime();
-            MyBlockData firstBlockData = savedBlocks.stream().filter(block -> !block.getMat().equals(Material.AIR))
+            final MyBlockData firstBlockData = savedBlocks.stream().filter(block -> !block.getMat().equals(Material.AIR))
                 .findFirst().orElse(null);
 
             @Override
