@@ -2,18 +2,14 @@ package nl.pim16aap2.bigDoors.GUI;
 
 import java.util.ArrayList;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.DoorAttribute;
 import nl.pim16aap2.bigDoors.util.DoorOwner;
-import com.cryptomorin.xseries.XMaterial;
 
 public class GUIItem
 {
