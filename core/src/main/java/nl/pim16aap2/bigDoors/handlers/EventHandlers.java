@@ -24,7 +24,6 @@ import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleStart;
 import nl.pim16aap2.bigDoors.toolUsers.ToolUser;
-import nl.pim16aap2.bigDoors.util.Util;
 
 public class EventHandlers implements Listener
 {

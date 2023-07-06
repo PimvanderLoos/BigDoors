@@ -9,19 +9,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import nl.pim16aap2.bigDoors.BigDoors;
-import org.bukkit.plugin.java.JavaPlugin;
-
 public class TimedCache<K, V>
 {
-    private final JavaPlugin plugin;
     private int timeout = -1;
     private Map<K, Value<V>> cache;
     private MyScheduledTask verifyTask;
 
-    public TimedCache(JavaPlugin plugin, int time)
+    public TimedCache(int time)
     {
         cache = new ConcurrentHashMap<>();
-        this.plugin = plugin;
         reinit(time);
     }
 
