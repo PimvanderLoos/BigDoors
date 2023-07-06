@@ -266,7 +266,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadHandler(this), this);
 
         // No need to put these in init, as they should not be reloaded.
-        pbCache = new TimedCache<>(this, config.cacheTimeout());
+        pbCache = new TimedCache<>(config.cacheTimeout());
         protCompatMan = new ProtectionCompatManager(this);
         Bukkit.getPluginManager().registerEvents(protCompatMan, this);
         db = new SQLiteJDBCDriverConnection(this, config.dbFile());

@@ -70,8 +70,10 @@ public class AutoCloseScheduler
                         cancel();
                     }
                     else
-                        plugin.getDoorOpener(door.getType())
+                        BigDoors.getScheduler().runTask(door.getChunkCoords(), () -> {
+                          plugin.getDoorOpener(door.getType())
                             .openDoorFuture(plugin.getCommander().getDoor(null, door.getDoorUID()), time, instantOpen, false);
+                        });
                 }
                 deleteTimer(door.getDoorUID());
             }
