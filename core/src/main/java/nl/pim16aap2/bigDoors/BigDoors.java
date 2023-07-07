@@ -168,7 +168,7 @@ public class BigDoors extends JavaPlugin implements Listener
         throws Exception
     {
         if (!schedulerIsRunning)
-            Bukkit.getScheduler().runTask(this, () -> schedulerIsRunning = true);
+            getScheduler().runTask(() -> schedulerIsRunning = true);
 
         updateManager = new UpdateManager(this);
         buildNumber = readBuildNumber();
