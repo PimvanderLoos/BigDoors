@@ -14,6 +14,7 @@ function install_dependency() {
 
     wget -O "$tmp_file" "$url"
     mvn install:install-file -Dfile="$tmp_file" -DgroupId="$groupId" -DartifactId="$artifactId" -Dversion="$version" -Dpackaging="$packaging"
+    rm "$tmp_file"
 }
 
 version_medieval_factions="5.2.0"
@@ -24,7 +25,3 @@ install_dependency \
     "medieval-factions" \
     "$version_medieval_factions" \
     "jar"
-
-
-
-
