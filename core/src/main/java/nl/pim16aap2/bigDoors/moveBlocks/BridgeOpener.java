@@ -330,7 +330,9 @@ public class BridgeOpener implements Opener
         @Nonnull Door door, double time, boolean instantOpen, boolean silent,
         @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
     {
-        if (!plugin.getCommander().canGo() || !plugin.isSchedulerRunning())
+        plugin.assertSchedulerRunning();
+
+        if (!plugin.getCommander().canGo())
         {
             plugin.getMyLogger()
                   .info("Failed to toggle: " + door.toSimpleString() + ", as door toggles are currently disabled!");

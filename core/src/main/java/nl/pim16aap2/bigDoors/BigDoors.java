@@ -276,6 +276,18 @@ public class BigDoors extends JavaPlugin implements Listener
     }
 
     /**
+     * Asserts that the scheduler is running.
+     *
+     * @throws IllegalStateException When the scheduler is not running.
+     */
+    public void assertSchedulerRunning()
+        throws IllegalStateException
+    {
+        if (!BigDoors.get().isSchedulerRunning())
+            throw new IllegalStateException("Scheduler is not running!");
+    }
+
+    /**
      * Checks if the current environment is invalid. This plugin should not attempt initialization in an invalid
      * environment.
      * <p>
@@ -453,9 +465,7 @@ public class BigDoors extends JavaPlugin implements Listener
 
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
-        if (!isSchedulerRunning())
-            return CompletableFuture.completedFuture("Scheduler not running!");
-
+        assertSchedulerRunning();
         return protCompatMan.canBreakBlock(playerUUID, playerName, loc)
             .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }
@@ -463,9 +473,7 @@ public class BigDoors extends JavaPlugin implements Listener
     public CompletableFuture<@Nullable String> canBreakBlocksBetweenLocs(
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
-        if (!isSchedulerRunning())
-            return CompletableFuture.completedFuture("Scheduler not running!");
-
+        assertSchedulerRunning();
         return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2)
             .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }
