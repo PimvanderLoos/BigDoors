@@ -404,7 +404,7 @@ public class BridgeMover extends BlockMover
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
                     {
-                        BigDoors.getScheduler().scheduleSyncDelayedTask(() ->
+                        BigDoors.getScheduler().runTaskLater(door.getChunkCoords(), () ->
                         {
                             for (MyBlockData block : savedBlocks)
                             {
@@ -415,18 +415,20 @@ public class BridgeMover extends BlockMover
                                     byte matData = block.getBlockByte();
                                     Vector veloc = block.getFBlock().getVelocity();
 
-                                    CustomCraftFallingBlock fBlock;
-                                    // Because the block in savedBlocks is already rotated where applicable, just
-                                    // use that block now.
-                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
+                                    BigDoors.getScheduler().runTask(() -> {
+                                      CustomCraftFallingBlock fBlock;
+                                      // Because the block in savedBlocks is already rotated where applicable, just
+                                      // use that block now.
+                                      fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
 
-                                    block.getFBlock().remove();
-                                    block.setFBlock(fBlock);
+                                      block.getFBlock().remove();
+                                      block.setFBlock(fBlock);
 
-                                    block.getFBlock().setVelocity(veloc);
+                                      block.getFBlock().setVelocity(veloc);
+                                    });
                                 }
                             }
-                        }, 0);
+                        }, 1L);
                     }
 
                     for (MyBlockData block : savedBlocks)

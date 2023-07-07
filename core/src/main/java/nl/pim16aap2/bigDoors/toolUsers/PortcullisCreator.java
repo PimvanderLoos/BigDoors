@@ -82,6 +82,6 @@ public class PortcullisCreator extends ToolUser
             return;
         }
         plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+          .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(loc, () -> selector(loc, canBreakBlock)));
     }
 }
