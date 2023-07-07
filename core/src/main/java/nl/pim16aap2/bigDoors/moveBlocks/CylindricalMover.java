@@ -303,7 +303,7 @@ public class CylindricalMover extends BlockMover
                     // so delete the current fBlock and replace it by one that's been rotated.
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
-                        BigDoors.getScheduler().scheduleSyncDelayedTask(() ->
+                        BigDoors.getScheduler().runTask(door.getChunkCoords(), () ->
                         {
                             for (MyBlockData block : savedBlocks)
                                 if (block.canRot() != 0 && block.canRot() != 5)
@@ -313,16 +313,18 @@ public class CylindricalMover extends BlockMover
                                     byte matData = block.getBlockByte();
                                     Vector veloc = block.getFBlock().getVelocity();
 
-                                    CustomCraftFallingBlock fBlock;
-                                    // Because the block in savedBlocks is already rotated where applicable, just
-                                    // use that block now.
-                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
+                                    BigDoors.getScheduler().runTask(() -> {
+                                      CustomCraftFallingBlock fBlock;
+                                      // Because the block in savedBlocks is already rotated where applicable, just
+                                      // use that block now.
+                                      fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
 
-                                    block.getFBlock().remove();
-                                    block.setFBlock(fBlock);
-                                    block.getFBlock().setVelocity(veloc);
+                                      block.getFBlock().remove();
+                                      block.setFBlock(fBlock);
+                                      block.getFBlock().setVelocity(veloc);
+                                    });
                                 }
-                        }, 0);
+                        });
 
                     double sin = Math.sin(stepSum);
                     double cos = Math.cos(stepSum);
