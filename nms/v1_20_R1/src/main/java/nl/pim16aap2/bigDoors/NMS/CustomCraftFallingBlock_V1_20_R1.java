@@ -81,6 +81,18 @@ public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements Fal
     }
 
     @Override
+    public boolean getCancelDrop()
+    {
+        return true;
+    }
+
+    @Override
+    public void setCancelDrop(boolean b)
+    {
+
+    }
+
+    @Override
     public boolean canHurtEntities()
     {
         return false;
