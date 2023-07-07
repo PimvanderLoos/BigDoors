@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.dansplugins</groupId>
             <artifactId>medieval-factions</artifactId>
-            <version>5.0.0-rc.7</version>
+            <version>5.2.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
