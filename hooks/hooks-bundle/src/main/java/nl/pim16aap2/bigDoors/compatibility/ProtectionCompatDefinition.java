@@ -122,17 +122,8 @@ public abstract class ProtectionCompatDefinition implements IProtectionCompatDef
         }
     };
 
-    public static final IProtectionCompatDefinition KONQUEST = new ProtectionCompatDefinition("Konquest")
-    {
-        @Override
-        public Class<? extends IProtectionCompat> getClass(String version)
-        {
-            return KonquestProtectionCompat.class;
-        }
-    };
-
     public static final List<IProtectionCompatDefinition> DEFAULT_COMPAT_DEFINITIONS = Collections.unmodifiableList(
-        Arrays.asList(TOWNY, PLOTSQUARED, WORLDGUARD, GRIEFPREVENTION, LANDS, MEDIEVAL_FACTIONS, REDPROTECT, GRIEF_DEFENDER, KONQUEST));
+        Arrays.asList(TOWNY, PLOTSQUARED, WORLDGUARD, GRIEFPREVENTION, LANDS, MEDIEVAL_FACTIONS, REDPROTECT, GRIEF_DEFENDER));
 
     private final String name;
 

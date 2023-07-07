@@ -111,12 +111,5 @@
             <version>0.1.8.47-ALPHA</version>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>nl.pim16aap2.BigDoors</groupId>
-            <artifactId>hook-konquest</artifactId>
-            <version>0.1.8.47-ALPHA</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>

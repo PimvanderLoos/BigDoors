@@ -16,15 +16,6 @@ function install_dependency() {
     mvn install:install-file -Dfile="$tmp_file" -DgroupId="$groupId" -DartifactId="$artifactId" -Dversion="$version" -Dpackaging="$packaging"
 }
 
-version_konquest="0.9.1"
-install_dependency \
-    "https://github.com/Rumsfield/konquest-doc/raw/main/release-jars/Konquest-$version_konquest.jar" \
-    "Konquest" \
-    "konquest" \
-    "konquest" \
-    "$version_konquest" \
-    "jar"
-
 version_medieval_factions="5.2.0"
 install_dependency \
     "https://github.com/Dans-Plugins/Medieval-Factions/releases/download/v$version_medieval_factions/medieval-factions-$version_medieval_factions-all.jar" \
