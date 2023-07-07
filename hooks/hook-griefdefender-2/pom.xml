@@ -23,7 +23,7 @@
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>hooks-api</artifactId>
-            <version>0.1.8.40-ALPHA</version>
+            <version>0.1.8.47-ALPHA</version>
             <scope>provided</scope>
         </dependency>
 
