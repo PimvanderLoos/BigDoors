@@ -11,6 +11,10 @@
         <version>0.1.8.47-ALPHA</version>
     </parent>
 
+    <properties>
+        <dependency.plotsquared.version>7.0.0-SNAPSHOT</dependency.plotsquared.version>
+    </properties>
+
     <repositories>
         <repository>
             <id>EngineHub</id>
@@ -46,15 +50,15 @@
         </dependency>
 
         <dependency>
-            <groupId>com.plotsquared</groupId>
-            <artifactId>PlotSquared-Core</artifactId>
-            <version>7.0.0-SNAPSHOT</version>
+            <groupId>com.intellectualsites.plotsquared</groupId>
+            <artifactId>plotsquared-core</artifactId>
+            <version>${dependency.plotsquared.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.plotsquared</groupId>
-            <artifactId>PlotSquared-Bukkit</artifactId>
-            <version>7.0.0-SNAPSHOT</version>
+            <groupId>com.intellectualsites.plotsquared</groupId>
+            <artifactId>plotsquared-bukkit</artifactId>
+            <version>${dependency.plotsquared.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
