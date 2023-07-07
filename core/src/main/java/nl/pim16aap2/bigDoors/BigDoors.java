@@ -127,6 +127,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private TimedCache<Long /* Chunk */, HashMap<Long /* Loc */, Long /* doorUID */>> pbCache = null;
     private VaultManager vaultManager;
     private UpdateManager updateManager;
+    private volatile boolean schedulerIsRunning = false;
     private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
     private static final boolean IS_ON_FLATTENED_VERSION = MC_VERSION.isAtLeast(MCVersion.v1_13_R1);
     private boolean isEnabled = false;
@@ -159,6 +160,9 @@ public class BigDoors extends JavaPlugin implements Listener
     private void onEnable0()
         throws Exception
     {
+        if (!schedulerIsRunning)
+            Bukkit.getScheduler().runTask(this, () -> schedulerIsRunning = true);
+
         updateManager = new UpdateManager(this);
         buildNumber = readBuildNumber();
         overrideVersion();
@@ -259,6 +263,16 @@ public class BigDoors extends JavaPlugin implements Listener
     public WorldHeightManager getWorldHeightManager()
     {
         return worldHeightManager;
+    }
+
+    /**
+     * Checks if the Bukkit scheduler is running. This will be false until all plugins have been enabled.
+     *
+     * @return True if the scheduler is running.
+     */
+    public boolean isSchedulerRunning()
+    {
+        return schedulerIsRunning;
     }
 
     /**
@@ -439,6 +453,9 @@ public class BigDoors extends JavaPlugin implements Listener
 
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
+        if (!isSchedulerRunning())
+            return CompletableFuture.completedFuture("Scheduler not running!");
+
         return protCompatMan.canBreakBlock(playerUUID, playerName, loc)
             .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }
@@ -446,6 +463,9 @@ public class BigDoors extends JavaPlugin implements Listener
     public CompletableFuture<@Nullable String> canBreakBlocksBetweenLocs(
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
+        if (!isSchedulerRunning())
+            return CompletableFuture.completedFuture("Scheduler not running!");
+
         return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2)
             .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
     }

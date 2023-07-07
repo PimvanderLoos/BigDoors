@@ -1,5 +1,6 @@
 Alpha 0.1.8.47
 - Drop support for Konquest. It turns out that the hook had been broken for a while, and I haven't received any reports about it. If you're still using Konquest, please let me know!
+- Do not allow doors to be toggled before all plugins have been enabled. This fixes timeout issues caused by the scheduler not running yet. Thanks, SlimeDog, for the bug report!
 
 Alpha 0.1.8.46
 - Add support for Minecraft 1.20.
