@@ -3,11 +3,12 @@
  */
 package nl.pim16aap2.bigDoors.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
+import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Location;
 import org.bukkit.World;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  *
@@ -138,7 +139,12 @@ public final class ChunkUtils
         if (!isChunkGenerated(world, chunkX, chunkZ))
             return ChunkLoadResult.FAIL;
 
-        world.getChunkAt(chunkX, chunkZ);
+        if (!world.loadChunk(chunkX, chunkZ, false))
+        {
+            BigDoors.get().getMyLogger().severe(
+                "Failed to load chunk at " + chunkX + ", " + chunkZ + " in world " + world.getName());
+            return ChunkLoadResult.FAIL;
+        }
         return ChunkLoadResult.REQUIRED_LOAD;
     }
 
