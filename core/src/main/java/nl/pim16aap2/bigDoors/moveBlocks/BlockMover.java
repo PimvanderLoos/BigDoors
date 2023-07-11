@@ -3,6 +3,7 @@ package nl.pim16aap2.bigDoors.moveBlocks;
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
+import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import nl.pim16aap2.bigDoors.events.DoorEventAutoToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
