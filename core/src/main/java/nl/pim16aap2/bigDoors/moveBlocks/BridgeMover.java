@@ -404,7 +404,7 @@ public class BridgeMover extends BlockMover
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
                     {
-                        BigDoors.getScheduler().runTaskLater(door.getChunkCoords(), () ->
+                        BigDoors.getScheduler().runTaskLater(door.getEngine(), () ->
                         {
                             for (MyBlockData block : savedBlocks)
                             {
