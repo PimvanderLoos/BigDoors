@@ -10,7 +10,8 @@ public abstract class Abortable
 
     protected void cancelTask()
     {
-        universalTask.cancel();
+        if (universalTask != null)
+            universalTask.cancel();
     }
 
     public void abort()
