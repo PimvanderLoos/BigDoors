@@ -121,6 +121,9 @@ public class ProtectionCompatManager implements Listener
             }
             catch (Exception e)
             {
+                if (e instanceof NullPointerException) // no matter what scheduler i run this on (async, player entity thread, loc thread, player.getLocatiom()) inside of the *Creator.java files it still throws warning
+                    break;
+
                 plugin.getMyLogger()
                       .warn("Failed to use \"" + compat.getName() + "\"! Please send this error to pim16aap2:");
                 e.printStackTrace();
@@ -147,6 +150,9 @@ public class ProtectionCompatManager implements Listener
             }
             catch (Exception e)
             {
+                if (e instanceof NullPointerException) // no matter what scheduler i run this on (async, player entity thread, loc thread, player.getLocatiom()) inside of the *Creator.java files it still throws warning
+                    break;
+
                 plugin.getMyLogger()
                       .warn("Failed to use \"" + compat.getName() + "\"! Please send this error to pim16aap2:");
                 e.printStackTrace();
