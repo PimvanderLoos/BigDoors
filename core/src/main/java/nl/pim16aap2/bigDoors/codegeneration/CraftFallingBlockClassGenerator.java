@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static net.bytebuddy.implementation.FieldAccessor.ofField;
 import static net.bytebuddy.implementation.FixedValue.value;
@@ -110,7 +111,8 @@ final class CraftFallingBlockClassGenerator extends ClassGenerator
         // Simple getters
         builder = builder.define(METHOD_IS_ON_GROUND).intercept(value(false));
         builder = builder.define(METHOD_TO_STRING).intercept(value("CraftFallingBlock"));
-        builder = builder.define(METHOD_GET_TYPE).intercept(value(EntityType.FALLING_BLOCK));
+        if (!Modifier.isFinal(METHOD_GET_TYPE.getModifiers()))
+            builder = builder.define(METHOD_GET_TYPE).intercept(value(EntityType.FALLING_BLOCK));
         builder = builder.define(METHOD_GET_DROP_ITEM).intercept(value(false));
         builder = builder.define(METHOD_CAN_HURT_ENTITIES).intercept(value(false));
         builder = builder.defineMethod(methodGetEntityHandle.getName(), classGeneratedEntityFallingBlock)
