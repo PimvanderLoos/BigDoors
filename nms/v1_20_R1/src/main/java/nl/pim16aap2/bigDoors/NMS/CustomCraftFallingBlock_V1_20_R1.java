@@ -1,8 +1,8 @@
 package nl.pim16aap2.bigDoors.NMS;
 
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
@@ -13,9 +13,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
 {
-    CustomCraftFallingBlock_V1_20_R1(final Server server, final CustomEntityFallingBlock_V1_20_R1 entity)
+    public CustomCraftFallingBlock_V1_20_R1(final CraftServer server, final CustomEntityFallingBlock_V1_20_R1 entity)
     {
-        super((org.bukkit.craftbukkit.v1_20_R1.CraftServer) server, entity);
+        super(server, entity);
         setVelocity(new Vector(0, 0, 0));
         setDropItem(false);
     }

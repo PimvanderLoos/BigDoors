@@ -32,5 +32,12 @@
             <version>0.1.8.47-ALPHA</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${dependency.bytebuddy.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
