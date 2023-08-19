@@ -2,6 +2,7 @@ package nl.pim16aap2.bigDoors;
 
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_11_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_12_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_13_R1;
@@ -19,7 +20,6 @@ import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R1_1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R2;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R3;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_20_R1;
 import nl.pim16aap2.bigDoors.codegeneration.FallbackGeneratorManager;
 import nl.pim16aap2.bigDoors.compatibility.FakePlayerCreator;
 import nl.pim16aap2.bigDoors.compatibility.ProtectionCompatManager;
@@ -216,12 +216,21 @@ public class BigDoors extends JavaPlugin implements Listener
 
         Bukkit.getPluginManager().registerEvents(new LoginMessageHandler(this), this);
 
-        validVersion = compatibleMCVer();
+        try
+        {
+            validVersion = compatibleMCVer();
+        }
+        catch (Exception | ExceptionInInitializerError e)
+        {
+            logger.logMessageToConsoleOnly("Failed to enable the plugin for this version of Minecraft!");
+            getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
+            validVersion = false;
+        }
         // Load the files for the correct version of Minecraft.
         if (!validVersion)
         {
             setDisabled(
-                "This version of Minecraft is not supported. Is the plugin up-to-date? Or enable code generation.");
+                "This version of Minecraft is not supported. Is the plugin up-to-date?");
             logger.logMessage("Trying to load the plugin on an incompatible version of Minecraft! (\""
                                   + (Bukkit.getServer().getClass().getPackage().getName().replace(".", ",")
                                            .split(",")[3])
@@ -867,7 +876,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 fabf = new FallingBlockFactory_V1_19_R3();
                 break;
             case "v1_20_R1":
-                fabf = new FallingBlockFactory_V1_20_R1();
+                fabf = FallingBlockFactoryProvider.getFactory();
                 break;
             default:
                 if (config.allowCodeGeneration())

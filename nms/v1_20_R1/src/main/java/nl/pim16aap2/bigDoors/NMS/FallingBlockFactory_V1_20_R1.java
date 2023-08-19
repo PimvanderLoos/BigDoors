@@ -10,7 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 
-public class FallingBlockFactory_V1_20_R1 implements FallingBlockFactory
+class FallingBlockFactory_V1_20_R1 implements FallingBlockFactory
 {
     @Override
     public CustomCraftFallingBlock fallingBlockFactory(Location loc, NMSBlock block, byte matData, Material mat)
