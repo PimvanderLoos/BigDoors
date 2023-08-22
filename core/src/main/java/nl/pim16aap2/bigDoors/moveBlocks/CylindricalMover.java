@@ -313,7 +313,7 @@ public class CylindricalMover extends BlockMover
                                     byte matData = block.getBlockByte();
                                     Vector veloc = block.getFBlock().getVelocity();
 
-                                    BigDoors.getScheduler().runTask(() -> {
+                                    BigDoors.getScheduler().runTask(loc, () -> {
                                       CustomCraftFallingBlock fBlock;
                                       // Because the block in savedBlocks is already rotated where applicable, just
                                       // use that block now.
