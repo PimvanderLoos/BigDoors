@@ -6,6 +6,7 @@ import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
@@ -123,6 +124,12 @@ public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements Fal
     {
         super.setTicksLived(value);
         getHandle().b = value;
+    }
+
+    @Override
+    public @NotNull EntityType getType()
+    {
+      return EntityType.FALLING_BLOCK;
     }
 
     @Override
