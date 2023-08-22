@@ -1,3 +1,5 @@
+Alpha 0.1.8.48
+
 Alpha 0.1.8.47
 - Fix NMS code broken on recent builds of Spigot (and forks). Thanks, SlimeDog, for the bug report!
 - Drop support for Konquest. It turns out that the hook had been broken for a while, and I haven't received any reports about it. If you're still using Konquest, please let me know!
