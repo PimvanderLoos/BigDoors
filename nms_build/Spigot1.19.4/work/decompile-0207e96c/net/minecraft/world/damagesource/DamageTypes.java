@@ -1,0 +1,97 @@
+package net.minecraft.world.damagesource;
+
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.ResourceKey;
+
+public interface DamageTypes {
+
+    ResourceKey<DamageType> IN_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("in_fire"));
+    ResourceKey<DamageType> LIGHTNING_BOLT = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("lightning_bolt"));
+    ResourceKey<DamageType> ON_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("on_fire"));
+    ResourceKey<DamageType> LAVA = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("lava"));
+    ResourceKey<DamageType> HOT_FLOOR = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("hot_floor"));
+    ResourceKey<DamageType> IN_WALL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("in_wall"));
+    ResourceKey<DamageType> CRAMMING = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("cramming"));
+    ResourceKey<DamageType> DROWN = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("drown"));
+    ResourceKey<DamageType> STARVE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("starve"));
+    ResourceKey<DamageType> CACTUS = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("cactus"));
+    ResourceKey<DamageType> FALL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("fall"));
+    ResourceKey<DamageType> FLY_INTO_WALL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("fly_into_wall"));
+    ResourceKey<DamageType> OUT_OF_WORLD = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("out_of_world"));
+    ResourceKey<DamageType> GENERIC = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("generic"));
+    ResourceKey<DamageType> MAGIC = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("magic"));
+    ResourceKey<DamageType> WITHER = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("wither"));
+    ResourceKey<DamageType> DRAGON_BREATH = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("dragon_breath"));
+    ResourceKey<DamageType> DRY_OUT = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("dry_out"));
+    ResourceKey<DamageType> SWEET_BERRY_BUSH = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("sweet_berry_bush"));
+    ResourceKey<DamageType> FREEZE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("freeze"));
+    ResourceKey<DamageType> STALAGMITE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("stalagmite"));
+    ResourceKey<DamageType> FALLING_BLOCK = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("falling_block"));
+    ResourceKey<DamageType> FALLING_ANVIL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("falling_anvil"));
+    ResourceKey<DamageType> FALLING_STALACTITE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("falling_stalactite"));
+    ResourceKey<DamageType> STING = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("sting"));
+    ResourceKey<DamageType> MOB_ATTACK = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("mob_attack"));
+    ResourceKey<DamageType> MOB_ATTACK_NO_AGGRO = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("mob_attack_no_aggro"));
+    ResourceKey<DamageType> PLAYER_ATTACK = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("player_attack"));
+    ResourceKey<DamageType> ARROW = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("arrow"));
+    ResourceKey<DamageType> TRIDENT = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("trident"));
+    ResourceKey<DamageType> MOB_PROJECTILE = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("mob_projectile"));
+    ResourceKey<DamageType> FIREWORKS = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("fireworks"));
+    ResourceKey<DamageType> FIREBALL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("fireball"));
+    ResourceKey<DamageType> UNATTRIBUTED_FIREBALL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("unattributed_fireball"));
+    ResourceKey<DamageType> WITHER_SKULL = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("wither_skull"));
+    ResourceKey<DamageType> THROWN = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("thrown"));
+    ResourceKey<DamageType> INDIRECT_MAGIC = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("indirect_magic"));
+    ResourceKey<DamageType> THORNS = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("thorns"));
+    ResourceKey<DamageType> EXPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("explosion"));
+    ResourceKey<DamageType> PLAYER_EXPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("player_explosion"));
+    ResourceKey<DamageType> SONIC_BOOM = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("sonic_boom"));
+    ResourceKey<DamageType> BAD_RESPAWN_POINT = ResourceKey.create(Registries.DAMAGE_TYPE, new MinecraftKey("bad_respawn_point"));
+
+    static void bootstrap(BootstapContext<DamageType> bootstapcontext) {
+        bootstapcontext.register(DamageTypes.IN_FIRE, new DamageType("inFire", 0.1F, DamageEffects.BURNING));
+        bootstapcontext.register(DamageTypes.LIGHTNING_BOLT, new DamageType("lightningBolt", 0.1F));
+        bootstapcontext.register(DamageTypes.ON_FIRE, new DamageType("onFire", 0.0F, DamageEffects.BURNING));
+        bootstapcontext.register(DamageTypes.LAVA, new DamageType("lava", 0.1F, DamageEffects.BURNING));
+        bootstapcontext.register(DamageTypes.HOT_FLOOR, new DamageType("hotFloor", 0.1F, DamageEffects.BURNING));
+        bootstapcontext.register(DamageTypes.IN_WALL, new DamageType("inWall", 0.0F));
+        bootstapcontext.register(DamageTypes.CRAMMING, new DamageType("cramming", 0.0F));
+        bootstapcontext.register(DamageTypes.DROWN, new DamageType("drown", 0.0F, DamageEffects.DROWNING));
+        bootstapcontext.register(DamageTypes.STARVE, new DamageType("starve", 0.0F));
+        bootstapcontext.register(DamageTypes.CACTUS, new DamageType("cactus", 0.1F));
+        bootstapcontext.register(DamageTypes.FALL, new DamageType("fall", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.0F, DamageEffects.HURT, DeathMessageType.FALL_VARIANTS));
+        bootstapcontext.register(DamageTypes.FLY_INTO_WALL, new DamageType("flyIntoWall", 0.0F));
+        bootstapcontext.register(DamageTypes.OUT_OF_WORLD, new DamageType("outOfWorld", 0.0F));
+        bootstapcontext.register(DamageTypes.GENERIC, new DamageType("generic", 0.0F));
+        bootstapcontext.register(DamageTypes.MAGIC, new DamageType("magic", 0.0F));
+        bootstapcontext.register(DamageTypes.WITHER, new DamageType("wither", 0.0F));
+        bootstapcontext.register(DamageTypes.DRAGON_BREATH, new DamageType("dragonBreath", 0.0F));
+        bootstapcontext.register(DamageTypes.DRY_OUT, new DamageType("dryout", 0.1F));
+        bootstapcontext.register(DamageTypes.SWEET_BERRY_BUSH, new DamageType("sweetBerryBush", 0.1F, DamageEffects.POKING));
+        bootstapcontext.register(DamageTypes.FREEZE, new DamageType("freeze", 0.0F, DamageEffects.FREEZING));
+        bootstapcontext.register(DamageTypes.STALAGMITE, new DamageType("stalagmite", 0.0F));
+        bootstapcontext.register(DamageTypes.FALLING_BLOCK, new DamageType("fallingBlock", 0.1F));
+        bootstapcontext.register(DamageTypes.FALLING_ANVIL, new DamageType("anvil", 0.1F));
+        bootstapcontext.register(DamageTypes.FALLING_STALACTITE, new DamageType("fallingStalactite", 0.1F));
+        bootstapcontext.register(DamageTypes.STING, new DamageType("sting", 0.1F));
+        bootstapcontext.register(DamageTypes.MOB_ATTACK, new DamageType("mob", 0.1F));
+        bootstapcontext.register(DamageTypes.MOB_ATTACK_NO_AGGRO, new DamageType("mob", 0.1F));
+        bootstapcontext.register(DamageTypes.PLAYER_ATTACK, new DamageType("player", 0.1F));
+        bootstapcontext.register(DamageTypes.ARROW, new DamageType("arrow", 0.1F));
+        bootstapcontext.register(DamageTypes.TRIDENT, new DamageType("trident", 0.1F));
+        bootstapcontext.register(DamageTypes.MOB_PROJECTILE, new DamageType("mob", 0.1F));
+        bootstapcontext.register(DamageTypes.FIREWORKS, new DamageType("fireworks", 0.1F));
+        bootstapcontext.register(DamageTypes.UNATTRIBUTED_FIREBALL, new DamageType("onFire", 0.1F, DamageEffects.BURNING));
+        bootstapcontext.register(DamageTypes.FIREBALL, new DamageType("fireball", 0.1F, DamageEffects.BURNING));
+        bootstapcontext.register(DamageTypes.WITHER_SKULL, new DamageType("witherSkull", 0.1F));
+        bootstapcontext.register(DamageTypes.THROWN, new DamageType("thrown", 0.1F));
+        bootstapcontext.register(DamageTypes.INDIRECT_MAGIC, new DamageType("indirectMagic", 0.0F));
+        bootstapcontext.register(DamageTypes.THORNS, new DamageType("thorns", 0.1F, DamageEffects.THORNS));
+        bootstapcontext.register(DamageTypes.EXPLOSION, new DamageType("explosion", DamageScaling.ALWAYS, 0.1F));
+        bootstapcontext.register(DamageTypes.PLAYER_EXPLOSION, new DamageType("explosion.player", DamageScaling.ALWAYS, 0.1F));
+        bootstapcontext.register(DamageTypes.SONIC_BOOM, new DamageType("sonic_boom", DamageScaling.ALWAYS, 0.0F));
+        bootstapcontext.register(DamageTypes.BAD_RESPAWN_POINT, new DamageType("badRespawnPoint", DamageScaling.ALWAYS, 0.1F, DamageEffects.HURT, DeathMessageType.INTENTIONAL_GAME_DESIGN));
+    }
+}

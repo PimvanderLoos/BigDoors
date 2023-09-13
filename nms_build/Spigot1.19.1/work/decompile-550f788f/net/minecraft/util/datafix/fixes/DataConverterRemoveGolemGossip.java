@@ -1,0 +1,26 @@
+package net.minecraft.util.datafix.fixes;
+
+import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.Typed;
+import com.mojang.datafixers.schemas.Schema;
+import com.mojang.serialization.Dynamic;
+
+public class DataConverterRemoveGolemGossip extends DataConverterNamedEntity {
+
+    public DataConverterRemoveGolemGossip(Schema schema, boolean flag) {
+        super(schema, flag, "Remove Golem Gossip Fix", DataConverterTypes.ENTITY, "minecraft:villager");
+    }
+
+    @Override
+    protected Typed<?> fix(Typed<?> typed) {
+        return typed.update(DSL.remainderFinder(), DataConverterRemoveGolemGossip::fixValue);
+    }
+
+    private static Dynamic<?> fixValue(Dynamic<?> dynamic) {
+        return dynamic.update("Gossips", (dynamic1) -> {
+            return dynamic.createList(dynamic1.asStream().filter((dynamic2) -> {
+                return !dynamic2.get("Type").asString("").equals("golem");
+            }));
+        });
+    }
+}
