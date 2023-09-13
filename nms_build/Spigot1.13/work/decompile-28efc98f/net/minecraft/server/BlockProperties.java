@@ -1,0 +1,85 @@
+package net.minecraft.server;
+
+import java.util.function.Predicate;
+
+public class BlockProperties {
+
+    public static final BlockStateBoolean a = BlockStateBoolean.of("attached");
+    public static final BlockStateBoolean b = BlockStateBoolean.of("conditional");
+    public static final BlockStateBoolean c = BlockStateBoolean.of("disarmed");
+    public static final BlockStateBoolean d = BlockStateBoolean.of("drag");
+    public static final BlockStateBoolean e = BlockStateBoolean.of("enabled");
+    public static final BlockStateBoolean f = BlockStateBoolean.of("extended");
+    public static final BlockStateBoolean g = BlockStateBoolean.of("eye");
+    public static final BlockStateBoolean h = BlockStateBoolean.of("falling");
+    public static final BlockStateBoolean i = BlockStateBoolean.of("has_bottle_0");
+    public static final BlockStateBoolean j = BlockStateBoolean.of("has_bottle_1");
+    public static final BlockStateBoolean k = BlockStateBoolean.of("has_bottle_2");
+    public static final BlockStateBoolean l = BlockStateBoolean.of("has_record");
+    public static final BlockStateBoolean m = BlockStateBoolean.of("inverted");
+    public static final BlockStateBoolean n = BlockStateBoolean.of("in_wall");
+    public static final BlockStateBoolean o = BlockStateBoolean.of("lit");
+    public static final BlockStateBoolean p = BlockStateBoolean.of("locked");
+    public static final BlockStateBoolean q = BlockStateBoolean.of("occupied");
+    public static final BlockStateBoolean r = BlockStateBoolean.of("open");
+    public static final BlockStateBoolean s = BlockStateBoolean.of("persistent");
+    public static final BlockStateBoolean t = BlockStateBoolean.of("powered");
+    public static final BlockStateBoolean u = BlockStateBoolean.of("short");
+    public static final BlockStateBoolean v = BlockStateBoolean.of("snowy");
+    public static final BlockStateBoolean w = BlockStateBoolean.of("triggered");
+    public static final BlockStateBoolean x = BlockStateBoolean.of("waterlogged");
+    public static final BlockStateEnum<EnumDirection.EnumAxis> y = BlockStateEnum.of("axis", EnumDirection.EnumAxis.class, new EnumDirection.EnumAxis[] { EnumDirection.EnumAxis.X, EnumDirection.EnumAxis.Z});
+    public static final BlockStateEnum<EnumDirection.EnumAxis> z = BlockStateEnum.of("axis", EnumDirection.EnumAxis.class);
+    public static final BlockStateBoolean A = BlockStateBoolean.of("up");
+    public static final BlockStateBoolean B = BlockStateBoolean.of("down");
+    public static final BlockStateBoolean C = BlockStateBoolean.of("north");
+    public static final BlockStateBoolean D = BlockStateBoolean.of("east");
+    public static final BlockStateBoolean E = BlockStateBoolean.of("south");
+    public static final BlockStateBoolean F = BlockStateBoolean.of("west");
+    public static final BlockStateDirection G = BlockStateDirection.a("facing", new EnumDirection[] { EnumDirection.NORTH, EnumDirection.EAST, EnumDirection.SOUTH, EnumDirection.WEST, EnumDirection.UP, EnumDirection.DOWN});
+    public static final BlockStateDirection H = BlockStateDirection.a("facing", (enumdirection) -> {
+        return enumdirection != EnumDirection.UP;
+    });
+    public static final BlockStateDirection I = BlockStateDirection.a("facing", (Predicate) EnumDirection.EnumDirectionLimit.HORIZONTAL);
+    public static final BlockStateEnum<BlockPropertyAttachPosition> J = BlockStateEnum.of("face", BlockPropertyAttachPosition.class);
+    public static final BlockStateEnum<BlockPropertyRedstoneSide> K = BlockStateEnum.of("east", BlockPropertyRedstoneSide.class);
+    public static final BlockStateEnum<BlockPropertyRedstoneSide> L = BlockStateEnum.of("north", BlockPropertyRedstoneSide.class);
+    public static final BlockStateEnum<BlockPropertyRedstoneSide> M = BlockStateEnum.of("south", BlockPropertyRedstoneSide.class);
+    public static final BlockStateEnum<BlockPropertyRedstoneSide> N = BlockStateEnum.of("west", BlockPropertyRedstoneSide.class);
+    public static final BlockStateEnum<BlockPropertyDoubleBlockHalf> O = BlockStateEnum.of("half", BlockPropertyDoubleBlockHalf.class);
+    public static final BlockStateEnum<BlockPropertyHalf> P = BlockStateEnum.of("half", BlockPropertyHalf.class);
+    public static final BlockStateEnum<BlockPropertyTrackPosition> Q = BlockStateEnum.of("shape", BlockPropertyTrackPosition.class);
+    public static final BlockStateEnum<BlockPropertyTrackPosition> R = BlockStateEnum.a("shape", BlockPropertyTrackPosition.class, (blockpropertytrackposition) -> {
+        return blockpropertytrackposition != BlockPropertyTrackPosition.NORTH_EAST && blockpropertytrackposition != BlockPropertyTrackPosition.NORTH_WEST && blockpropertytrackposition != BlockPropertyTrackPosition.SOUTH_EAST && blockpropertytrackposition != BlockPropertyTrackPosition.SOUTH_WEST;
+    });
+    public static final BlockStateInteger S = BlockStateInteger.of("age", 0, 2);
+    public static final BlockStateInteger T = BlockStateInteger.of("age", 0, 3);
+    public static final BlockStateInteger U = BlockStateInteger.of("age", 0, 5);
+    public static final BlockStateInteger V = BlockStateInteger.of("age", 0, 7);
+    public static final BlockStateInteger W = BlockStateInteger.of("age", 0, 15);
+    public static final BlockStateInteger X = BlockStateInteger.of("age", 0, 25);
+    public static final BlockStateInteger Y = BlockStateInteger.of("bites", 0, 6);
+    public static final BlockStateInteger Z = BlockStateInteger.of("delay", 1, 4);
+    public static final BlockStateInteger aa = BlockStateInteger.of("distance", 1, 7);
+    public static final BlockStateInteger ab = BlockStateInteger.of("eggs", 1, 4);
+    public static final BlockStateInteger ac = BlockStateInteger.of("hatch", 0, 2);
+    public static final BlockStateInteger ad = BlockStateInteger.of("layers", 1, 8);
+    public static final BlockStateInteger ae = BlockStateInteger.of("level", 0, 3);
+    public static final BlockStateInteger af = BlockStateInteger.of("level", 1, 8);
+    public static final BlockStateInteger ag = BlockStateInteger.of("level", 0, 15);
+    public static final BlockStateInteger ah = BlockStateInteger.of("moisture", 0, 7);
+    public static final BlockStateInteger ai = BlockStateInteger.of("note", 0, 24);
+    public static final BlockStateInteger aj = BlockStateInteger.of("pickles", 1, 4);
+    public static final BlockStateInteger ak = BlockStateInteger.of("power", 0, 15);
+    public static final BlockStateInteger al = BlockStateInteger.of("stage", 0, 1);
+    public static final BlockStateInteger am = BlockStateInteger.of("rotation", 0, 15);
+    public static final BlockStateEnum<BlockPropertyBedPart> an = BlockStateEnum.of("part", BlockPropertyBedPart.class);
+    public static final BlockStateEnum<BlockPropertyChestType> ao = BlockStateEnum.of("type", BlockPropertyChestType.class);
+    public static final BlockStateEnum<BlockPropertyComparatorMode> ap = BlockStateEnum.of("mode", BlockPropertyComparatorMode.class);
+    public static final BlockStateEnum<BlockPropertyDoorHinge> aq = BlockStateEnum.of("hinge", BlockPropertyDoorHinge.class);
+    public static final BlockStateEnum<BlockPropertyInstrument> ar = BlockStateEnum.of("instrument", BlockPropertyInstrument.class);
+    public static final BlockStateEnum<BlockPropertyPistonType> as = BlockStateEnum.of("type", BlockPropertyPistonType.class);
+    public static final BlockStateEnum<BlockPropertySlabType> at = BlockStateEnum.of("type", BlockPropertySlabType.class);
+    public static final BlockStateEnum<BlockPropertyStairsShape> au = BlockStateEnum.of("shape", BlockPropertyStairsShape.class);
+    public static final BlockStateEnum<BlockPropertyStructureMode> av = BlockStateEnum.of("mode", BlockPropertyStructureMode.class);
+}
