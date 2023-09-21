@@ -7,13 +7,11 @@ import net.bytebuddy.implementation.StubMethod;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import static net.bytebuddy.implementation.FieldAccessor.ofField;
 import static net.bytebuddy.implementation.FixedValue.value;
@@ -36,8 +34,6 @@ final class CraftFallingBlockClassGenerator extends ClassGenerator
 
     private static final Method METHOD_IS_ON_GROUND =
         findMethod().inClass(Entity.class).withName("isOnGround").get();
-    private static final Method METHOD_GET_TYPE =
-        findMethod().inClass(Entity.class).withName("getType").get();
     private static final Method METHOD_GET_DROP_ITEM =
         findMethod().inClass(FallingBlock.class).withName("getDropItem").get();
     private static final Method METHOD_SET_DROP_ITEM =
@@ -111,8 +107,6 @@ final class CraftFallingBlockClassGenerator extends ClassGenerator
         // Simple getters
         builder = builder.define(METHOD_IS_ON_GROUND).intercept(value(false));
         builder = builder.define(METHOD_TO_STRING).intercept(value("CraftFallingBlock"));
-        if (!Modifier.isFinal(METHOD_GET_TYPE.getModifiers()))
-            builder = builder.define(METHOD_GET_TYPE).intercept(value(EntityType.FALLING_BLOCK));
         builder = builder.define(METHOD_GET_DROP_ITEM).intercept(value(false));
         builder = builder.define(METHOD_CAN_HURT_ENTITIES).intercept(value(false));
         builder = builder.defineMethod(methodGetEntityHandle.getName(), classGeneratedEntityFallingBlock)

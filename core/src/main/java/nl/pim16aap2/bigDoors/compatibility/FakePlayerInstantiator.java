@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.compatibility;
 
 import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -13,11 +14,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
 import java.util.UUID;
 
 import static nl.pim16aap2.bigDoors.reflection.ReflectionBuilder.*;
 
-class FakePlayerInstantiator
+final class FakePlayerInstantiator
 {
     private Class<?> classCraftOfflinePlayer;
     private Class<?> classCraftWorld;
@@ -25,6 +27,7 @@ class FakePlayerInstantiator
     private Class<?> classEntityPlayer;
     private Class<?> classMinecraftServer;
     private Class<?> classPlayerInteractManager;
+    private final @Nullable Class<?> classClientInformation;
     private Class<?> classGameProfile;
 
     private Method methodGetHandle;
@@ -37,6 +40,8 @@ class FakePlayerInstantiator
     private Field fieldUuid;
     private Field fieldProfile;
     private Field fieldPlayerNameVar;
+
+    private final @Nullable Object defaultClientInformation;
 
     private final JavaPlugin plugin;
 
@@ -55,6 +60,7 @@ class FakePlayerInstantiator
         classMinecraftServer = findClass(nmsBase + "MinecraftServer", "net.minecraft.server.MinecraftServer").get();
         classPlayerInteractManager = findClass(nmsBase + "PlayerInteractManager",
                                                "net.minecraft.server.level.PlayerInteractManager").get();
+        classClientInformation = findClass("net.minecraft.server.level.ClientInformation").setNullable().get();
         classGameProfile = findClass("com.mojang.authlib.GameProfile").get();
 
         final @Nullable Class<?> classProfilePublicKey =
@@ -62,8 +68,9 @@ class FakePlayerInstantiator
         cTorEntityPlayerConstructor = findConstructor()
             .inClass(classEntityPlayer)
             .withParameters(parameterBuilder()
-                                .withRequiredParameters(classMinecraftServer, classWorldServer, classGameProfile)
-                                .withOptionalParameters(classPlayerInteractManager, classProfilePublicKey)).get();
+                .withRequiredParameters(classMinecraftServer, classWorldServer, classGameProfile)
+                .withOptionalParameters(classPlayerInteractManager, classProfilePublicKey, classClientInformation))
+            .get();
 
         // "getBukkitEntity" will return several matches all dumped into the EntityPlayer class by the compiler.
         // We can just get the first method and everything will be fine.
@@ -90,8 +97,9 @@ class FakePlayerInstantiator
             .withParameters(parameterBuilder()
                                 .withOptionalParameters(classWorldServer)
                                 .withOptionalParameters(classNMSWorld)).setNullable().get();
-    }
 
+        defaultClientInformation = classClientInformation == null ? null : createDefaultClientInformation();
+    }
 
     public @Nullable Player getFakePlayer(OfflinePlayer oPlayer, String playerName, World world)
     {
@@ -139,5 +147,18 @@ class FakePlayerInstantiator
             player.setMetadata(FakePlayerCreator.FAKE_PLAYER_METADATA, new FixedMetadataValue(plugin, true));
 
         return player;
+    }
+
+    private Object createDefaultClientInformation()
+        throws InvocationTargetException, IllegalAccessException
+    {
+        return ReflectionBuilder
+            .findMethod()
+            .inClass(Objects.requireNonNull(classClientInformation))
+            .withReturnType(classClientInformation)
+            .withoutParameters()
+            .withModifiers(Modifier.STATIC, Modifier.PUBLIC)
+            .get()
+            .invoke(null);
     }
 }
