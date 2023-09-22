@@ -5,13 +5,28 @@ import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.ConfigLoader;
 import nl.pim16aap2.bigDoors.util.Util;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class RedstoneHandler implements Listener
 {
+    private static final List<BlockFace> FACES = Collections.unmodifiableList(
+        Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN));
+
     private final BigDoors plugin;
 
     public RedstoneHandler(BigDoors plugin)
@@ -19,51 +34,37 @@ public class RedstoneHandler implements Listener
         this.plugin = plugin;
     }
 
-    public void checkDoor(Location loc)
+    private void checkDoor(Location loc)
     {
-        Door door = plugin.getCommander().doorFromPowerBlockLoc(loc);
+        final Door door = plugin.getCommander().doorFromPowerBlockLoc(loc);
         if (door != null && !door.isLocked())
             plugin.getDoorOpener(door.getType()).openDoorFuture(door, 0.0, false, true).exceptionally(Util::exceptionally);
     }
 
-    // When redstone changes, check if there's a power block on any side of it (just
-    // not below it).
-    // If so, a door has (probably) been found, so try to open it.
-    @EventHandler
+    private void checkAroundLocation(Block block)
+    {
+        for (final BlockFace dir : FACES)
+        {
+            final Block relative = block.getRelative(dir);
+            if (plugin.getConfigLoader().getPowerBlockTypes().contains(relative.getType()))
+                checkDoor(relative.getLocation());
+        }
+    }
+
+    private void checkAroundLocation(Location location)
+    {
+        checkAroundLocation(location.getBlock());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onBlockRedstoneChange(BlockRedstoneEvent event)
     {
         try
         {
-            Block block = event.getBlock();
-            Location location = block.getLocation();
+            final Block block = event.getBlock();
             if (event.getOldCurrent() != 0 && event.getNewCurrent() != 0)
                 return;
-
-            int x = location.getBlockX(), y = location.getBlockY(), z = location.getBlockZ();
-
-            if (plugin.getConfigLoader().getPowerBlockTypes()
-                .contains(location.getWorld().getBlockAt(x, y, z - 1).getType())) // North
-                checkDoor(new Location(location.getWorld(), x, y, z - 1));
-
-            if (plugin.getConfigLoader().getPowerBlockTypes()
-                .contains(location.getWorld().getBlockAt(x + 1, y, z).getType())) // East
-                checkDoor(new Location(location.getWorld(), x + 1, y, z));
-
-            if (plugin.getConfigLoader().getPowerBlockTypes()
-                .contains(location.getWorld().getBlockAt(x, y, z + 1).getType())) // South
-                checkDoor(new Location(location.getWorld(), x, y, z + 1));
-
-            if (plugin.getConfigLoader().getPowerBlockTypes()
-                .contains(location.getWorld().getBlockAt(x - 1, y, z).getType())) // West
-                checkDoor(new Location(location.getWorld(), x - 1, y, z));
-
-            if (plugin.getConfigLoader().getPowerBlockTypes()
-                .contains(location.getWorld().getBlockAt(x, y + 1, z).getType())) // Above
-                checkDoor(new Location(location.getWorld(), x, y + 1, z));
-
-            if (plugin.getConfigLoader().getPowerBlockTypes()
-                .contains(location.getWorld().getBlockAt(x, y - 1, z).getType())) // Under
-                checkDoor(new Location(location.getWorld(), x, y - 1, z));
+            checkAroundLocation(block);
         }
         catch (Exception e)
         {
@@ -72,5 +73,56 @@ public class RedstoneHandler implements Listener
             if (ConfigLoader.DEBUG)
                 e.printStackTrace();
         }
+    }
+
+    private void handleBlocksMovedByPiston(BlockFace direction, List<Block> blocks)
+    {
+        final Set<Location> addedPositions = new HashSet<>();
+        final Set<Location> removedPositions = new HashSet<>();
+
+        for (final Block block : blocks)
+        {
+            if (block.getType() != Material.REDSTONE_BLOCK)
+                continue;
+
+            final Location oldLocation = block.getLocation();
+            final Block newBlock = block.getRelative(direction);
+            final Location newLocation = newBlock.getLocation();
+
+            // Nothing changes if another redstone block replaces the current one.
+            if (addedPositions.contains(oldLocation))
+                addedPositions.remove(oldLocation);
+            else
+                removedPositions.add(oldLocation);
+
+            // Nothing happens if the current redstone block replaces another one.
+            if (removedPositions.contains(newLocation))
+                removedPositions.remove(newLocation);
+            else
+                addedPositions.add(newLocation);
+        }
+
+        addedPositions.forEach(this::checkAroundLocation);
+        removedPositions.forEach(this::checkAroundLocation);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onPistonExtend(BlockPistonExtendEvent event)
+    {
+        handleBlocksMovedByPiston(event.getDirection(), event.getBlocks());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onPistonRetract(BlockPistonRetractEvent event)
+    {
+        handleBlocksMovedByPiston(event.getDirection(), event.getBlocks());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onBlockPlace(BlockPlaceEvent event)
+    {
+        final Block block = event.getBlock();
+        if (plugin.getConfigLoader().getPowerBlockTypes().contains(block.getType()))
+            checkAroundLocation(block);
     }
 }
