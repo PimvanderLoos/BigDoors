@@ -17,11 +17,12 @@ import java.util.Objects;
  * Newer versions of Spigot/Paper/etc. have a final {@link org.bukkit.entity.Entity#getType()} method while older
  * versions only have an abstract one.
  */
-class CustomCraftEntityGenerator
+class CustomCraftEntityGenerator_V1_20_R1
 {
     /**
      * Gets a {@link FallingBlockFactory_V1_20_R1.CustomCraftFallingBlockFactory} that can be used to create new
      * {@link CustomCraftFallingBlock_V1_20_R1} instances.
+     *
      * @return The supplier for new {@link CustomCraftFallingBlock_V1_20_R1} instances.
      */
     public FallingBlockFactory_V1_20_R1.CustomCraftFallingBlockFactory getCraftEntitySupplier()

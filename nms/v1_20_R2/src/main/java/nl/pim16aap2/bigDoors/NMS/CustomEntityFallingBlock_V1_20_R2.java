@@ -11,15 +11,15 @@ import net.minecraft.world.entity.EnumMoveType;
 import net.minecraft.world.entity.item.EntityFallingBlock;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.phys.Vec3D;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R2.CraftWorld;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
-public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implements CustomEntityFallingBlock
+public class CustomEntityFallingBlock_V1_20_R2 extends EntityFallingBlock implements CustomEntityFallingBlock
 {
     private IBlockData block;
     private final CraftWorld world;
 
-    public CustomEntityFallingBlock_V1_20_R1(
+    public CustomEntityFallingBlock_V1_20_R2(
         final org.bukkit.World world, final double d0, final double d1, final double d2, final IBlockData iblockdata)
     {
         super(EntityTypes.L, ((CraftWorld) world).getHandle());
@@ -29,10 +29,10 @@ public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implem
         this.e(d0, d1, d2);
         super.b = 0;
         super.i = false;
-        super.ae = true;
+        super.af = true;
         this.e(true);
         this.f(new Vec3D(0.0, 0.0, 0.0));
-        this.a(BlockPosition.a(this.dn(), this.dp(), this.dt()));
+        this.a(BlockPosition.a(this.dq(), this.ds(), this.dw()));
         spawn();
     }
 
@@ -48,12 +48,27 @@ public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implem
             ai();
         else
         {
-            this.a(EnumMoveType.a, this.dl());
+            this.a(EnumMoveType.a, this.getDeltaMovement0());
             if (++b > 12000)
                 ai();
 
             f(dl().d(0.9800000190734863D, 1.0D, 0.9800000190734863D));
         }
+    }
+
+    /**
+     * Placeholder method.
+     * </p>
+     * The actual method is called 'do' in 1.20.2, which is a reserved keyword in Java, so we can't call the method that
+     * way.
+     * </p>
+     * This method should be changed by bytecode manipulation to call the actual method.
+     *
+     * @return A new {@link Vec3D} with all values set to 0 unless overridden.
+     */
+    public Vec3D getDeltaMovement0()
+    {
+        throw new UnsupportedOperationException("This method should be overridden!");
     }
 
     @Override
@@ -78,7 +93,7 @@ public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implem
     @Override
     protected void a(final NBTTagCompound nbttagcompound)
     {
-        block = GameProfileSerializer.a(super.dI().a(Registries.e), nbttagcompound.p("BlockState"));
+        block = GameProfileSerializer.a(super.cJ().a(Registries.e), nbttagcompound.p("BlockState"));
         b = nbttagcompound.h("Time");
 
         if (nbttagcompound.b("TileEntityData", 10))
@@ -93,7 +108,7 @@ public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implem
     }
 
     @Override
-    public IBlockData o()
+    public IBlockData t()
     {
         return block;
     }
