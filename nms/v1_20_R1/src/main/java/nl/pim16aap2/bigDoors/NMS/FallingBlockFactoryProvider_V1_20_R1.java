@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
  * <p>
  * Use {@link #getFactory()} to get a new {@link FallingBlockFactory} instance.
  */
-public class FallingBlockFactoryProvider
+public class FallingBlockFactoryProvider_V1_20_R1
 {
     /**
      * Creates a new {@link FallingBlockFactory} instance for version 1.20.R1 of Minecraft for the current server build.
@@ -29,7 +29,7 @@ public class FallingBlockFactoryProvider
         if (methodGetTypeIsFinal())
             return CustomCraftFallingBlock_V1_20_R1::new;
         else
-            return new CustomCraftEntityGenerator().getCraftEntitySupplier();
+            return new CustomCraftEntityGenerator_V1_20_R1().getCraftEntitySupplier();
     }
 
     /**
