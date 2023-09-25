@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.apache.commons.lang.math.NumberUtils;
+import nl.pim16aap2.bigDoors.util.VersionScheme;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,8 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A utility class to assist in checking for updates for plugins uploaded to
@@ -39,25 +37,6 @@ import java.util.regex.Pattern;
  */
 public final class UpdateChecker
 {
-    public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) ->
-    {
-        String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
-        if (firstSplit == null || secondSplit == null)
-            return null;
-
-        for (int i = 0; i < Math.min(firstSplit.length, secondSplit.length); i++)
-        {
-            int currentValue = NumberUtils.toInt(firstSplit[i]), newestValue = NumberUtils.toInt(secondSplit[i]);
-
-            if (newestValue > currentValue)
-                return second;
-            else if (newestValue < currentValue)
-                return first;
-        }
-
-        return (secondSplit.length > firstSplit.length) ? second : first;
-    };
-
     private static final URL UPDATE_URL;
     static
     {
@@ -75,8 +54,6 @@ public final class UpdateChecker
         }
         UPDATE_URL = url;
     }
-
-    private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
 
     private static UpdateChecker instance;
 
@@ -194,15 +171,6 @@ public final class UpdateChecker
         return lastResult;
     }
 
-    private static String[] splitVersionInfo(String version)
-    {
-        Matcher matcher = DECIMAL_SCHEME_PATTERN.matcher(version);
-        if (!matcher.find())
-            return null;
-
-        return matcher.group().split("\\.");
-    }
-
     /**
      * Retrieves a member from a {@link JsonObject} as String.
      *
@@ -306,7 +274,7 @@ public final class UpdateChecker
      */
     public static UpdateChecker init(final BigDoors plugin)
     {
-        return init(plugin, VERSION_SCHEME_DECIMAL);
+        return init(plugin, VersionScheme.DECIMAL);
     }
 
     /**
@@ -345,27 +313,6 @@ public final class UpdateChecker
         TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(time);
         Date date = Date.from(Instant.from(temporalAccessor));
         return ((new Date()).getTime() - date.getTime()) / 1000;
-    }
-
-    /**
-     * A functional interface to compare two version Strings with similar version
-     * schemes.
-     */
-    @FunctionalInterface
-    public interface VersionScheme
-    {
-
-        /**
-         * Compare two versions and return the higher of the two. If null is returned,
-         * it is assumed that at least one of the two versions are unsupported by this
-         * version scheme parser.
-         *
-         * @param first  the first version to check
-         * @param second the second version to check
-         * @return the greater of the two versions. null if unsupported version schemes
-         */
-        String compareVersions(String first, String second);
-
     }
 
     /**
