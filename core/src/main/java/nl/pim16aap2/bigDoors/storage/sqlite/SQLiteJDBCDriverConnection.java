@@ -8,10 +8,12 @@ import nl.pim16aap2.bigDoors.util.DoorOwner;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.util.VersionScheme;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -86,6 +88,7 @@ public class SQLiteJDBCDriverConnection
     private final String dbName;
     private boolean enabled = true;
     private boolean validVersion = true;
+    private boolean supportsReturningClause = false;
     private AtomicBoolean locked = new AtomicBoolean(false);
     private static final String FAKEUUID = "0000";
 
@@ -170,6 +173,18 @@ public class SQLiteJDBCDriverConnection
         return getConnectionUnsafe(url);
     }
 
+    private @Nonnull String getDriverVersion(Connection conn)
+    {
+        try
+        {
+            return Objects.requireNonNull(conn).getMetaData().getDriverVersion();
+        }
+        catch (SQLException | NullPointerException e)
+        {
+            throw new RuntimeException("Failed to get driver version!", e);
+        }
+    }
+
     // Initialize the tables.
     private void init()
     {
@@ -187,6 +202,22 @@ public class SQLiteJDBCDriverConnection
         // Table creation
         try (Connection conn = getConnection())
         {
+            Objects.requireNonNull(conn);
+
+            final String driverVersion = getDriverVersion(conn);
+
+            this.supportsReturningClause =
+                driverVersion.equals(VersionScheme.DECIMAL.compareVersions(driverVersion, "3.35.0"));
+            if (!supportsReturningClause && !conn.getMetaData().supportsGetGeneratedKeys())
+            {
+                plugin.getMyLogger().severe("SQLite Driver version: " + driverVersion);
+                plugin.getMyLogger().severe("Driver does not support RETURNING clause or getGeneratedKeys()!");
+                plugin.getMyLogger().severe("Please update your driver!");
+                plugin.getMyLogger().severe("Database disabled!");
+                enabled = false;
+                return;
+            }
+
             // Check if the doors table already exists. If it does, assume the rest exists
             // as well
             // and don't set it up.
@@ -241,9 +272,10 @@ public class SQLiteJDBCDriverConnection
                 setDBVersion(conn, DATABASE_VERSION);
             }
         }
-        catch (SQLException | NullPointerException e)
+        catch (SQLException | RuntimeException e)
         {
-            logMessage("203", e);
+            logMessage("Database Initialization", e);
+            enabled = false;
         }
     }
 
@@ -544,23 +576,40 @@ public class SQLiteJDBCDriverConnection
         if (playerID >= 0)
             return playerID;
 
+        String statementString = "INSERT INTO players (playerUUID, playerName) VALUES (?,?)";
+        if (this.supportsReturningClause)
+            statementString += " RETURNING id";
+        statementString += ";";
+
         final String userName = Objects.requireNonNull(Util.nameFromUUID(playerUUID), "player name cannot be null!");
-        try (PreparedStatement statement =
-                 conn.prepareStatement("INSERT INTO players (playerUUID, playerName) VALUES (?,?);",
-                                       Statement.RETURN_GENERATED_KEYS))
+        try (PreparedStatement statement = conn.prepareStatement(statementString))
         {
             statement.setString(1, playerUUID.toString());
             statement.setString(2, userName);
 
-            final int rowCount = statement.executeUpdate();
-            if (rowCount == 0)
-                throw new SQLException("Failed to insert user \"" + userName + "\" (" + playerUUID + ")!");
-
-            try (ResultSet generatedKeys = statement.getGeneratedKeys())
+            ResultSet insertedPlayerId = null;
+            try
             {
-                if (generatedKeys.next())
-                    return generatedKeys.getLong(1);
-                throw new SQLException("Failed to find generated keys when inserting new user!");
+                if (this.supportsReturningClause)
+                {
+                    insertedPlayerId = statement.executeQuery();
+                }
+                else
+                {
+                    statement.executeUpdate();
+                    insertedPlayerId = statement.getGeneratedKeys();
+                }
+
+                if (!insertedPlayerId.next())
+                    throw new SQLException(
+                        "Failed to find ID of recently inserted door! RETURNING clause supported: " +
+                            this.supportsReturningClause);
+                return insertedPlayerId.getLong(1);
+            }
+            finally
+            {
+                if (insertedPlayerId != null)
+                    insertedPlayerId.close();
             }
         }
     }
@@ -1593,6 +1642,9 @@ public class SQLiteJDBCDriverConnection
 
             String doorInsertsql = "INSERT INTO doors(name,world,isOpen,xMin,yMin,zMin,xMax,yMax,zMax,engineX,engineY,engineZ,isLocked,type,engineSide,powerBlockX,powerBlockY,powerBlockZ,openDirection,autoClose,chunkHash,blocksToMove,notify) "
                 + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            if (this.supportsReturningClause)
+                doorInsertsql += " RETURNING id";
+
             PreparedStatement doorstatement = conn.prepareStatement(doorInsertsql);
 
             doorstatement.setString(DOOR_NAME - 1, door.getName());
@@ -1622,14 +1674,31 @@ public class SQLiteJDBCDriverConnection
             doorstatement.setLong(DOOR_BLOCKS_TO_MOVE - 1, door.getBlocksToMove());
             doorstatement.setInt(DOOR_NOTIFY - 1, door.notificationEnabled() ? 1 : 0);
 
-            doorstatement.executeUpdate();
-
             final long doorUID;
-            try (ResultSet generatedKeys = doorstatement.getGeneratedKeys())
+            ResultSet insertedDoorId = null;
+            try
             {
-                if (!generatedKeys.next())
-                    throw new SQLException("Failed to find generated keys when inserting new door!");
-                doorUID = generatedKeys.getLong(1);
+                if (this.supportsReturningClause)
+                {
+                    insertedDoorId = doorstatement.executeQuery();
+                }
+                else
+                {
+                    doorstatement.executeUpdate();
+                    insertedDoorId = doorstatement.getGeneratedKeys();
+                }
+
+                if (!insertedDoorId.next())
+                    throw new SQLException(
+                        "Failed to find ID of recently inserted door! RETURNING clause supported: " +
+                            this.supportsReturningClause);
+
+                doorUID = insertedDoorId.getLong(1);
+            }
+            finally
+            {
+                if (insertedDoorId != null)
+                    insertedDoorId.close();
             }
 
             Statement stmt3 = conn.createStatement();

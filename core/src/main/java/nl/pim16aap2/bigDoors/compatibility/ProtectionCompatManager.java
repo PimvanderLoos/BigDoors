@@ -343,7 +343,9 @@ public class ProtectionCompatManager implements Listener
                             .getPlugin(compatDefinition.getName()).getDescription().getVersion();
 
             final Class<? extends IProtectionCompat> compatClass =
-                Objects.requireNonNull(compatDefinition.getClass(version), "Compat class cannot be null!");
+                Objects.requireNonNull(
+                    compatDefinition.getClass(version),
+                    "Compat class cannot be null for compat \"" + compatName + "\" (version \"" + version + "\")!");
 
             // No need to load compats twice.
             if (protectionAlreadyLoaded(compatClass))

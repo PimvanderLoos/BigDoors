@@ -1,5 +1,6 @@
 Alpha 0.1.8.48
 - Add support for MC 1.20.2.
+- Fixed database error after sudden breaking change in the SQLite JDBC driver. Thanks, Bonn2, for the bug report!
 - Fixed doors not being toggled when their powerblock is activated by placing a redstone block next to it either directly or using a piston. Thanks, zioforcella, for the bug report!
 
 Alpha 0.1.8.47
