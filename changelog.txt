@@ -1,3 +1,5 @@
+Alpha 0.1.8.49
+
 Alpha 0.1.8.48
 - Add support for MC 1.20.2.
 - Fixed database error after sudden breaking change in the SQLite JDBC driver. Thanks, Bonn2, for the bug report!
