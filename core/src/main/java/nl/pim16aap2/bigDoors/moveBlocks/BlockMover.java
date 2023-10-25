@@ -22,10 +22,11 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static nl.pim16aap2.bigDoors.events.DoorEventToggle.ToggleType;
@@ -34,22 +35,41 @@ public abstract class BlockMover
 {
     private final BigDoors plugin;
     private final @Nullable Door door;
-
-    protected final AtomicBoolean blocksPlaced = new AtomicBoolean(false);
-    protected final ArrayList<MyBlockData> savedBlocks = new ArrayList<>();
+    private final List<MyBlockData> savedBlocks = new CopyOnWriteArrayList<>();
     private final List<MyBlockData> publicSavedBlocks = Collections.unmodifiableList(savedBlocks);
+
     protected final boolean instantOpen;
+    protected final AtomicBoolean blocksPlaced = new AtomicBoolean(false);
 
     protected BlockMover(BigDoors plugin, @Nullable Door door, boolean instantOpen)
     {
         this.plugin = plugin;
         this.door = door;
         this.instantOpen = instantOpen;
+
         if (door == null)
             return;
 
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Created new BlockMover; instantOpen: %s",
+            formatDoorInfo(), instantOpen
+        ));
+
         plugin.getAutoCloseScheduler().cancelTimer(door.getDoorUID());
         preprocess();
+    }
+
+    /**
+     * Add saved blocks to the list of saved blocks.
+     * <p>
+     * After this method has been called, the list of saved blocks returned by {@link #getSavedBlocks()} will contain
+     * all the blocks from the provided collection.
+     *
+     * @param blocks The blocks to register.
+     */
+    protected void registerSavedBlocks(Collection<MyBlockData> blocks)
+    {
+        savedBlocks.addAll(blocks);
     }
 
     private void preprocess()
@@ -64,6 +84,11 @@ public abstract class BlockMover
         if (!Util.isPosInCuboid(powerBlockLoc, min.clone().add(-1, -1, -1), max.clone().add(1, 1, 1)))
             return;
 
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Preprocessing blocks; Powerblock outside door; powerBlockLoc: %s, min: %s, max: %s",
+            formatDoorInfo(), powerBlockLoc, min, max
+        ));
+
         for (MyBlockFace blockFace : MyBlockFace.getValues())
         {
             final Vector3D vec = MyBlockFace.getDirection(blockFace);
@@ -74,7 +99,13 @@ public abstract class BlockMover
 
             final Block block = newLocation.getBlock();
             if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
+            {
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s] Preprocessing blocks; Block at [%d, %d, %d] is a piston; breaking it",
+                    formatDoorInfo(), newLocation.getBlockX(), newLocation.getBlockY(), newLocation.getBlockZ()
+                ));
                 Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, block::breakNaturally, 1L);
+            }
         }
 
         for (Entity entity : powerBlockLoc.getWorld().getNearbyEntities(powerBlockLoc, 1.1, 1.1, 1.1))
@@ -85,19 +116,66 @@ public abstract class BlockMover
                 powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), itemFrame.getItem());
                 powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), XMaterial.ITEM_FRAME.parseItem());
                 itemFrame.remove();
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s] Preprocessing blocks; Removed item frame at [%d, %d, %d]",
+                    formatDoorInfo(), itemFrame.getLocation().getBlockX(), itemFrame.getLocation().getBlockY(), itemFrame.getLocation().getBlockZ()
+                ));
             }
         }
     }
 
+    public String formatDoorInfo()
+    {
+        if (door == null)
+            return " -1 - ERROR: NULL";
+
+        return String.format(
+            "%3d - %-12s",
+            door.getDoorUID(), door.getType().name()
+        );
+    }
+
     // Put blocks in their final position.
     // Use onDisable = false to make it safe to use during onDisable().
-    public abstract void putBlocks(boolean onDisable);
+    public final synchronized void putBlocks(boolean onDisable)
+    {
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Putting blocks; onDisable: %s",
+            formatDoorInfo(), onDisable
+        ));
+        try
+        {
+            putBlocks0(onDisable);
+        }
+        catch (Exception e)
+        {
+            plugin.getMyLogger().log("Error while putting blocks for door: " + getDoorUID(), e);
+        }
+    }
+
+    protected abstract void putBlocks0(boolean onDisable);
 
     public abstract long getDoorUID();
 
     public abstract Door getDoor();
 
-    public abstract void cancel(boolean onDisable);
+    public final synchronized void cancel(boolean onDisable)
+    {
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Cancelling animation; onDisable: %s",
+            formatDoorInfo(), onDisable
+        ));
+        try
+        {
+            cancel0(onDisable);
+        }
+        catch (Exception e)
+        {
+            plugin.getMyLogger().log("Error while cancelling animation for door: " + getDoorUID(), e);
+        }
+    }
+
+    protected abstract void cancel0(boolean onDisable);
 
     /**
      * Gets the number of ticks the door should to the delay to make sure the second
@@ -114,10 +192,17 @@ public abstract class BlockMover
     protected synchronized void putBlocks(
         boolean onDisable, double time, int endCount, LocationFinder locationUpdater, Runnable coordinateUpdater)
     {
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Putting blocks; onDisable: %s, time: %s, endCount: %s, blocksPlaced: %s, instantOpen: %s, locationUpdater: %s",
+            formatDoorInfo(), onDisable, time, endCount, blocksPlaced.get(), instantOpen, (locationUpdater == null ? "null" : locationUpdater.getClass().getName())
+        ));
         if (blocksPlaced.getAndSet(true))
             return;
 
         final World world = Objects.requireNonNull(door).getWorld();
+
+        final DoorRegion oldRegion = new DoorRegion();
+        final DoorRegion newRegion = new DoorRegion();
 
         for (MyBlockData savedBlock : savedBlocks)
         {
@@ -125,6 +210,9 @@ public abstract class BlockMover
             byte matByte = savedBlock.getBlockByte();
             Location newPos = locationUpdater.apply(savedBlock.getRadius(), savedBlock.getStartX(),
                                                     savedBlock.getStartY(), savedBlock.getStartZ());
+
+            oldRegion.processLocation(savedBlock.getStartX(), savedBlock.getStartY(), savedBlock.getStartZ());
+            newRegion.processLocation(newPos);
 
             if (!instantOpen)
                 savedBlock.getFBlock().remove();
@@ -152,6 +240,11 @@ public abstract class BlockMover
             }
         }
 
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Moved blocks from %s to %s",
+            formatDoorInfo(), oldRegion, newRegion
+        ));
+
         coordinateUpdater.run();
         toggleOpen(door);
 
@@ -168,7 +261,7 @@ public abstract class BlockMover
                 final ToggleType toggleType = door.isOpen() ? ToggleType.OPEN : ToggleType.CLOSE;
                 Bukkit.getPluginManager().callEvent(new DoorEventToggleEnd(door, toggleType, instantOpen));
 
-                if (canAutoToggle(door))
+                if (canAutoToggle(door) && plugin.getAutoCloseScheduler().autoCloseAllowed())
                     plugin.getAutoCloseScheduler().scheduleAutoClose(door, time, instantOpen);
             }
         }.runTaskLater(plugin, getDelay(endCount));
@@ -209,5 +302,45 @@ public abstract class BlockMover
     public interface LocationFinder
     {
         Location apply(double radius, double startX, double startY, double startZ);
+    }
+
+    private static final class DoorRegion
+    {
+        private int minX = Integer.MAX_VALUE;
+        private int minY = Integer.MAX_VALUE;
+        private int minZ = Integer.MAX_VALUE;
+
+        private int maxX = Integer.MIN_VALUE;
+        private int maxY = Integer.MIN_VALUE;
+        private int maxZ = Integer.MIN_VALUE;
+
+        public void processLocation(int x, int y, int z)
+        {
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
+        }
+
+        public void processLocation(double x, double y, double z)
+        {
+            processLocation((int) x, (int) y, (int) z);
+        }
+
+        public void processLocation(Location loc)
+        {
+            processLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format(
+                "[%d, %d, %d] - [%d, %d, %d]",
+                minX, minY, minZ, maxX, maxY, maxZ);
+        }
     }
 }

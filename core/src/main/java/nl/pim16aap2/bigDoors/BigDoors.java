@@ -131,9 +131,10 @@ public class BigDoors extends JavaPlugin implements Listener
     private volatile boolean schedulerIsRunning = false;
     private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
     private static final boolean IS_ON_FLATTENED_VERSION = MC_VERSION.isAtLeast(MCVersion.v1_13_R1);
-    private boolean isEnabled = false;
+    private volatile boolean isEnabled = false;
     private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
+    private final String oldVersion = getDescription().getVersion();
 
     public BigDoors()
     {
@@ -146,6 +147,12 @@ public class BigDoors extends JavaPlugin implements Listener
     @Override
     public void onEnable()
     {
+        getMyLogger().logMessageToLogFile(
+            "\n\n\n\n" +
+            "*********************************************************\n" +
+            "        Starting BigDoors version: " + getDescription().getVersion() + "\n" +
+            "*********************************************************");
+        getMyLogger().logMessageToConsoleOnly("Enabling Plugin!");
         try
         {
             onEnable0();
@@ -153,9 +160,15 @@ public class BigDoors extends JavaPlugin implements Listener
         catch (Throwable t)
         {
             setDisabled("An unknown error occurred!");
-            logger.logMessageToConsoleOnly("Failed to enable plugin: An unknown error occurred!");
-            getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(t));
+            logger.severe("Failed to enable plugin: An unknown error occurred!");
+            getMyLogger().log(t);
         }
+    }
+
+    @Override
+    public void onLoad()
+    {
+        getMyLogger().logMessageToLogFile("Loading Plugin!");
     }
 
     private void onEnable0()
@@ -175,7 +188,7 @@ public class BigDoors extends JavaPlugin implements Listener
         catch (Exception | ExceptionInInitializerError e)
         {
             setDisabled("Failed to read config file!");
-            logger.logMessageToConsoleOnly("Failed to read config file. Plugin disabled!");
+            logger.severe("Failed to read config file. Plugin disabled!");
             getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
             return;
         }
@@ -187,7 +200,7 @@ public class BigDoors extends JavaPlugin implements Listener
         catch (Exception | ExceptionInInitializerError e)
         {
             setDisabled("Failed to initialize BukkitReflectionUtil!");
-            logger.logMessageToConsoleOnly("Failed to initialize BukkitReflectionUtil! Plugin disabled!");
+            logger.severe("Failed to initialize BukkitReflectionUtil! Plugin disabled!");
             getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
             return;
         }
@@ -205,7 +218,7 @@ public class BigDoors extends JavaPlugin implements Listener
                     + disableReason.get() +
                     "'. This can be bypassed in the config if you are feeling adventurous (unsafeMode).";
                 setDisabled(error);
-                logger.logMessage(error, true, true);
+                logger.logMessage(error, true, true, Level.SEVERE);
                 return;
             }
             else if (config.unsafeModeNotification())
@@ -267,6 +280,7 @@ public class BigDoors extends JavaPlugin implements Listener
 
         registerCommands(commandHandler);
 
+        enableAnimations();
         isEnabled = true;
     }
 
@@ -346,18 +360,55 @@ public class BigDoors extends JavaPlugin implements Listener
         getCommand("bdm").setExecutor(commandExecutor);
     }
 
+    /**
+     * Stops all active animations and prevents new ones from being scheduled.
+     */
+    public void disableAnimations()
+    {
+        getMyLogger().logMessageToLogFile("Disabling animations");
+        if (autoCloseScheduler != null)
+        {
+            getMyLogger().logMessageToLogFile("Disabling auto close timers: Plugin disabled!");
+            autoCloseScheduler.autoCloseAllowed(false);
+            autoCloseScheduler.cancelAllTimers();
+        }
+
+        if (commander != null)
+        {
+            getMyLogger().logMessageToLogFile("Disabling animations: Plugin disabled!");
+            commander.animationsAllowed(false);
+            // This is not 'onDisable', but we don't want to schedule anything regardless.
+            commander.stopMovers(true);
+        }
+    }
+
+    /**
+     * Enables animations. This will allow new animations to be scheduled.
+     */
+    public void enableAnimations()
+    {
+        getMyLogger().logMessageToLogFile("Enabling animations");
+        if (autoCloseScheduler != null)
+            autoCloseScheduler.autoCloseAllowed(true);
+        if (commander != null)
+            commander.animationsAllowed(true);
+    }
+
     private void setDisabled(String reason)
     {
         try
         {
             this.isEnabled = false;
+            disableAnimations();
             HandlerList.unregisterAll((JavaPlugin) this);
             failureCommandHandler = new FailureCommandHandler("Plugin disabled: " + reason);
             registerCommands(failureCommandHandler);
+
+            getMyLogger().info("The plugin has been disabled! Reason: " + reason);
         }
         catch (Exception e)
         {
-            logger.logMessageToConsoleOnly("Failed to set disabled status!");
+            logger.severe("Failed to set disabled status!");
             getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
         }
     }
@@ -412,8 +463,7 @@ public class BigDoors extends JavaPlugin implements Listener
 
         updateManager.setEnabled(getConfigLoader().autoDLUpdate(), getConfigLoader().announceUpdateCheck());
 
-        if (commander != null)
-            commander.setCanGo(true);
+        enableAnimations();
     }
 
     public static BigDoors get()
@@ -495,6 +545,7 @@ public class BigDoors extends JavaPlugin implements Listener
 
     public void restart()
     {
+        getMyLogger().info("Restarting plugin! Valid version: '" + validVersion + "'");
         if (!validVersion)
             return;
         reloadConfig();
@@ -524,15 +575,17 @@ public class BigDoors extends JavaPlugin implements Listener
     @Override
     public void onDisable()
     {
+        getMyLogger().logMessageToLogFile("");
+        getMyLogger().info("Disabling plugin! Valid version: '" + validVersion + "'");
+
         if (!validVersion)
             return;
 
         closeGUIs();
 
-        // Stop all toolUsers and take all BigDoor tools from players.
-        commander.setCanGo(false);
-        commander.stopMovers(true);
+        disableAnimations();
 
+        // Stop all toolUsers and take all BigDoor tools from players.
         Iterator<Entry<UUID, ToolUser>> it = toolUsers.entrySet().iterator();
         while (it.hasNext())
         {
@@ -542,6 +595,13 @@ public class BigDoors extends JavaPlugin implements Listener
 
         toolUsers.clear();
         cmdWaiters.clear();
+
+        getMyLogger().logMessageToLogFile(
+            "\n" +
+            "#########################################################\n" +
+            "        Disabled BigDoors version: " + oldVersion + "\n" +
+            "#########################################################\n\n\n\n"
+        );
     }
 
     private void closeGUIs()

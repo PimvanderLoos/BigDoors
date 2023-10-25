@@ -203,7 +203,7 @@ public class SlidingDoorOpener implements Opener
     {
         plugin.assertSchedulerRunning();
 
-        if (!plugin.getCommander().canGo())
+        if (!plugin.getCommander().animationsAllowed())
         {
             plugin.getMyLogger()
                   .info("Failed to toggle: " + door.toSimpleString() + ", as door toggles are currently disabled!");

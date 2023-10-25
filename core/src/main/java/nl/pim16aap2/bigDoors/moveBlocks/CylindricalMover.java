@@ -29,7 +29,6 @@ import java.util.List;
 
 public class CylindricalMover extends BlockMover
 {
-    private GetNewLocation gnl;
     private final FallingBlockFactory fabf;
     private final double time;
     private final Door door;
@@ -37,20 +36,25 @@ public class CylindricalMover extends BlockMover
     private final int dx, dz;
     private final BigDoors plugin;
     private final int tickRate;
-    private double endStepSum;
-    private double multiplier;
-    private double startStepSum;
+    private final double multiplier;
     private final RotateDirection rotDirection;
     private final Location pointOpposite;
     private final int stepMultiplier;
-    private final int xMin, xMax, yMin;
-    private final int yMax, zMin, zMax;
+    private final int xMin;
+    private final int yMin;
+    private final int zMin;
+    private final int xMax;
+    private final int yMax;
+    private final int zMax;
     private final DoorDirection currentDirection;
     private final Location turningPoint;
-    private int endCount = 0;
-    private BukkitRunnable animationRunnable;
 
-    @SuppressWarnings("deprecation")
+    private volatile GetNewLocation gnl;
+    private volatile int endCount = 0;
+    private volatile double endStepSum;
+    private volatile double startStepSum;
+    private volatile BukkitRunnable animationRunnable;
+
     public CylindricalMover(BigDoors plugin, World world, int qCircleLimit, RotateDirection rotDirection, double time,
         Location pointOpposite, DoorDirection currentDirection, Door door, boolean instantOpen, double multiplier)
     {
@@ -87,7 +91,7 @@ public class CylindricalMover extends BlockMover
 
     private void createAnimatedBlocks()
     {
-        savedBlocks.ensureCapacity(door.getBlockCount());
+        final List<MyBlockData> savedBlocks = new ArrayList<>(door.getBlockCount());
 
         // This will reserve a bit too much memory, but not enough to worry about.
         final List<NMSBlock> edges =
@@ -214,7 +218,7 @@ public class CylindricalMover extends BlockMover
             edges.forEach(block -> block.deleteOriginalBlock(true));
         }
 
-        savedBlocks.trimToSize();
+        registerSavedBlocks(savedBlocks);
 
         if (!instantOpen)
             rotateEntities();
@@ -223,16 +227,22 @@ public class CylindricalMover extends BlockMover
     }
 
     @Override
-    public synchronized void cancel(boolean onDisable)
+    public synchronized void cancel0(boolean onDisable)
     {
         if (this.animationRunnable == null)
+        {
+            plugin.getMyLogger().logMessageToLogFile(String.format(
+                "[%s] animationRunnable is null, not cancelling anything!",
+                formatDoorInfo()
+            ));
             return;
+        }
         this.animationRunnable.cancel();
         this.putBlocks(onDisable);
     }
 
     @Override
-    public synchronized void putBlocks(boolean onDisable)
+    public synchronized void putBlocks0(boolean onDisable)
     {
         super.putBlocks(onDisable, time, endCount,
                         gnl::getNewLocation,
@@ -247,15 +257,27 @@ public class CylindricalMover extends BlockMover
         animationRunnable = new BukkitRunnable()
         {
             final Location center = new Location(world, turningPoint.getBlockX() + 0.5, yMin, turningPoint.getBlockZ() + 0.5);
-            boolean replace = false;
-            double counter = 0;
             final double step = (Math.PI / 2) / endCount * stepMultiplier;
-            double stepSum = startStepSum;
             final int totalTicks = (int) (endCount * multiplier);
             final int replaceCount = endCount / 2;
-            long startTime = System.nanoTime();
-            long lastTime;
-            long currentTime = System.nanoTime();
+
+            volatile boolean replace = false;
+            volatile double counter = 0;
+            volatile double stepSum = startStepSum;
+            volatile long startTime = System.nanoTime();
+            volatile long lastTime;
+            volatile long currentTime = System.nanoTime();
+
+            @Override
+            public synchronized void cancel()
+                throws IllegalStateException
+            {
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s] Canceling animationRunnable",
+                    formatDoorInfo()
+                ));
+                super.cancel();
+            }
 
             @Override
             public void run()
@@ -266,10 +288,13 @@ public class CylindricalMover extends BlockMover
                 lastTime = currentTime;
                 currentTime = System.nanoTime();
                 long msSinceStart = (currentTime - startTime) / 1000000;
-                if (!plugin.getCommander().isPaused())
-                    counter = msSinceStart / (50 * tickRate);
+                if (plugin.getCommander().isPaused())
+                {
+                    final long oldStartTime = startTime;
+                    startTime = oldStartTime + currentTime - lastTime;
+                }
                 else
-                    startTime += currentTime - lastTime;
+                    counter = msSinceStart / (50 * tickRate);
 
                 if (counter < endCount - 1)
                     stepSum = startStepSum + step * counter;
@@ -278,10 +303,10 @@ public class CylindricalMover extends BlockMover
 
                 replace = counter == replaceCount;
 
-                if (!plugin.getCommander().canGo() || counter > totalTicks)
+                if (counter > totalTicks)
                 {
                     Util.playSound(door.getEngine(), "bd.closing-vault-door", 0.2f, 1f);
-                    for (MyBlockData savedBlock : savedBlocks)
+                    for (MyBlockData savedBlock : getSavedBlocks())
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
 
@@ -300,7 +325,7 @@ public class CylindricalMover extends BlockMover
                     if (replace)
                         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                         {
-                            for (MyBlockData block : savedBlocks)
+                            for (MyBlockData block : getSavedBlocks())
                                 if (block.canRot() != 0 && block.canRot() != 5)
                                 {
                                     Material mat = block.getMat();
@@ -322,7 +347,7 @@ public class CylindricalMover extends BlockMover
                     double sin = Math.sin(stepSum);
                     double cos = Math.cos(stepSum);
 
-                    for (MyBlockData block : savedBlocks)
+                    for (MyBlockData block : getSavedBlocks())
                         if (!block.getMat().equals(Material.AIR))
                         {
                             double radius = block.getRadius();
@@ -344,6 +369,10 @@ public class CylindricalMover extends BlockMover
                 }
             }
         };
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Scheduling animationRunnable",
+            formatDoorInfo()
+        ));
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 
@@ -512,6 +541,19 @@ public class CylindricalMover extends BlockMover
             }
             break;
         }
+
+        final Location oldMin = door.getMinimum();
+        final Location oldMax = door.getMaximum();
+        BigDoors.get().getMyLogger().logMessageToLogFile(String.format(
+            "[%3d - %-12s] Updating coords from [%d, %d, %d] - [%d, %d, %d] to [%d, %d, %d] - [%d, %d, %d] (shadow: %b, moved: %d, currentDirection: %s, rotDirection: %s)",
+            door.getDoorUID(), door.getType(),
+            oldMin.getBlockX(), oldMin.getBlockY(), oldMin.getBlockZ(),
+            oldMax.getBlockX(), oldMax.getBlockY(), oldMax.getBlockZ(),
+            newMin.getBlockX(), newMin.getBlockY(), newMin.getBlockZ(),
+            newMax.getBlockX(), newMax.getBlockY(), newMax.getBlockZ(),
+            shadow, moved, currentDirection, rotDirection
+        ));
+
         door.setMaximum(newMax);
         door.setMinimum(newMin);
 

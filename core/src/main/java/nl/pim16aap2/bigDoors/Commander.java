@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -26,20 +27,23 @@ import java.util.stream.Stream;
 
 public class Commander
 {
-    private final BigDoors plugin;
-    private Map<Long, BlockMover> busyDoors;
-    private HashMap<UUID, String> players;
-    private boolean goOn = true;
-    private boolean paused = false;
-    private SQLiteJDBCDriverConnection db;
-    private Messages messages;
     private static final DummyMover DUMMYMOVER = new DummyMover();
+
+    private final BigDoors plugin;
+
+    private final Map<Long, BlockMover> busyDoors;
+    private final HashMap<UUID, String> players;
+    private final SQLiteJDBCDriverConnection db;
+    private final Messages messages;
+
+    private volatile boolean animationsAllowed = false;
+    private volatile boolean paused = false;
 
     public Commander(BigDoors plugin, SQLiteJDBCDriverConnection db)
     {
         this.plugin = plugin;
         this.db = db;
-        busyDoors = new ConcurrentHashMap<>();
+        busyDoors = newBusyDoorsMap();
         messages = plugin.getMessages();
         players = new HashMap<>();
     }
@@ -54,11 +58,28 @@ public class Commander
         busyDoors.clear();
     }
 
+    /**
+     * Cancels all active animations.
+     * <p>
+     * Note that this does not stop the animations from being started again. If that is the desired effect, use
+     * {@link #animationsAllowed(boolean)}.
+     *
+     * @param onDisable Whether this method is called from the onDisable method.
+     */
     public void stopMovers(boolean onDisable)
     {
+        plugin.getMyLogger().logMessageToLogFile("Stopping all movers; onDisable: " + onDisable);
+        plugin.getMyLogger().logMessageToLogFile("");
         Iterator<BlockMover> it = busyDoors.values().iterator();
         while (it.hasNext())
-            it.next().cancel(onDisable);
+        {
+            final BlockMover mover = it.next();
+            plugin.getMyLogger().logMessageToLogFile(String.format(
+                "[%s] Commander is cancelling mover",
+                mover.formatDoorInfo()
+            ));
+            mover.cancel(onDisable);
+        }
     }
 
     // Check if a door is busy
@@ -72,11 +93,14 @@ public class Commander
      * such using a placeholder.
      *
      * @param doorUID The UID of the door to check and potentially register as busy.
-     * @return True if the door is already busy and therefore not registered as
-     *         such.
+     * @return True if the door is already busy and therefore not registered as such.
      */
     public boolean isDoorBusyRegisterIfNot(long doorUID)
     {
+        if (!animationsAllowed)
+            return true; // 'true' because even though the door isn't busy, it's not allowed to be animated.
+
+
         // putIfAbsent returns the result of ConcurrentHashMap#put(key, value)
         // if the key did not exist in the map yet. Otherwise, it returns the
         // mapping of the key.
@@ -95,7 +119,13 @@ public class Commander
     }
 
     public void addBlockMover(BlockMover mover)
+        throws IllegalStateException
     {
+        if (!animationsAllowed)
+            throw new IllegalStateException(String.format(
+                "[%s] Failed to add block mover: animations are not allowed at this time.",
+                mover.formatDoorInfo()
+            ));
         busyDoors.replace(mover.getDoorUID(), mover);
     }
 
@@ -119,21 +149,8 @@ public class Commander
     // Toggle the paused status of all doors.
     public void togglePaused()
     {
-        paused = !paused;
-    }
-
-    // Check if the doors can go. This differs from begin paused in that it will
-    // finish up
-    // all currently moving doors.
-    public boolean canGo()
-    {
-        return goOn;
-    }
-
-    // Change the canGo status of all doors.
-    public void setCanGo(boolean bool)
-    {
-        goOn = bool;
+        final boolean wasPaused = paused;
+        paused = !wasPaused;
     }
 
     // Print an ArrayList of doors to a player.
@@ -172,20 +189,18 @@ public class Commander
             long doorUID = Long.parseLong(doorStr);
             return db.getDoor(player == null ? null : player.getUniqueId(), doorUID, bypass);
         }
-        // If it can't convert to a long, get all doors from the player with the
-        // provided name.
-        // If there is more than one, tell the player that they are going to have to
-        // make a choice.
+        // If it can't convert to a long, get all doors from the player with the provided name.
+        // If there is more than one, tell the player that they are going to have to make a choice.
         catch (NumberFormatException e)
         {
             if (player == null)
                 return null;
-            ArrayList<Door> doors = new ArrayList<>();
-            doors = db.getDoors(player.getUniqueId().toString(), doorStr);
+
+            final ArrayList<Door> doors = db.getDoors(player.getUniqueId().toString(), doorStr);
             if (doors.size() == 1)
                 return doors.get(0);
 
-            if (doors.size() == 0)
+            if (doors.isEmpty())
                 Util.messagePlayer(player, messages.getString("GENERAL.NoDoorsFound"));
             else
                 Util.messagePlayer(player, messages.getString("GENERAL.MoreThan1DoorFound"));
@@ -494,6 +509,30 @@ public class Commander
         return db.isPowerBlockLocationEmpty(loc);
     }
 
+    /**
+     * Sets whether animations are currently allowed.
+     * <p>
+     * When false, no new animations will be started. Existing animations will continue to run. To stop all animations,
+     * use {@link #stopMovers(boolean)}.
+     *
+     * @param animationsAllowed True if animations should be allowed, false otherwise.
+     */
+    public void animationsAllowed(boolean animationsAllowed)
+    {
+        plugin.getMyLogger().logMessageToLogFile("Setting animationsAllowed to: " + animationsAllowed + ".");
+        this.animationsAllowed = animationsAllowed;
+    }
+
+    /**
+     * Gets whether animations are currently allowed.
+     *
+     * @return True if animations are allowed, false otherwise.
+     */
+    public boolean animationsAllowed()
+    {
+        return animationsAllowed;
+    }
+
     private static final class DummyMover extends BlockMover
     {
         private DummyMover()
@@ -502,12 +541,21 @@ public class Commander
         }
 
         @Override
-        public synchronized void cancel(boolean onDisable)
+        public String formatDoorInfo()
+        {
+            return String.format(
+                "%3d - %-11s",
+                getDoorUID(), "DUMMY_DOOR"
+            );
+        }
+
+        @Override
+        public synchronized void cancel0(boolean onDisable)
         {
         }
 
         @Override
-        public void putBlocks(boolean onDisable)
+        public void putBlocks0(boolean onDisable)
         {
         }
 
@@ -522,6 +570,70 @@ public class Commander
         {
             return null;
         }
+    }
 
+    private Map<Long, BlockMover> newBusyDoorsMap()
+    {
+        return new ConcurrentHashMap<Long, BlockMover>() {
+            @Override
+            public BlockMover putIfAbsent(@NotNull Long key, BlockMover value)
+            {
+                final BlockMover result = super.putIfAbsent(key, value);
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%3d - %-12s]: Attempting to register door as busy if not already busy; Was already registered with: %s",
+                    key, "___________", result == null ? "null" : result.getClass().getName()
+                ));
+                return result;
+            }
+
+            @Override
+            public BlockMover replace(@NotNull Long key, @NotNull BlockMover value)
+            {
+                final BlockMover removed =  super.replace(key, value);
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s]: Replacing existing mover of type: '%s' with one of type: '%s'",
+                    value.formatDoorInfo(), removed == null ? "null" : removed.getClass().getName(), value.getClass().getName()
+                ));
+                return removed;
+            }
+
+            @Override
+            public @Nullable BlockMover put(Long key, BlockMover value)
+            {
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s]: Registering door as busy with mover type: %s",
+                    value.formatDoorInfo(), value.getClass().getName()
+                ));
+                return super.put(key, value);
+            }
+
+            @Override
+            public BlockMover remove(Object key)
+            {
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%3s - %-12s] Removing door from busyDoors",
+                    key, "___________"
+                ));
+                return super.remove(key);
+            }
+
+            @Override
+            public void putAll(@NotNull Map<? extends Long, ? extends BlockMover> m)
+            {
+                final StringBuilder sb = new StringBuilder();
+                m.forEach((k, v) -> sb.append(v == null ? k : v.formatDoorInfo()).append(", "));
+                if (sb.length() > 2)
+                    sb.setLength(sb.length() - 2);
+                plugin.getMyLogger().logMessageToLogFile("Registering movers as busy: " + sb);
+                super.putAll(m);
+            }
+
+            @Override
+            public void clear()
+            {
+                plugin.getMyLogger().logMessageToLogFile("Clearing ALL busyDoors; current size: " + size());
+                super.clear();
+            }
+        };
     }
 }

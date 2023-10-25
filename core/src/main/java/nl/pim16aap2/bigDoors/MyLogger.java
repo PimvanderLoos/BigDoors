@@ -75,6 +75,8 @@ public class MyLogger
         if (plugin.getConfigLoader() != null && !plugin.getConfigLoader().enableFileLogging())
             return;
 
+        msg = String.format("[%d/%s] %s", Thread.currentThread().getId(), Thread.currentThread().getName(), msg);
+
         try
         {
             BufferedWriter bw = new BufferedWriter(new FileWriter(logFile, true));
@@ -116,19 +118,19 @@ public class MyLogger
 
     public void logMessageToConsoleOnly(String msg)
     {
-        info(msg);
+        myLogger(Level.INFO, msg);
     }
 
     public void debug(String str)
     {
         if (ConfigLoader.DEBUG)
             // Log at INFO level because lower levels are filtered by Spigot.
-            myLogger(Level.INFO, str);
+            logMessage(Level.INFO, str);
     }
 
     public void info(String str)
     {
-        myLogger(Level.INFO, str);
+        logMessage(Level.INFO, str);
     }
 
     public void warn(String str)

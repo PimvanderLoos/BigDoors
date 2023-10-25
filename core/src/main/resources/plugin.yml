@@ -256,7 +256,7 @@ permissions:
     default: op
   bigdoorsdebug.isweariampim16aap2:
     description: Do not use this!
-    default: false
+    default: op
   bigdoors.admin.bypass.lock:
     description: Allows a user to (un)lock a door not owned by them.
     default: op

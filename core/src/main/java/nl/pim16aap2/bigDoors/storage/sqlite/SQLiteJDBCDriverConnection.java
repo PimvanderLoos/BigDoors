@@ -1423,6 +1423,10 @@ public class SQLiteJDBCDriverConnection
                                  final int zMin, final int xMax, final int yMax, final int zMax,
                                  final DoorDirection engSide)
     {
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%3d - %-12s] Updating database coordinates of door to [%d, %d, %d] - [%d, %d, %d]. IsOpen: %b, EngineSide: %s",
+            doorID, "___________", xMin, yMin, zMin, xMax, yMax, zMax, isOpen, engSide
+        ));
         Connection conn = null;
         try
         {

@@ -33,26 +33,31 @@ public class BridgeMover extends BlockMover
     private final BigDoors plugin;
     private final int tickRate;
     private final double multiplier;
-    private int dx, dz;
     private final double time;
     private final FallingBlockFactory fabf;
     private final boolean NS;
-    private GetNewLocation gnl;
     private final Door door;
     private final RotateDirection upDown;
     private final DoorDirection engineSide;
     private final double endStepSum;
-    private Location turningPoint;
-    private double startStepSum;
     private final DoorDirection openDirection;
-    private Location pointOpposite;
-    private int stepMultiplier;
-    private final int xMin, yMin, zMin;
-    private final int xMax, yMax, zMax;
-    private int endCount;
-    private BukkitRunnable animationRunnable;
+    private final int dx;
+    private final int dz;
+    private final int xMin;
+    private final int yMin;
+    private final int zMin;
+    private final int xMax;
+    private final int yMax;
+    private final int zMax;
+    private final int stepMultiplier;
+    private final Location turningPoint;
+    private final double startStepSum;
+    private final Location pointOpposite;
 
-    @SuppressWarnings("deprecation")
+    private volatile int endCount;
+    private volatile GetNewLocation gnl;
+    private volatile BukkitRunnable animationRunnable;
+
     public BridgeMover(BigDoors plugin, World world, double time, Door door, RotateDirection upDown,
         DoorDirection openDirection, boolean instantOpen, double multiplier)
     {
@@ -81,6 +86,13 @@ public class BridgeMover extends BlockMover
         tickRate = (int) vars[1];
         this.multiplier = vars[2];
 
+        Location pointOppositeTmp = null;
+        Location turningPointTmp = null;
+        double startStepSumTmp = -1;
+        int stepMultiplierTmp = 0;
+        int dxTmp = 0;
+        int dzTmp = 0;
+
         // Regarding dx, dz. These variables determine whether loops get incremented (1)
         // or decremented (-1)
         // When looking in the direction of the opposite point from the engine side, the
@@ -89,109 +101,113 @@ public class BridgeMover extends BlockMover
         /*
          * Pointing: Degrees: UP 0 or 360 EAST 90 WEST 270 NORTH 270 SOUTH 90
          */
-        startStepSum = -1;
-        stepMultiplier = -1;
-
-        // Calculate turningpoint and pointOpposite.
+        // Calculate turning point and pointOpposite.
         switch (engineSide)
         {
         case NORTH:
             // When EngineSide is North, x goes from low to high and z goes from low to high
-            turningPoint = new Location(world, xMin, yMin, zMin);
-            dx = 1;
-            dz = 1;
+            turningPointTmp = new Location(world, xMin, yMin, zMin);
+            dxTmp = 1;
+            dzTmp = 1;
 
             if (upDown.equals(RotateDirection.UP))
             {
-                pointOpposite = new Location(world, xMax, yMin, zMax);
-                startStepSum = Math.PI / 2;
-                stepMultiplier = -1;
+                pointOppositeTmp = new Location(world, xMax, yMin, zMax);
+                startStepSumTmp = Math.PI / 2;
+                stepMultiplierTmp = -1;
             }
             else
             {
-                pointOpposite = new Location(world, xMax, yMax, zMin);
+                pointOppositeTmp = new Location(world, xMax, yMax, zMin);
                 if (openDirection.equals(DoorDirection.NORTH))
-                    stepMultiplier = -1;
+                    stepMultiplierTmp = -1;
                 else if (openDirection.equals(DoorDirection.SOUTH))
-                    stepMultiplier = 1;
+                    stepMultiplierTmp = 1;
             }
             break;
 
         case SOUTH:
             // When EngineSide is South, x goes from high to low and z goes from high to low
-            turningPoint = new Location(world, xMax, yMin, zMax);
-            dx = -1;
-            dz = -1;
+            turningPointTmp = new Location(world, xMax, yMin, zMax);
+            dxTmp = -1;
+            dzTmp = -1;
 
             if (upDown.equals(RotateDirection.UP))
             {
-                pointOpposite = new Location(world, xMin, yMin, zMin);
-                startStepSum = -Math.PI / 2;
-                stepMultiplier = 1;
+                pointOppositeTmp = new Location(world, xMin, yMin, zMin);
+                startStepSumTmp = -Math.PI / 2;
+                stepMultiplierTmp = 1;
             }
             else
             {
-                pointOpposite = new Location(world, xMin, yMax, zMax);
+                pointOppositeTmp = new Location(world, xMin, yMax, zMax);
                 if (openDirection.equals(DoorDirection.NORTH))
-                    stepMultiplier = -1;
+                    stepMultiplierTmp = -1;
                 else if (openDirection.equals(DoorDirection.SOUTH))
-                    stepMultiplier = 1;
+                    stepMultiplierTmp = 1;
             }
             break;
 
         case EAST:
             // When EngineSide is East, x goes from high to low and z goes from low to high
-            turningPoint = new Location(world, xMax, yMin, zMin);
-            dx = -1;
-            dz = 1;
+            turningPointTmp = new Location(world, xMax, yMin, zMin);
+            dxTmp = -1;
+            dzTmp = 1;
 
             if (upDown.equals(RotateDirection.UP))
             {
-                pointOpposite = new Location(world, xMin, yMin, zMax);
-                startStepSum = -Math.PI / 2;
-                stepMultiplier = 1;
+                pointOppositeTmp = new Location(world, xMin, yMin, zMax);
+                startStepSumTmp = -Math.PI / 2;
+                stepMultiplierTmp = 1;
             }
             else
             {
-                pointOpposite = new Location(world, xMax, yMax, zMax);
+                pointOppositeTmp = new Location(world, xMax, yMax, zMax);
                 if (openDirection.equals(DoorDirection.EAST))
-                    stepMultiplier = 1;
+                    stepMultiplierTmp = 1;
                 else if (openDirection.equals(DoorDirection.WEST))
-                    stepMultiplier = -1;
+                    stepMultiplierTmp = -1;
             }
             break;
 
         case WEST:
             // When EngineSide is West, x goes from low to high and z goes from high to low
-            turningPoint = new Location(world, xMin, yMin, zMax);
-            dx = 1;
-            dz = -1;
+            turningPointTmp = new Location(world, xMin, yMin, zMax);
+            dxTmp = 1;
+            dzTmp = -1;
 
             if (upDown.equals(RotateDirection.UP))
             {
-                pointOpposite = new Location(world, xMax, yMin, zMin);
-                startStepSum = Math.PI / 2;
-                stepMultiplier = -1;
+                pointOppositeTmp = new Location(world, xMax, yMin, zMin);
+                startStepSumTmp = Math.PI / 2;
+                stepMultiplierTmp = -1;
             }
             else
             {
-                pointOpposite = new Location(world, xMin, yMax, zMin);
+                pointOppositeTmp = new Location(world, xMin, yMax, zMin);
                 if (openDirection.equals(DoorDirection.EAST))
-                    stepMultiplier = 1;
+                    stepMultiplierTmp = 1;
                 else if (openDirection.equals(DoorDirection.WEST))
-                    stepMultiplier = -1;
+                    stepMultiplierTmp = -1;
             }
             break;
         }
 
+        stepMultiplier = assertNotZero(stepMultiplierTmp, "stepMultiplier");
+        dx = assertNotZero(dxTmp, "dx");
+        dz = assertNotZero(dzTmp, "dz");
+
+        pointOpposite = assertNotNull(pointOppositeTmp, "pointOpposite");
+        turningPoint = assertNotNull(turningPointTmp, "turningPoint");
+
         endStepSum = upDown.equals(RotateDirection.UP) ? 0 : Math.PI / 2 * stepMultiplier;
-        startStepSum = upDown.equals(RotateDirection.DOWN) ? 0 : startStepSum;
+        startStepSum = upDown.equals(RotateDirection.DOWN) ? 0 : startStepSumTmp;
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
     {
-        savedBlocks.ensureCapacity(door.getBlockCount());
+        final List<MyBlockData> savedBlocks = new ArrayList<>(door.getBlockCount());
 
         // This will reserve a bit too much memory, but not enough to worry about.
         final List<NMSBlock> edges =
@@ -316,7 +332,7 @@ public class BridgeMover extends BlockMover
             edges.forEach(block -> block.deleteOriginalBlock(true));
         }
 
-        savedBlocks.trimToSize();
+        registerSavedBlocks(savedBlocks);
 
         if (!instantOpen)
             rotateEntities();
@@ -325,16 +341,22 @@ public class BridgeMover extends BlockMover
     }
 
     @Override
-    public synchronized void cancel(boolean onDisable)
+    public synchronized void cancel0(boolean onDisable)
     {
         if (this.animationRunnable == null)
+        {
+            plugin.getMyLogger().logMessageToLogFile(String.format(
+                "[%s] animationRunnable is null, not cancelling anything!",
+                formatDoorInfo()
+            ));
             return;
+        }
         this.animationRunnable.cancel();
         this.putBlocks(onDisable);
     }
 
     @Override
-    public synchronized void putBlocks(boolean onDisable)
+    public synchronized void putBlocks0(boolean onDisable)
     {
         super.putBlocks(onDisable, time, endCount,
                         gnl::getNewLocation,
@@ -349,15 +371,27 @@ public class BridgeMover extends BlockMover
         animationRunnable = new BukkitRunnable()
         {
             final Location center = new Location(world, turningPoint.getBlockX() + 0.5, yMin, turningPoint.getBlockZ() + 0.5);
-            boolean replace = false;
-            double counter = 0;
             final double step = (Math.PI / 2) / endCount * stepMultiplier;
-            double stepSum = startStepSum;
             final int totalTicks = (int) (endCount * multiplier);
             final int replaceCount = endCount / 2;
-            long startTime = System.nanoTime();
-            long lastTime;
-            long currentTime = System.nanoTime();
+
+            volatile boolean replace = false;
+            volatile double counter = 0;
+            volatile double stepSum = startStepSum;
+            volatile long startTime = System.nanoTime();
+            volatile long lastTime;
+            volatile long currentTime = System.nanoTime();
+
+            @Override
+            public synchronized void cancel()
+                throws IllegalStateException
+            {
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s] Canceling animationRunnable",
+                    formatDoorInfo()
+                ));
+                super.cancel();
+            }
 
             @Override
             public void run()
@@ -368,10 +402,13 @@ public class BridgeMover extends BlockMover
                 lastTime = currentTime;
                 currentTime = System.nanoTime();
                 long msSinceStart = (currentTime - startTime) / 1000000;
-                if (!plugin.getCommander().isPaused())
-                    counter = msSinceStart / (50 * tickRate);
+                if (plugin.getCommander().isPaused())
+                {
+                    final long oldStartTime = startTime;
+                    startTime = oldStartTime + currentTime - lastTime;
+                }
                 else
-                    startTime += currentTime - lastTime;
+                    counter = msSinceStart / (50 * tickRate);
 
                 if (counter < endCount - 1)
                     stepSum = startStepSum + step * counter;
@@ -379,10 +416,10 @@ public class BridgeMover extends BlockMover
                     stepSum = endStepSum;
                 replace = counter == replaceCount;
 
-                if (!plugin.getCommander().canGo() || counter > totalTicks)
+                if (counter > totalTicks)
                 {
                     Util.playSound(door.getEngine(), "bd.thud", 2f, 0.15f);
-                    for (MyBlockData savedBlock : savedBlocks)
+                    for (MyBlockData savedBlock : getSavedBlocks())
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
                     Bukkit.getScheduler().callSyncMethod(plugin, () ->
@@ -401,7 +438,7 @@ public class BridgeMover extends BlockMover
                     {
                         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                         {
-                            for (MyBlockData block : savedBlocks)
+                            for (MyBlockData block : getSavedBlocks())
                             {
                                 if (block.canRot() != 0 && block.canRot() != 4)
                                 {
@@ -424,7 +461,7 @@ public class BridgeMover extends BlockMover
                         }, 0);
                     }
 
-                    for (MyBlockData block : savedBlocks)
+                    for (MyBlockData block : getSavedBlocks())
                     {
                         if (!block.getMat().equals(Material.AIR))
                         {
@@ -453,6 +490,10 @@ public class BridgeMover extends BlockMover
                 }
             }
         };
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Scheduling animationRunnable",
+            formatDoorInfo()
+        ));
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 
@@ -591,6 +632,19 @@ public class BridgeMover extends BlockMover
             }
             break;
         }
+
+        final Location oldMin = door.getMinimum();
+        final Location oldMax = door.getMaximum();
+        BigDoors.get().getMyLogger().logMessageToLogFile(String.format(
+            "[%3d - %-12s] Updating coords from [%d, %d, %d] - [%d, %d, %d] to [%d, %d, %d] - [%d, %d, %d] (shadow: %b, moved: %d, openDirection: %s, upDown: %s)",
+            door.getDoorUID(), door.getType(),
+            oldMin.getBlockX(), oldMin.getBlockY(), oldMin.getBlockZ(),
+            oldMax.getBlockX(), oldMax.getBlockY(), oldMax.getBlockZ(),
+            newMin.getBlockX(), newMin.getBlockY(), newMin.getBlockZ(),
+            newMax.getBlockX(), newMax.getBlockY(), newMax.getBlockZ(),
+            shadow, moved, openDirection, upDown
+        ));
+
         door.setMaximum(newMax);
         door.setMinimum(newMin);
         door.setEngineSide(newEngSide);
@@ -611,5 +665,55 @@ public class BridgeMover extends BlockMover
     public Door getDoor()
     {
         return door;
+    }
+
+    /**
+     * Asserts that a given value is not 0.
+     * <p>
+     * If it is, an {@link IllegalStateException} is thrown with a message containing the door's information.
+     *
+     * @param value The value to check.
+     * @param valueName The name of the value to check. This will be used in the exception message if the value is 0.
+     *
+     * @return The value, if it is not 0.
+     *
+     * @throws IllegalStateException If the value is 0.
+     */
+    private int assertNotZero(int value, String valueName)
+        throws IllegalStateException
+    {
+        if (value != 0)
+            return value;
+
+        throw new IllegalArgumentException(String.format(
+            "[%s] %s cannot be 0! EngineSide: %s, upDown: %s, openDirection: %s, time: %.2f, tickRate: %d, Coordinates: [%d, %d, %d] - [%d, %d, %d]",
+            formatDoorInfo(), valueName, engineSide, upDown, openDirection, time, tickRate, xMin, yMin, zMin, xMax, yMax, zMax
+        ));
+    }
+
+    /**
+     * Asserts that a given value is not null.
+     * <p>
+     * If it is, an {@link IllegalStateException} is thrown with a message containing the door's information.
+     *
+     * @param value The value to check.
+     * @param valueName The name of the value to check. This will be used in the exception message if the value is 0.
+     *
+     * @param <T> The type of the value.
+     *
+     * @return The value, if it is not 0.
+     *
+     * @throws IllegalStateException If the value is 0.
+     */
+    private <T> T assertNotNull(T value, String valueName)
+        throws IllegalStateException
+    {
+        if (value != null)
+            return value;
+
+        throw new IllegalArgumentException(String.format(
+            "[%s] %s cannot be null! EngineSide: %s, upDown: %s, openDirection: %s, time: %.2f, tickRate: %d, Coordinates: [%d, %d, %d] - [%d, %d, %d]",
+            formatDoorInfo(), valueName, engineSide, upDown, openDirection, time, tickRate, xMin, yMin, zMin, xMax, yMax, zMax
+        ));
     }
 }

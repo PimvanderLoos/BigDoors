@@ -192,7 +192,15 @@ public interface Opener
      */
     static DoorOpenResult processFutureResult(CompletableFuture<DoorOpenResult> result)
     {
-        return result.getNow(DoorOpenResult.ERROR);
+        try
+        {
+            return result.getNow(DoorOpenResult.ERROR);
+        }
+        catch (Exception e)
+        {
+            BigDoors.get().getMyLogger().log("Failed to process DoorOpenResult", e);
+            return DoorOpenResult.ERROR;
+        }
     }
 
     /**

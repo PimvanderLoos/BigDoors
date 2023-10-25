@@ -24,22 +24,27 @@ import java.util.List;
 
 public class SlidingMover extends BlockMover
 {
-    private FallingBlockFactory fabf;
-    private Door door;
-    private boolean NS;
-    private double time;
-    private World world;
-    private BigDoors plugin;
-    private int tickRate;
-    private int moveX, moveZ;
-    private int blocksToMove;
-    private RotateDirection openDirection;
-    private int xMin, xMax, yMin;
-    private int yMax, zMin, zMax;
-    private int endCount;
-    private BukkitRunnable animationRunnable;
+    private final FallingBlockFactory fabf;
+    private final Door door;
+    private final boolean NS;
+    private final double time;
+    private final World world;
+    private final BigDoors plugin;
+    private final int tickRate;
+    private final int moveX;
+    private final int moveZ;
+    private final int blocksToMove;
+    private final RotateDirection openDirection;
+    private final int xMin;
+    private final int yMin;
+    private final int zMin;
+    private final int xMax;
+    private final int yMax;
+    private final int zMax;
 
-    @SuppressWarnings("deprecation")
+    private volatile int endCount;
+    private volatile BukkitRunnable animationRunnable;
+
     public SlidingMover(BigDoors plugin, World world, double time, Door door, boolean instantOpen, int blocksToMove,
         RotateDirection openDirection, double multiplier)
     {
@@ -70,11 +75,12 @@ public class SlidingMover extends BlockMover
         pcMult = pcMult == 0.0 ? 1.0 : pcMult;
         int maxSpeed = 6;
 
+        double timeTmp = 0.0;
         // If the time isn't default, calculate speed.
         if (time != 0.0)
         {
             speed = Math.abs(blocksToMove) / time;
-            this.time = time;
+            timeTmp = time;
         }
 
         // If the non-default exceeds the max-speed or isn't set, calculate default
@@ -83,15 +89,17 @@ public class SlidingMover extends BlockMover
         {
             speed = 1.4 * pcMult;
             speed = speed > maxSpeed ? maxSpeed : speed;
-            this.time = Math.abs(blocksToMove) / speed;
+            timeTmp = Math.abs(blocksToMove) / speed;
         }
+        this.time = timeTmp;
+
         tickRate = Util.tickRateFromSpeed(speed);
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
     {
-        savedBlocks.ensureCapacity(door.getBlockCount());
+        final List<MyBlockData> savedBlocks = new ArrayList<>(door.getBlockCount());
 
         // This will reserve a bit too much memory, but not enough to worry about.
         final List<NMSBlock> edges =
@@ -147,7 +155,7 @@ public class SlidingMover extends BlockMover
             edges.forEach(block -> block.deleteOriginalBlock(true));
         }
 
-        savedBlocks.trimToSize();
+        registerSavedBlocks(savedBlocks);
 
         if (!instantOpen)
             rotateEntities();
@@ -156,16 +164,22 @@ public class SlidingMover extends BlockMover
     }
 
     @Override
-    public synchronized void cancel(boolean onDisable)
+    public synchronized void cancel0(boolean onDisable)
     {
         if (this.animationRunnable == null)
+        {
+            plugin.getMyLogger().logMessageToLogFile(String.format(
+                "[%s] animationRunnable is null, not cancelling anything!",
+                formatDoorInfo()
+            ));
             return;
+        }
         this.animationRunnable.cancel();
         this.putBlocks(onDisable);
     }
 
     @Override
-    public synchronized void putBlocks(boolean onDisable)
+    public synchronized void putBlocks0(boolean onDisable)
     {
         super.putBlocks(onDisable, time, endCount,
                         (__, x, y, z) -> getNewLocation(x, y, z),
@@ -184,15 +198,27 @@ public class SlidingMover extends BlockMover
 
         animationRunnable = new BukkitRunnable()
         {
-            double counter = 0;
-            double step = ((double) blocksToMove) / ((double) endCount);
-            double stepSum = 0;
-            int totalTicks = (int) (endCount * 1.1);
-            long startTime = System.nanoTime();
-            long lastTime;
-            long currentTime = System.nanoTime();
-            MyBlockData firstBlockData = savedBlocks.stream().filter(block -> !block.getMat().equals(Material.AIR))
-                .findFirst().orElse(null);
+            final double step = ((double) blocksToMove) / ((double) endCount);
+            final int totalTicks = (int) (endCount * 1.1);
+            final MyBlockData firstBlockData =
+                getSavedBlocks().stream().filter(block -> !block.getMat().equals(Material.AIR)).findFirst().orElse(null);
+
+            volatile double counter = 0;
+            volatile double stepSum = 0;
+            volatile long startTime = System.nanoTime();
+            volatile long lastTime;
+            volatile long currentTime = System.nanoTime();
+
+            @Override
+            public synchronized void cancel()
+                throws IllegalStateException
+            {
+                plugin.getMyLogger().logMessageToLogFile(String.format(
+                    "[%s] Canceling animationRunnable",
+                    formatDoorInfo()
+                ));
+                super.cancel();
+            }
 
             @Override
             public void run()
@@ -203,20 +229,23 @@ public class SlidingMover extends BlockMover
                 lastTime = currentTime;
                 currentTime = System.nanoTime();
                 long msSinceStart = (currentTime - startTime) / 1000000;
-                if (!plugin.getCommander().isPaused())
-                    counter = msSinceStart / (50 * tickRate);
+                if (plugin.getCommander().isPaused())
+                {
+                    final long oldStartTime = startTime;
+                    startTime = oldStartTime + currentTime - lastTime;
+                }
                 else
-                    startTime += currentTime - lastTime;
+                    counter = msSinceStart / (50 * tickRate);
 
                 if (counter < endCount - 1)
                     stepSum = step * counter;
                 else
                     stepSum = blocksToMove;
 
-                if (!plugin.getCommander().canGo() || counter > totalTicks || firstBlockData == null)
+                if (counter > totalTicks || firstBlockData == null)
                 {
                     Util.playSound(door.getEngine(), "bd.thud", 2f, 0.15f);
-                    for (MyBlockData savedBlock : savedBlocks)
+                    for (MyBlockData savedBlock : getSavedBlocks())
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
                     Bukkit.getScheduler().callSyncMethod(plugin, () ->
@@ -238,12 +267,16 @@ public class SlidingMover extends BlockMover
                     Vector vec = loc.toVector().subtract(firstBlockData.getFBlock().getLocation().toVector());
                     vec.multiply(0.101);
 
-                    for (MyBlockData block : savedBlocks)
+                    for (MyBlockData block : getSavedBlocks())
                         if (!block.getMat().equals(Material.AIR))
                             block.getFBlock().setVelocity(vec);
                 }
             }
         };
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%s] Scheduling animationRunnable",
+            formatDoorInfo()
+        ));
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 
@@ -264,6 +297,18 @@ public class SlidingMover extends BlockMover
 
         Location newMax = new Location(door.getWorld(), xMax + movedX, yMax, zMax + movedZ);
         Location newMin = new Location(door.getWorld(), xMin + movedX, yMin, zMin + movedZ);
+
+        final Location oldMin = door.getMinimum();
+        final Location oldMax = door.getMaximum();
+        BigDoors.get().getMyLogger().logMessageToLogFile(String.format(
+            "[%3d - %-12s] Updating coords from [%d, %d, %d] - [%d, %d, %d] to [%d, %d, %d] - [%d, %d, %d] (shadow: %b, moved: %d)",
+            door.getDoorUID(), door.getType(),
+            oldMin.getBlockX(), oldMin.getBlockY(), oldMin.getBlockZ(),
+            oldMax.getBlockX(), oldMax.getBlockY(), oldMax.getBlockZ(),
+            newMin.getBlockX(), newMin.getBlockY(), newMin.getBlockZ(),
+            newMax.getBlockX(), newMax.getBlockY(), newMax.getBlockZ(),
+            shadow, moved
+        ));
 
         door.setMaximum(newMax);
         door.setMinimum(newMin);

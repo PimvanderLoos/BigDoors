@@ -25,6 +25,7 @@ import nl.pim16aap2.bigDoors.waitForCommand.WaitForSetBlocksToMove;
 import nl.pim16aap2.bigDoors.waitForCommand.WaitForSetTime;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -39,6 +40,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -411,8 +413,7 @@ public class CommandHandler implements CommandExecutor
                 case "disabletoggle":
                     if (player != null && !player.hasPermission("bigdoors.admin.disabletoggle"))
                         break;
-                    plugin.getCommander().setCanGo(false);
-                    plugin.getCommander().stopMovers(false);
+                    plugin.disableAnimations();
                     if (player != null)
                         plugin.getMyLogger().returnToSender(sender, Level.INFO, ChatColor.GREEN,
                                                             plugin.getMessages().getString("COMMAND.ToggleDisabled"));
@@ -424,7 +425,7 @@ public class CommandHandler implements CommandExecutor
                 case "enabletoggle":
                     if (player != null && !player.hasPermission("bigdoors.admin.disabletoggle"))
                         break;
-                    plugin.getCommander().setCanGo(true);
+                    plugin.enableAnimations();
                     if (player != null)
                         plugin.getMyLogger().returnToSender(sender, Level.INFO, ChatColor.GREEN,
                                                             plugin.getMessages().getString("COMMAND.ToggleEnabled"));
@@ -1105,85 +1106,38 @@ public class CommandHandler implements CommandExecutor
             Util.messagePlayer(player, ChatColor.GREEN, "Door deleted!");
     }
 
-    // Used for various debugging purposes (you don't say!).
     public void doorDebug(Player player, String[] args)
     {
-//        UUID pim = UUID.fromString("27e6c556-4f30-32bf-a005-c80a46ddd935");
-//        int maxSize = plugin.getVaultManager().getMaxDoorSizeForPlayer(Bukkit.getWorld("world"), pim);
-//        System.out.println("Max door size for Pim is: " + maxSize);
-//
-//        if (args.length > 0)
-//        {
-//            String node = args[0];
-//            int highest = plugin.getVaultManager().getHighestPermissionSuffix(Bukkit.getWorld("world"), Bukkit.getOfflinePlayer(pim), node);
-//            System.out.println("Highest value of \"" + node + "\" for Pim is: " + highest);
-//        }
-//
-//        if (player != null)
-//        {
-//            maxSize = plugin.getVaultManager().getMaxDoorSizeForPlayer(player.getWorld(), pim);
-//            System.out.println("ONLINE: Max door size for Pim is: " + maxSize);
-//
-//            if (args.length > 0)
-//            {
-//                String node = args[0];
-//                int highest = plugin.getVaultManager().getHighestPermissionSuffix(player.getWorld(), player, node);
-//                System.out.println("Highest value of \"" + node + "\" for Pim is: " + highest);
-//            }
-//        }
+        if (args.length == 0)
+        {
+            player.sendMessage("Please provide a door UID!");
+            return;
+        }
+        final OptionalInt uidOpt = Util.parseInt(args[0]);
+        if (!uidOpt.isPresent())
+        {
+            player.sendMessage("Invalid door UID!");
+            return;
+        }
+        final long doorUID = uidOpt.getAsInt();
+        final Door door = plugin.getCommander().getDoor(null, doorUID);
+        if (door == null)
+        {
+            player.sendMessage("No door found by that UID!");
+            return;
+        }
 
-//        plugin.getUpdateManager().checkForUpdates();
-//
-//        new BukkitRunnable()
-//        {
-//            @Override
-//            public void run()
-//            {
-//                player.sendMessage(plugin.getLoginMessage());
-//            }
-//        }.runTaskLater(plugin, 20L);
+        final Location min = door.getMinimum();
+        final Location max = door.getMaximum();
+        plugin.getMyLogger().logMessageToLogFile(String.format(
+            "[%3d - %-12s] Received debug report for this door. Current coordinates: [%d, %d, %d] - [%d, %d, %d]. Is open: %b, openDir: %s",
+            door.getDoorUID(), door.getType(),
+            min.getBlockX(), min.getBlockY(), min.getBlockZ(),
+            max.getBlockX(), max.getBlockY(), max.getBlockZ(),
+            door.isOpen(), door.getOpenDir()
+        ));
 
-//        Location loc = new Location(player.getWorld(), 128, 75, 140);
-//        long toSecond = 1000000000L;
-//        long secondstToRun = 10L;
-//        new BukkitRunnable()
-//        {
-//            long startTime = System.nanoTime();
-//            long count = 0;
-//            long toggles = 0;
-//            long seconds = 0;
-//            long lastDebugSecond = 0;
-//
-//            @Override
-//            public void run()
-//            {
-//                long currentTime = System.nanoTime();
-//                long delta = currentTime - startTime;
-//                seconds = delta / toSecond;
-//
-//                if (seconds >= lastDebugSecond)
-//                {
-//                    String message = String.format("Activated the powerblock %d times in %d ns (%d s). This resulted in %d toggles.",
-//                                                   count, delta, seconds, toggles);
-//                    System.out.println(message);
-//                    if (seconds == secondstToRun)
-//                        Bukkit.broadcastMessage(message);
-//                    ++lastDebugSecond;
-//                }
-//
-//                if (seconds >= 10)
-//                    cancel();
-//                else
-//                {
-//                    for (int i = 0; i < 100; ++i)
-//                    {
-//                        if (plugin.getRedstoneHandler().checkDoor(loc))
-//                            ++toggles;
-//                        ++count;
-//                    }
-//                }
-//            }
-//        }.runTaskTimer(plugin, 0, 1);
+        player.sendMessage("Door: " + door.getDoorUID() + " (" + door.getName() + ") has been reported!");
     }
 
     private String helpFormat(String command, String explanation)
