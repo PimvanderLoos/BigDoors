@@ -10,6 +10,7 @@ import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
 import nl.pim16aap2.bigDoors.util.Vector2D;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -131,6 +132,7 @@ public class PortcullisOpener implements Opener
         if (chunkLoadResult == ChunkLoadResult.REQUIRED_LOAD)
             instantOpen = true;
 
+        plugin.getMyLogger().logMessageToLogFile(""); // Empty line for readability.
         plugin.getMyLogger().logMessageToLogFileForDoor(
             door,
             String.format(
@@ -216,12 +218,59 @@ public class PortcullisOpener implements Opener
         return DoorOpenResult.SUCCESS;
     }
 
-    private int getBlocksInDir(Door door, RotateDirection upDown)
+    /**
+     * Checks if a block that obstructs the portcullis corresponds to a block in the portcullis that can be filled in.
+     *
+     * @param door
+     *     The portcullis to check.
+     * @param xAxis
+     *     The x coordinate of the block to check.
+     * @param yAxis
+     *     The y coordinate of the block to check.
+     * @param zAxis
+     *     The z coordinate of the block to check.
+     * @param delta
+     *     The direction to check in. -1 for down, 1 for up.
+     * @return True if there is an empty gap of air in the portcullis that can be filled in, otherwise false.
+     */
+    private boolean hasGapForBlock(
+        Door door,
+        int xAxis,
+        int yAxis,
+        int zAxis,
+        int targetBlocksToMove,
+        int delta)
     {
-        plugin.getMyLogger().logMessageToLogFileForDoor(
-            door, "Trying to get blocks in direction " + upDown.name() +
-                ". Target: " + (door.getBlocksToMove() == 0 ? "default" : door.getBlocksToMove()));
+        final int checkYAxis = yAxis - targetBlocksToMove * delta;
 
+        if (!door.isInsideDoor(xAxis, checkYAxis, zAxis))
+        {
+            final Location min = door.getMinimum();
+            final Location max = door.getMaximum();
+
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                "Tried to look for a gap at [%d, %d, %d], but this is not inside the portcullis!" +
+                    " The portcullis is at [%d, %d, %d] - [%d, %d, %d].",
+                xAxis, checkYAxis, zAxis,
+                min.getBlockX(), min.getBlockY(), min.getBlockZ(),
+                max.getBlockX(), max.getBlockY(), max.getBlockZ()
+            ));
+
+            return false;
+        }
+
+        final Material blockType = door.getWorld().getBlockAt(xAxis, checkYAxis, zAxis).getType();
+
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Found block of type %s at [%d, %d, %d] in the portcullis. Checking if it can be filled in...",
+            blockType.name(), xAxis, checkYAxis, zAxis
+        ));
+
+        return Util.canOverwriteMaterial(blockType);
+    }
+
+    private int getBlocksInDir(Door door, RotateDirection upDown, boolean allowFillingInGaps)
+    {
         int xMin, xMax, zMin, zMax, yMin, yMax, yLen, blocksUp = 0, delta;
         xMin = door.getMinimum().getBlockX();
         yMin = door.getMinimum().getBlockY();
@@ -254,6 +303,19 @@ public class PortcullisOpener implements Opener
         yAxis = upDown == RotateDirection.DOWN ? yMin - 1 : yMax + 1;
         yGoal = upDown == RotateDirection.DOWN ? yMin - distanceToCheck - 1 : yMax + distanceToCheck + 1;
 
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Trying to find number of blocks to move in direction %s. " +
+                "Provided target: %s, fixed target: %s, delta: %d, yAxis: %d, yGoal: %d",
+            upDown.name(),
+            door.getBlocksToMove() == 0 ? "default" : door.getBlocksToMove(),
+            distanceToCheck,
+            delta,
+            yAxis,
+            yGoal
+        ));
+
+        int resolvedObstructions = 0;
+        int failedObstructions = 0;
         @Nullable Integer returnValue = null;
         while (yAxis != yGoal)
         {
@@ -261,20 +323,45 @@ public class PortcullisOpener implements Opener
                 for (zAxis = zMin; zAxis <= zMax; ++zAxis)
                     if (!Util.canOverwriteMaterial(world.getBlockAt(xAxis, yAxis, zAxis).getType()))
                     {
+                        final boolean canBeResolved;
+                        if (allowFillingInGaps &&
+                            // Check if there is an empty gap of air in the portcullis that can be filled in.
+                            hasGapForBlock(door, xAxis, yAxis, zAxis, distanceToCheck, delta))
+                        {
+                            canBeResolved = true;
+                            resolvedObstructions++;
+                        }
+                        else
+                        {
+                            canBeResolved = false;
+                            failedObstructions++;
+                            if (returnValue == null)
+                                returnValue = blocksUp;
+                        }
+
                         plugin.getMyLogger().logMessageToLogFileForDoor(
                             door, String.format(
-                                "Found obstruction at [%d, %d, %d] in direction %s: %s! Final blocks to move value: %d.",
+                                "Found obstruction at [%d, %d, %d] in direction %s: %s! Can be resolved: %b.",
                                 xAxis, yAxis, zAxis,
                                 upDown.name(),
                                 world.getBlockAt(xAxis, yAxis, zAxis).getType().name(),
-                                (returnValue == null ? blocksUp : returnValue)
+                                canBeResolved
                             ));
-                        if (returnValue == null)
-                            returnValue = blocksUp;
                     }
             yAxis += delta;
             blocksUp += delta;
         }
+        if (resolvedObstructions > 0 || failedObstructions > 0)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                "%sEncountered %d obstruction(s)! Resolved: %d, Failed: %d.",
+                (failedObstructions > 0 ? "WARNING: POTENTIALLY BROKEN PORTCULLIS! " : ""),
+                resolvedObstructions + failedObstructions,
+                resolvedObstructions,
+                failedObstructions
+            ));
+        }
+
         return returnValue == null ? blocksUp : returnValue;
     }
 
@@ -296,11 +383,11 @@ public class PortcullisOpener implements Opener
     {
         RotateDirection openDir = getCurrentDirection(door);
         if (isRotateDirectionValid(openDir))
-            return getBlocksInDir(door, openDir);
+            return getBlocksInDir(door, openDir, true);
         else
         {
-            int blocksUp = getBlocksInDir(door, RotateDirection.UP);
-            int blocksDown = getBlocksInDir(door, RotateDirection.DOWN);
+            int blocksUp = getBlocksInDir(door, RotateDirection.UP, false);
+            int blocksDown = getBlocksInDir(door, RotateDirection.DOWN, false);
             return blocksUp > -1 * blocksDown ? blocksUp : blocksDown;
         }
     }

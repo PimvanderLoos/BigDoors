@@ -77,12 +77,10 @@ public final class Util
 
     public static String formatDoorInfo(@Nullable ILoggableDoor door)
     {
-        if (door == null)
-            return " -1 - ERROR: NULL";
-
         return String.format(
             "%3d - %-12s",
-            door.getDoorUID(), door.getTypeName()
+            door == null ? -1 : door.getDoorUID(),
+            door == null ? "ERROR: NULL" : door.getTypeName()
         );
     }
 

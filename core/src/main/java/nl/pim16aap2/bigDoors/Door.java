@@ -337,4 +337,19 @@ public class Door implements ILoggableDoor
         ret += "blockCount = " + getBlockCount() + ", hash = " + getPowerBlockChunkHash();
         return ret;
     }
+
+    /**
+     * Checks if the given location is inside this door.
+     *
+     * @param xAxis The x coordinate of the location.
+     * @param yAxis The y coordinate of the location.
+     * @param zAxis The z coordinate of the location.
+     * @return True if the given location is inside this door.
+     */
+    public boolean isInsideDoor(int xAxis, int yAxis, int zAxis)
+    {
+        return xAxis >= min.getBlockX() && xAxis <= max.getBlockX() &&
+               yAxis >= min.getBlockY() && yAxis <= max.getBlockY() &&
+               zAxis >= min.getBlockZ() && zAxis <= max.getBlockZ();
+    }
 }
