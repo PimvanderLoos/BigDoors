@@ -19,5 +19,17 @@ public interface CustomCraftFallingBlock
     void setHeadPose(EulerAngle pose);
 
     void setBodyPose(EulerAngle eulerAngle);
+
+    /**
+     * Removes the entity from the world similar to {@link #remove()}.
+     * <p>
+     * This method may be overridden to perform additional actions when the entity is removed.
+     * <p>
+     * This method is 'private' because it should only be called by this plugin.
+     */
+    default void privateRemove()
+    {
+        remove();
+    }
 }
 

@@ -1,12 +1,10 @@
 package nl.pim16aap2.bigDoors.handlers;
 
+import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
-
-import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.moveBlocks.BlockMover;
 
 public class ChunkUnloadHandler implements Listener
 {
@@ -24,6 +22,11 @@ public class ChunkUnloadHandler implements Listener
         // that is being unloaded.
         plugin.getCommander().getBlockMovers()
             .filter(BM -> BM.getDoor().chunkInRange(event.getChunk()))
-            .forEach(blockMover -> blockMover.cancel(false));
+            .forEach(blockMover -> {
+                plugin.getMyLogger().logMessageToLogFileForDoor(
+                    blockMover.getDoor(), "Chunk unload detected while moving door. The animation will be cancelled."
+                );
+                blockMover.cancel(false);
+             });
     }
 }

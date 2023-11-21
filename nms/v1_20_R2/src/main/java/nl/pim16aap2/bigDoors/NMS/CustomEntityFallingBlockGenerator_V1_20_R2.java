@@ -29,10 +29,10 @@ class CustomEntityFallingBlockGenerator_V1_20_R2
         final Constructor<CustomEntityFallingBlock_V1_20_R2> ctor = Objects.requireNonNull(
             getEntityFallingBlockConstructor(), "Redefined CustomEntityFallingBlock constructor cannot be null!");
 
-        return (world, x, y, z, blockData) -> {
+        return (logger, door, world, x, y, z, blockData) -> {
             try
             {
-                return ctor.newInstance(world, x, y, z, blockData);
+                return ctor.newInstance(logger, door, world, x, y, z, blockData);
             }
             catch (Exception e)
             {
@@ -49,6 +49,8 @@ class CustomEntityFallingBlockGenerator_V1_20_R2
             //noinspection unchecked
             return (Constructor<CustomEntityFallingBlock_V1_20_R2>)
                 clz.getConstructor(
+                    nl.pim16aap2.bigDoors.ILogger.class,
+                    nl.pim16aap2.bigDoors.util.ILoggableDoor.class,
                     org.bukkit.World.class,
                     double.class,
                     double.class,

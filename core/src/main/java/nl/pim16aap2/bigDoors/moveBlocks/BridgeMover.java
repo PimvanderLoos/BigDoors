@@ -246,7 +246,7 @@ public class BridgeMover extends BlockMover
                         BlockState bs = vBlock.getState();
                         MaterialData materialData = bs.getData();
 
-                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                         NMSBlock block2 = null;
 
                         int canRotate = 0;
@@ -267,12 +267,12 @@ public class BridgeMover extends BlockMover
                             {
                                 if (canRotate == 6)
                                 {
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                                     block2.rotateBlockUpDown(NS);
                                 }
                                 else if (canRotate == 8 || canRotate == 9)
                                 {
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                                     block2.rotateVerticallyInDirection(openDirection);
                                 }
                                 else
@@ -281,7 +281,7 @@ public class BridgeMover extends BlockMover
                                     BlockState bs2 = b.getState();
                                     bs2.setData(materialData);
                                     bs2.update();
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                                 }
                             }
                         }
@@ -290,7 +290,7 @@ public class BridgeMover extends BlockMover
 
                         CustomCraftFallingBlock fBlock = null;
                         if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat, door);
 
                         savedBlocks.add(new MyBlockData(mat, matByte, fBlock, radius, materialData,
                                                         block2 == null ? block : block2, canRotate, startLocation));
@@ -345,10 +345,7 @@ public class BridgeMover extends BlockMover
     {
         if (this.animationRunnable == null)
         {
-            plugin.getMyLogger().logMessageToLogFile(String.format(
-                "[%s] animationRunnable is null, not cancelling anything!",
-                formatDoorInfo()
-            ));
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "AnimationRunnable is null, not cancelling anything!");
             return;
         }
         this.animationRunnable.cancel();
@@ -386,10 +383,7 @@ public class BridgeMover extends BlockMover
             public synchronized void cancel()
                 throws IllegalStateException
             {
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s] Canceling animationRunnable",
-                    formatDoorInfo()
-                ));
+                plugin.getMyLogger().logMessageToLogFileForDoor(door, "Canceling animationRunnable");
                 super.cancel();
             }
 
@@ -450,9 +444,9 @@ public class BridgeMover extends BlockMover
                                     CustomCraftFallingBlock fBlock;
                                     // Because the block in savedBlocks is already rotated where applicable, just
                                     // use that block now.
-                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
+                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat, door);
 
-                                    block.getFBlock().remove();
+                                    block.getFBlock().privateRemove();
                                     block.setFBlock(fBlock);
 
                                     block.getFBlock().setVelocity(veloc);
@@ -490,10 +484,7 @@ public class BridgeMover extends BlockMover
                 }
             }
         };
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Scheduling animationRunnable",
-            formatDoorInfo()
-        ));
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "Scheduling animationRunnable");
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 
@@ -687,7 +678,7 @@ public class BridgeMover extends BlockMover
 
         throw new IllegalArgumentException(String.format(
             "[%s] %s cannot be 0! EngineSide: %s, upDown: %s, openDirection: %s, time: %.2f, tickRate: %d, Coordinates: [%d, %d, %d] - [%d, %d, %d]",
-            formatDoorInfo(), valueName, engineSide, upDown, openDirection, time, tickRate, xMin, yMin, zMin, xMax, yMax, zMax
+            Util.formatDoorInfo(door), valueName, engineSide, upDown, openDirection, time, tickRate, xMin, yMin, zMin, xMax, yMax, zMax
         ));
     }
 
@@ -713,7 +704,7 @@ public class BridgeMover extends BlockMover
 
         throw new IllegalArgumentException(String.format(
             "[%s] %s cannot be null! EngineSide: %s, upDown: %s, openDirection: %s, time: %.2f, tickRate: %d, Coordinates: [%d, %d, %d] - [%d, %d, %d]",
-            formatDoorInfo(), valueName, engineSide, upDown, openDirection, time, tickRate, xMin, yMin, zMin, xMax, yMax, zMax
+            Util.formatDoorInfo(door), valueName, engineSide, upDown, openDirection, time, tickRate, xMin, yMin, zMin, xMax, yMax, zMax
         ));
     }
 }

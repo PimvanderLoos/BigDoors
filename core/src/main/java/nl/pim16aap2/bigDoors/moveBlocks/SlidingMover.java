@@ -123,14 +123,14 @@ public class SlidingMover extends BlockMover
                         byte matData = vBlock.getData();
                         BlockState bs = vBlock.getState();
                         MaterialData materialData = bs.getData();
-                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
 
                         if (!BigDoors.isOnFlattenedVersion())
                             vBlock.setType(Material.AIR);
 
                         CustomCraftFallingBlock fBlock = null;
                         if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat, door);
                         savedBlocks
                             .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
 
@@ -168,10 +168,7 @@ public class SlidingMover extends BlockMover
     {
         if (this.animationRunnable == null)
         {
-            plugin.getMyLogger().logMessageToLogFile(String.format(
-                "[%s] animationRunnable is null, not cancelling anything!",
-                formatDoorInfo()
-            ));
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "AnimationRunnable is null, not cancelling anything!");
             return;
         }
         this.animationRunnable.cancel();
@@ -213,10 +210,7 @@ public class SlidingMover extends BlockMover
             public synchronized void cancel()
                 throws IllegalStateException
             {
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s] Canceling animationRunnable",
-                    formatDoorInfo()
-                ));
+                plugin.getMyLogger().logMessageToLogFileForDoor(door, "Canceling animationRunnable");
                 super.cancel();
             }
 
@@ -273,10 +267,7 @@ public class SlidingMover extends BlockMover
                 }
             }
         };
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Scheduling animationRunnable",
-            formatDoorInfo()
-        ));
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "Scheduling animationRunnable");
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 

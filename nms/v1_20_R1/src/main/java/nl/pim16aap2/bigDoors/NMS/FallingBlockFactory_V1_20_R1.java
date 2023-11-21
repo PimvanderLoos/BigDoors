@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPosition;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.BlockBase.Info;
 import net.minecraft.world.level.block.state.IBlockData;
+import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +22,12 @@ class FallingBlockFactory_V1_20_R1 implements FallingBlockFactory
     }
 
     @Override
-    public CustomCraftFallingBlock fallingBlockFactory(Location loc, NMSBlock block, byte matData, Material mat)
+    public CustomCraftFallingBlock fallingBlockFactory(
+        Location loc,
+        NMSBlock block,
+        byte matData,
+        Material mat,
+        ILoggableDoor door)
     {
         final IBlockData blockData = ((NMSBlock_V1_20_R1) block).getMyBlockData();
         final CustomEntityFallingBlock_V1_20_R1 fBlockNMS
@@ -35,7 +41,7 @@ class FallingBlockFactory_V1_20_R1 implements FallingBlockFactory
     }
 
     @Override
-    public NMSBlock nmsBlockFactory(World world, int x, int y, int z)
+    public NMSBlock nmsBlockFactory(World world, int x, int y, int z, ILoggableDoor door)
     {
         final Info blockInfo =
             Info.a((BlockBase) ((CraftWorld) world).getHandle().a_(new BlockPosition(x, y, z)).b());

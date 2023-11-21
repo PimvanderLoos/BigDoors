@@ -74,10 +74,7 @@ public class Commander
         while (it.hasNext())
         {
             final BlockMover mover = it.next();
-            plugin.getMyLogger().logMessageToLogFile(String.format(
-                "[%s] Commander is cancelling mover",
-                mover.formatDoorInfo()
-            ));
+            plugin.getMyLogger().logMessageToLogFileForDoor(mover.getDoor(), "Commander is cancelling mover");
             mover.cancel(onDisable);
         }
     }
@@ -124,7 +121,7 @@ public class Commander
         if (!animationsAllowed)
             throw new IllegalStateException(String.format(
                 "[%s] Failed to add block mover: animations are not allowed at this time.",
-                mover.formatDoorInfo()
+                Util.formatDoorInfo(mover.getDoor())
             ));
         busyDoors.replace(mover.getDoorUID(), mover);
     }
@@ -541,15 +538,6 @@ public class Commander
         }
 
         @Override
-        public String formatDoorInfo()
-        {
-            return String.format(
-                "%3d - %-11s",
-                getDoorUID(), "DUMMY_DOOR"
-            );
-        }
-
-        @Override
         public synchronized void cancel0(boolean onDisable)
         {
         }
@@ -568,7 +556,15 @@ public class Commander
         @Override
         public Door getDoor()
         {
-            return null;
+            // Return a new subclass of Door
+            return new Door(-1)
+            {
+                @Override
+                public String getTypeName()
+                {
+                    return null;
+                }
+            };
         }
     }
 
@@ -580,7 +576,7 @@ public class Commander
             {
                 final BlockMover result = super.putIfAbsent(key, value);
                 plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%3d - %-12s]: Attempting to register door as busy if not already busy; Was already registered with: %s",
+                    "[%3d - %-12s] Attempting to register door as busy if not already busy; Was already registered with: %s",
                     key, "___________", result == null ? "null" : result.getClass().getName()
                 ));
                 return result;
@@ -590,9 +586,9 @@ public class Commander
             public BlockMover replace(@NotNull Long key, @NotNull BlockMover value)
             {
                 final BlockMover removed =  super.replace(key, value);
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s]: Replacing existing mover of type: '%s' with one of type: '%s'",
-                    value.formatDoorInfo(), removed == null ? "null" : removed.getClass().getName(), value.getClass().getName()
+                plugin.getMyLogger().logMessageToLogFileForDoor(value.getDoor(), String.format(
+                    "Replacing existing mover of type: '%s' with one of type: '%s'",
+                    removed == null ? "null" : removed.getClass().getName(), value.getClass().getName()
                 ));
                 return removed;
             }
@@ -600,9 +596,9 @@ public class Commander
             @Override
             public @Nullable BlockMover put(Long key, BlockMover value)
             {
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s]: Registering door as busy with mover type: %s",
-                    value.formatDoorInfo(), value.getClass().getName()
+                plugin.getMyLogger().logMessageToLogFileForDoor(value.getDoor(), String.format(
+                    "Registering door as busy with mover type: %s",
+                    value.getClass().getName()
                 ));
                 return super.put(key, value);
             }
@@ -621,7 +617,7 @@ public class Commander
             public void putAll(@NotNull Map<? extends Long, ? extends BlockMover> m)
             {
                 final StringBuilder sb = new StringBuilder();
-                m.forEach((k, v) -> sb.append(v == null ? k : v.formatDoorInfo()).append(", "));
+                m.forEach((k, v) -> sb.append(v == null ? k : Util.formatDoorInfo(v.getDoor())).append(", "));
                 if (sb.length() > 2)
                     sb.setLength(sb.length() - 2);
                 plugin.getMyLogger().logMessageToLogFile("Registering movers as busy: " + sb);

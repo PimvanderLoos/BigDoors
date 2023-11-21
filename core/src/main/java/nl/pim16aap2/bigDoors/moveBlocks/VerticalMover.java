@@ -41,10 +41,23 @@ public class VerticalMover extends BlockMover
 
     private volatile BukkitRunnable animationRunnable;
 
-    public VerticalMover(BigDoors plugin, World world, double time, Door door, boolean instantOpen, int blocksToMove,
-        double multiplier)
+    public VerticalMover(
+        final BigDoors plugin,
+        final World world,
+        final double targetTime,
+        final Door door,
+        final boolean instantOpen,
+        final int blocksToMove,
+        final double multiplier)
     {
         super(plugin, door, instantOpen);
+
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "Creating VerticalMover: " +
+            "instantOpen: " + instantOpen +
+            ", blocksToMove: " + blocksToMove +
+            ", multiplier: " + multiplier +
+            ", time: " + targetTime);
+
         this.plugin = plugin;
         this.world = world;
         this.door = door;
@@ -63,26 +76,35 @@ public class VerticalMover extends BlockMover
         pcMult = pcMult == 0.0 ? 1.0 : pcMult;
         int maxSpeed = 6;
 
-        double timeTmp = 0.0;
-        // If the time isn't default, calculate speed.
-        if (time != 0.0)
-        {
-            speed = Math.abs(blocksToMove) / time;
-            timeTmp = time;
-        }
+        final boolean timeIsDefault = Math.abs(targetTime) < 0.001 || Math.abs(targetTime - 1.0) < 0.001;
 
-        // If the non-default exceeds the max-speed or isn't set, calculate default speed.
-        if (time == 0.0 || speed > maxSpeed)
+        double timeTmp;
+        // If the time isn't default, calculate speed.
+        if (!timeIsDefault)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "Time isn't default, calculating speed...");
+            speed = Math.abs(blocksToMove) / targetTime;
+            timeTmp = targetTime;
+        }
+        else
         {
             speed = (blocksToMove < 0 ? 1.7 : 0.8) * pcMult;
             speed = speed > maxSpeed ? maxSpeed : speed;
+            timeTmp = Math.abs(blocksToMove) / speed;
+        }
+
+        if (speed > maxSpeed)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "Speed (" + speed + ") exceeds maxSpeed (" + maxSpeed + "), setting to maxSpeed...");
+            speed = maxSpeed;
             timeTmp = Math.abs(blocksToMove) / speed;
         }
         this.time = timeTmp;
 
         tickRate = Util.tickRateFromSpeed(speed);
 
-        endCount = (int) (20.0f / tickRate * time);
+        // tickrate = 1, time = 7.5. endCount = 20 * 7.5 = 150. Why does the endCount result in 10?
+        endCount = (int) Math.ceil(Math.max(10, (20.0 / tickRate) * time));
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
     }
@@ -113,14 +135,14 @@ public class VerticalMover extends BlockMover
                         byte matData = vBlock.getData();
                         BlockState bs = vBlock.getState();
                         MaterialData materialData = bs.getData();
-                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
 
                         if (!BigDoors.isOnFlattenedVersion())
                             vBlock.setType(Material.AIR);
 
                         CustomCraftFallingBlock fBlock = null;
                         if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat, door);
                         savedBlocks
                             .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
 
@@ -158,10 +180,7 @@ public class VerticalMover extends BlockMover
     {
         if (this.animationRunnable == null)
         {
-            plugin.getMyLogger().logMessageToLogFile(String.format(
-                "[%s] animationRunnable is null, not cancelling anything!",
-                formatDoorInfo()
-            ));
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "AnimationRunnable is null, not cancelling anything!");
             return;
         }
         this.animationRunnable.cancel();
@@ -184,13 +203,22 @@ public class VerticalMover extends BlockMover
     // Method that takes care of the rotation aspect.
     private void rotateEntities()
     {
+        final double step = (blocksToMove) / ((double) endCount);
+        final int totalTicks = (int) (endCount * 1.1);
+        final MyBlockData firstBlockData =
+            getSavedBlocks().stream().filter(block -> !block.getMat().equals(Material.AIR)).findFirst().orElse(null);
+
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Animating entities! Step: %.2f, totalTicks: %d, time: %.2f, blocks to move: %d, endCount: %d",
+            step,
+            totalTicks,
+            time,
+            blocksToMove,
+            endCount
+        ));
+
         animationRunnable = new BukkitRunnable()
         {
-            final double step = (blocksToMove) / ((double) endCount);
-            final int totalTicks = (int) (endCount * 1.1);
-            final MyBlockData firstBlockData =
-                getSavedBlocks().stream().filter(block -> !block.getMat().equals(Material.AIR)).findFirst().orElse(null);
-
             volatile double counter = 0;
             volatile double stepSum = 0;
             volatile long startTime = System.nanoTime();
@@ -201,10 +229,7 @@ public class VerticalMover extends BlockMover
             public synchronized void cancel()
                 throws IllegalStateException
             {
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s] Canceling animationRunnable",
-                    formatDoorInfo()
-                ));
+                plugin.getMyLogger().logMessageToLogFileForDoor(door, "Canceling animationRunnable");
                 super.cancel();
             }
 
@@ -256,10 +281,7 @@ public class VerticalMover extends BlockMover
                 }
             }
         };
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Scheduling animationRunnable",
-            formatDoorInfo()
-        ));
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "Scheduling animationRunnable");
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 

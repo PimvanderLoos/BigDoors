@@ -4,6 +4,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.google.common.hash.Hashing;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
+import nl.pim16aap2.bigDoors.events.DoorEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -11,8 +12,10 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -70,6 +73,38 @@ public final class Util
     {
         // STAY OUT!
         throw new IllegalAccessError();
+    }
+
+    public static String formatDoorInfo(@Nullable ILoggableDoor door)
+    {
+        if (door == null)
+            return " -1 - ERROR: NULL";
+
+        return String.format(
+            "%3d - %-12s",
+            door.getDoorUID(), door.getTypeName()
+        );
+    }
+
+    /**
+     * Gets a formatted string of all the event listeners for a given event.
+     *
+     * @param event The event to get the listeners for.
+     * @return A formatted string of all the event listeners for a given event.
+     */
+    public static String getFormattedEventListeners(DoorEvent event)
+    {
+        final StringBuilder sb = new StringBuilder();
+        for (final RegisteredListener listener : event.getHandlers().getRegisteredListeners())
+        {
+            final @Nullable Listener pluginListener = listener.getListener();
+            sb.append(" - ")
+              .append(listener.getPlugin().getName())
+              .append(": ")
+              .append(pluginListener == null ? "null" : pluginListener.getClass().getName())
+              .append('\n');
+        }
+        return sb.toString();
     }
 
     public static void processConfig(ConfigLoader configLoader)

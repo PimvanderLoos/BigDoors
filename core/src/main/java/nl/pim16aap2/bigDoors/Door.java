@@ -2,6 +2,7 @@ package nl.pim16aap2.bigDoors;
 
 import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.DoorType;
+import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
 import org.bukkit.Chunk;
@@ -10,7 +11,7 @@ import org.bukkit.World;
 
 import java.util.UUID;
 
-public class Door
+public class Door implements ILoggableDoor
 {
     private Location              min;
     private Location              max;
@@ -91,6 +92,18 @@ public class Door
              type, engineSide, powerBlock, openDir, autoClose, notify);
     }
 
+    /**
+     * Creates a new door with the given doorUID without initializing any of the fields.
+     * <p>
+     * This constructor should only be used in very specific cases where none of the other data is needed.
+     *
+     * @param doorUID The doorUID of the door to create.
+     */
+    protected Door(long doorUID)
+    {
+        this.doorUID = doorUID;
+    }
+
     // ------------------------ SIMPLE GETTERS -------------------- //
     public DoorType getType() throws NullPointerException
     {
@@ -106,6 +119,13 @@ public class Door
     public String getName()             {  return name;          }  // Get the name of the door.
     public World getWorld()             {  return world;         }  // Get the world this door is in.
     public long getDoorUID()            {  return doorUID;       }  // Get doorUID as used in the doors table in the db.
+
+    @Override
+    public String getTypeName()
+    {
+        return type.name();
+    }
+
     public boolean isLocked()           {  return isLocked;      }  // Check if this door is locked or not.
     public boolean isOpen()             {  return isOpen;        }  // Check if this door is in the open or closed state.
     public int getPermission()          {  return permission;    }  // Check permission level of current owner.

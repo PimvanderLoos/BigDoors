@@ -11,6 +11,7 @@ import nl.pim16aap2.bigDoors.util.Util;
 import nl.pim16aap2.bigDoors.util.Vector2D;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -130,6 +131,15 @@ public class PortcullisOpener implements Opener
         if (chunkLoadResult == ChunkLoadResult.REQUIRED_LOAD)
             instantOpen = true;
 
+        plugin.getMyLogger().logMessageToLogFileForDoor(
+            door,
+            String.format(
+                "Trying to open portcullis at coordinates [%d, %d, %d] - [%d, %d, %d] with blocksToMove %d and isOpen %b",
+                door.getMinimum().getBlockX(), door.getMinimum().getBlockY(), door.getMinimum().getBlockZ(),
+                door.getMaximum().getBlockX(), door.getMaximum().getBlockY(), door.getMaximum().getBlockZ(),
+                door.getBlocksToMove(), door.isOpen()
+            ));
+
         // Make sure the doorSize does not exceed the total doorSize.
         // If it does, open the door instantly.
         final int maxDoorSize = getSizeLimit(door);
@@ -151,7 +161,11 @@ public class PortcullisOpener implements Opener
 
         final int blocksToMove = getBlocksToMove(door);
         if (blocksToMove == 0)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(
+                door, "Received invalid blocksToMove value of 0 for portcullis: " + door);
             return CompletableFuture.completedFuture(abort(DoorOpenResult.NODIRECTION, door.getDoorUID()));
+        }
 
         final Location newMin = door.getMinimum().add(0, blocksToMove, 0);
         final Location newMax = door.getMaximum().add(0, blocksToMove, 0);
@@ -160,14 +174,22 @@ public class PortcullisOpener implements Opener
             return CompletableFuture.completedFuture(abort(DoorOpenResult.CANCELLED, door.getDoorUID()));
 
         if (bypassProtectionHooks)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(
+                door, "Bypassing protection hooks for portcullis: " + door.toSimpleString());
             return CompletableFuture.completedFuture(openDoor0(door, blocksToMove, instantOpen, time));
+        }
 
         final boolean instantOpen0 = instantOpen;
         return hasAccessToLocations(door, newMin, newMax).thenCompose(
             hasAccess ->
             {
                 if (!hasAccess)
+                {
+                    plugin.getMyLogger().logMessageToLogFileForDoor(
+                        door, "Player does not have access to portcullis: " + door.toSimpleString());
                     return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
+                }
                 return Util.runSync(() -> openDoor0(door, blocksToMove, instantOpen0, time),
                                     1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
             }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
@@ -186,6 +208,7 @@ public class PortcullisOpener implements Opener
             plugin.getCommander().updateDoorOpenDirection(door.getDoorUID(), openDirection);
         }
 
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "Starting portcullis animation!");
         plugin.getCommander()
               .addBlockMover(new VerticalMover(plugin, door.getWorld(), time, door, instantOpen, blocksToMove,
                                                plugin.getConfigLoader().pcMultiplier()));
@@ -195,6 +218,10 @@ public class PortcullisOpener implements Opener
 
     private int getBlocksInDir(Door door, RotateDirection upDown)
     {
+        plugin.getMyLogger().logMessageToLogFileForDoor(
+            door, "Trying to get blocks in direction " + upDown.name() +
+                ". Target: " + (door.getBlocksToMove() == 0 ? "default" : door.getBlocksToMove()));
+
         int xMin, xMax, zMin, zMax, yMin, yMax, yLen, blocksUp = 0, delta;
         xMin = door.getMinimum().getBlockX();
         yMin = door.getMinimum().getBlockY();
@@ -210,7 +237,16 @@ public class PortcullisOpener implements Opener
 
         final int distanceToCheck = Util.minPositive(blocksToMove, blocksToMoveLimit, distanceToWorldLimit);
         if (distanceToCheck <= 0)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(
+                door, "Distance to check is 0 or less (" + distanceToCheck + ")" +
+                    ": blocksToMoveLimit = " + blocksToMoveLimit +
+                    ", distanceToWorldLimit = " + distanceToWorldLimit +
+                    ", blocksToMove = " + blocksToMove +
+                    ". Returning a blocks to move value of 0 in direction " + upDown.name() + "."
+            );
             return 0;
+        }
 
         int xAxis, yAxis, zAxis, yGoal;
         World world = door.getWorld();
@@ -218,16 +254,28 @@ public class PortcullisOpener implements Opener
         yAxis = upDown == RotateDirection.DOWN ? yMin - 1 : yMax + 1;
         yGoal = upDown == RotateDirection.DOWN ? yMin - distanceToCheck - 1 : yMax + distanceToCheck + 1;
 
+        @Nullable Integer returnValue = null;
         while (yAxis != yGoal)
         {
             for (xAxis = xMin; xAxis <= xMax; ++xAxis)
                 for (zAxis = zMin; zAxis <= zMax; ++zAxis)
                     if (!Util.canOverwriteMaterial(world.getBlockAt(xAxis, yAxis, zAxis).getType()))
-                        return blocksUp;
+                    {
+                        plugin.getMyLogger().logMessageToLogFileForDoor(
+                            door, String.format(
+                                "Found obstruction at [%d, %d, %d] in direction %s: %s! Final blocks to move value: %d.",
+                                xAxis, yAxis, zAxis,
+                                upDown.name(),
+                                world.getBlockAt(xAxis, yAxis, zAxis).getType().name(),
+                                (returnValue == null ? blocksUp : returnValue)
+                            ));
+                        if (returnValue == null)
+                            returnValue = blocksUp;
+                    }
             yAxis += delta;
             blocksUp += delta;
         }
-        return blocksUp;
+        return returnValue == null ? blocksUp : returnValue;
     }
 
     private RotateDirection getCurrentDirection(Door door)

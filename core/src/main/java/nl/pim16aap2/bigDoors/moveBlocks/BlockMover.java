@@ -50,9 +50,9 @@ public abstract class BlockMover
         if (door == null)
             return;
 
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Created new BlockMover; instantOpen: %s",
-            formatDoorInfo(), instantOpen
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Created new BlockMover; instantOpen: %s",
+            instantOpen
         ));
 
         plugin.getAutoCloseScheduler().cancelTimer(door.getDoorUID());
@@ -84,9 +84,9 @@ public abstract class BlockMover
         if (!Util.isPosInCuboid(powerBlockLoc, min.clone().add(-1, -1, -1), max.clone().add(1, 1, 1)))
             return;
 
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Preprocessing blocks; Powerblock outside door; powerBlockLoc: %s, min: %s, max: %s",
-            formatDoorInfo(), powerBlockLoc, min, max
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Preprocessing blocks; Powerblock outside door; powerBlockLoc: %s, min: %s, max: %s",
+            powerBlockLoc, min, max
         ));
 
         for (MyBlockFace blockFace : MyBlockFace.getValues())
@@ -100,9 +100,9 @@ public abstract class BlockMover
             final Block block = newLocation.getBlock();
             if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
             {
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s] Preprocessing blocks; Block at [%d, %d, %d] is a piston; breaking it",
-                    formatDoorInfo(), newLocation.getBlockX(), newLocation.getBlockY(), newLocation.getBlockZ()
+                plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                    "Preprocessing blocks; Block at [%d, %d, %d] is a piston; breaking it",
+                    newLocation.getBlockX(), newLocation.getBlockY(), newLocation.getBlockZ()
                 ));
                 Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, block::breakNaturally, 1L);
             }
@@ -116,32 +116,21 @@ public abstract class BlockMover
                 powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), itemFrame.getItem());
                 powerBlockLoc.getWorld().dropItemNaturally(itemFrame.getLocation(), XMaterial.ITEM_FRAME.parseItem());
                 itemFrame.remove();
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s] Preprocessing blocks; Removed item frame at [%d, %d, %d]",
-                    formatDoorInfo(), itemFrame.getLocation().getBlockX(), itemFrame.getLocation().getBlockY(), itemFrame.getLocation().getBlockZ()
+                plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                    "Preprocessing blocks; Removed item frame at [%d, %d, %d]",
+                    itemFrame.getLocation().getBlockX(), itemFrame.getLocation().getBlockY(), itemFrame.getLocation().getBlockZ()
                 ));
             }
         }
-    }
-
-    public String formatDoorInfo()
-    {
-        if (door == null)
-            return " -1 - ERROR: NULL";
-
-        return String.format(
-            "%3d - %-12s",
-            door.getDoorUID(), door.getType().name()
-        );
     }
 
     // Put blocks in their final position.
     // Use onDisable = false to make it safe to use during onDisable().
     public final synchronized void putBlocks(boolean onDisable)
     {
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Putting blocks; onDisable: %s",
-            formatDoorInfo(), onDisable
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Putting blocks; onDisable: %s",
+            onDisable
         ));
         try
         {
@@ -161,9 +150,9 @@ public abstract class BlockMover
 
     public final synchronized void cancel(boolean onDisable)
     {
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Cancelling animation; onDisable: %s",
-            formatDoorInfo(), onDisable
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Cancelling animation; onDisable: %s",
+            onDisable
         ));
         try
         {
@@ -192,9 +181,9 @@ public abstract class BlockMover
     protected synchronized void putBlocks(
         boolean onDisable, double time, int endCount, LocationFinder locationUpdater, Runnable coordinateUpdater)
     {
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Putting blocks; onDisable: %s, time: %s, endCount: %s, blocksPlaced: %s, instantOpen: %s, locationUpdater: %s",
-            formatDoorInfo(), onDisable, time, endCount, blocksPlaced.get(), instantOpen, (locationUpdater == null ? "null" : locationUpdater.getClass().getName())
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Putting blocks; onDisable: %b, time: %.2f, endCount: %d, blocksPlaced: %b, instantOpen: %b, locationUpdater: %s",
+            onDisable, time, endCount, blocksPlaced.get(), instantOpen, (locationUpdater == null ? "null" : locationUpdater.getClass().getName())
         ));
         if (blocksPlaced.getAndSet(true))
             return;
@@ -215,7 +204,7 @@ public abstract class BlockMover
             newRegion.processLocation(newPos);
 
             if (!instantOpen)
-                savedBlock.getFBlock().remove();
+                savedBlock.getFBlock().privateRemove();
 
             if (!savedBlock.getMat().equals(Material.AIR))
             {
@@ -240,9 +229,9 @@ public abstract class BlockMover
             }
         }
 
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Moved blocks from %s to %s",
-            formatDoorInfo(), oldRegion, newRegion
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Moved blocks from    %s to %s",
+            oldRegion, newRegion
         ));
 
         coordinateUpdater.run();
@@ -278,9 +267,14 @@ public abstract class BlockMover
         if (!door.isOpen() || door.getAutoClose() <= 0)
             return false;
 
-        final DoorEventAutoToggle preparationEvent = new DoorEventAutoToggle(door);
-        Bukkit.getPluginManager().callEvent(preparationEvent);
-        return !preparationEvent.isCancelled();
+        final DoorEventAutoToggle autoToggleEvent = new DoorEventAutoToggle(door);
+        Bukkit.getPluginManager().callEvent(autoToggleEvent);
+        if (autoToggleEvent.isCancelled())
+            BigDoors.get().getMyLogger().logMessageToLogFileForDoor(
+                door,
+                "AutoToggle cancelled by event! Registered event Listeners:\n" +
+                    Util.getFormattedEventListeners(autoToggleEvent));
+        return !autoToggleEvent.isCancelled();
     }
 
     protected void toggleOpen(Door door)

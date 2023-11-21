@@ -1,11 +1,13 @@
 package nl.pim16aap2.bigDoors;
 
 import nl.pim16aap2.bigDoors.util.ConfigLoader;
+import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import nl.pim16aap2.bigDoors.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,8 +17,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 
-public class MyLogger
+public class MyLogger implements ILogger
 {
+    private final ThreadLocal<SimpleDateFormat> dateFormatter =
+        ThreadLocal.withInitial(() -> new SimpleDateFormat("dd-MM-yyyy HH:mm:ss:SSS"));
+
     private final BigDoors plugin;
     private final File logFile;
 
@@ -59,6 +64,7 @@ public class MyLogger
             myLogger(level, ChatColor.stripColor(str));
     }
 
+    @Override
     public void logMessage(Level level, String msg)
     {
         logMessage(msg, true, false, level);
@@ -66,6 +72,7 @@ public class MyLogger
 
     // Log a message to the log file. Can print to console and/or
     // add some new lines before the message in the logfile to make it stand out.
+    @Override
     public void logMessage(String msg, boolean printToConsole, boolean startSkip, final Level level)
     {
         if (printToConsole)
@@ -81,11 +88,10 @@ public class MyLogger
         {
             BufferedWriter bw = new BufferedWriter(new FileWriter(logFile, true));
             Date now = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             if (startSkip)
-                bw.write("\n\n[" + format.format(now) + "] " + msg);
+                bw.write("\n\n[" + dateFormatter.get().format(now) + "] " + msg);
             else
-                bw.write("[" + format.format(now) + "] " + msg);
+                bw.write("[" + dateFormatter.get().format(now) + "] " + msg);
             bw.newLine();
             bw.flush();
             bw.close();
@@ -99,6 +105,7 @@ public class MyLogger
 
     // Log a message to the log file. Can print to console and/or
     // add some new lines before the message in the logfile to make it stand out.
+    @Override
     public void logMessage(String msg, boolean printToConsole, boolean startSkip)
     {
         logMessage(msg, printToConsole, startSkip, Level.WARNING);
@@ -106,21 +113,45 @@ public class MyLogger
 
     // Log a message to the logfile. Does not print to console or add newlines in
     // front of the actual message.
+    @Override
     public void logMessageToLogFile(String msg)
     {
         logMessage(msg, false, false);
     }
 
+    /**
+     * Logs a message to the logfile, prepending the door info to the message.
+     *
+     * @param door The door to log the message for.
+     * @param message The message to log.
+     */
+    @Override
+    public void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, String message)
+    {
+        logMessageToLogFile(String.format(
+            "[%s] %s", Util.formatDoorInfo(door), message
+        ));
+    }
+
+    @Override
+    public void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, Throwable throwable, String message)
+    {
+        logMessageToLogFileForDoor(door, message + "\n" + Util.throwableToString(throwable));
+    }
+
+    @Override
     public void logMessageToConsole(String msg)
     {
         logMessage(msg, true, false);
     }
 
+    @Override
     public void logMessageToConsoleOnly(String msg)
     {
         myLogger(Level.INFO, msg);
     }
 
+    @Override
     public void debug(String str)
     {
         if (ConfigLoader.DEBUG)
@@ -128,33 +159,33 @@ public class MyLogger
             logMessage(Level.INFO, str);
     }
 
+    @Override
     public void info(String str)
     {
         logMessage(Level.INFO, str);
     }
 
+    @Override
     public void warn(String str)
     {
         myLogger(Level.WARNING, str);
         logMessage(str, false, false);
     }
 
+    @Override
     public void severe(String str)
     {
         myLogger(Level.SEVERE, str);
         logMessage(str, false, false);
     }
 
-    public static void logMessage(Level level, String pluginName, String message)
-    {
-        Bukkit.getLogger().log(level, "[" + pluginName + "] " + message);
-    }
-
+    @Override
     public void log(Throwable throwable)
     {
         severe(Util.throwableToString(throwable));
     }
 
+    @Override
     public void log(String message, Throwable throwable)
     {
         severe(message + "\n" + Util.throwableToString(throwable));

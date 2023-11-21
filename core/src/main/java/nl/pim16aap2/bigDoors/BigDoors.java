@@ -152,6 +152,8 @@ public class BigDoors extends JavaPlugin implements Listener
             "*********************************************************\n" +
             "        Starting BigDoors version: " + getDescription().getVersion() + "\n" +
             "*********************************************************");
+        getMyLogger().logMessageToLogFile("Server Software: " + Bukkit.getServer().getName());
+        getMyLogger().logMessageToLogFile("Server Version: " + Bukkit.getBukkitVersion() + "; " + Bukkit.getVersion());
         getMyLogger().logMessageToConsoleOnly("Enabling Plugin!");
         try
         {
@@ -570,6 +572,9 @@ public class BigDoors extends JavaPlugin implements Listener
 
         vaultManager.init();
         pbCache.reinit(config.cacheTimeout());
+
+        // 'onDisable' disabled the animations, so we need to re-enable them.
+        enableAnimations();
     }
 
     @Override
@@ -940,12 +945,13 @@ public class BigDoors extends JavaPlugin implements Listener
                 fabf = FallingBlockFactoryProvider_V1_20_R1.getFactory();
                 break;
             case "v1_20_R2":
-                fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory();
+                fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory(getMyLogger());
                 break;
             default:
                 if (config.allowCodeGeneration())
                     fabf = FallbackGeneratorManager.getFallingBlockFactory();
         }
+        getMyLogger().logMessageToLogFile("Loaded falling block factory class: " + fabf.getClass().getName());
 
         // Return true if compatible.
         return fabf != null;

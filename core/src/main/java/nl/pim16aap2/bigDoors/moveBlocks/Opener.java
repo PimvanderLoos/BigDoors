@@ -449,6 +449,11 @@ public interface Opener
         final ToggleType toggleType = door.isOpen() ? ToggleType.CLOSE : ToggleType.OPEN;
         DoorEventTogglePrepare preparationEvent = new DoorEventTogglePrepare(door, toggleType, instantOpen);
         Bukkit.getPluginManager().callEvent(preparationEvent);
+        if (preparationEvent.isCancelled())
+            BigDoors.get().getMyLogger().logMessageToLogFileForDoor(
+                door,
+                "Toggle cancelled by event! Registered event Listeners:\n" +
+                    Util.getFormattedEventListeners(preparationEvent));
         return preparationEvent.isCancelled();
     }
 

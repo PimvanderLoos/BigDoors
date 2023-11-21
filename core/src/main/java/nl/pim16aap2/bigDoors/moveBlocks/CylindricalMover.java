@@ -124,7 +124,7 @@ public class CylindricalMover extends BlockMover
                         final BlockState bs = vBlock.getState();
                         final MaterialData materialData = bs.getData();
 
-                        final NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                        final NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                         NMSBlock block2 = null;
 
                         byte matByte = matData;
@@ -150,7 +150,7 @@ public class CylindricalMover extends BlockMover
                             {
                                 if (canRotate == 6 || canRotate == 8 || canRotate == 9)
                                 {
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                                     block2.rotateCylindrical(this.rotDirection);
                                 }
                                 else
@@ -159,7 +159,7 @@ public class CylindricalMover extends BlockMover
                                     BlockState bs2 = b.getState();
                                     bs2.setData(materialData);
                                     bs2.update();
-                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+                                    block2 = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis, door);
                                 }
                             }
                         }
@@ -168,7 +168,7 @@ public class CylindricalMover extends BlockMover
 
                         CustomCraftFallingBlock fBlock = null;
                         if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat, door);
 
                         savedBlocks.add(new MyBlockData(mat, matByte, fBlock, radius, materialData,
                                                         block2 == null ? block : block2, canRotate, startLocation));
@@ -231,10 +231,7 @@ public class CylindricalMover extends BlockMover
     {
         if (this.animationRunnable == null)
         {
-            plugin.getMyLogger().logMessageToLogFile(String.format(
-                "[%s] animationRunnable is null, not cancelling anything!",
-                formatDoorInfo()
-            ));
+            plugin.getMyLogger().logMessageToLogFileForDoor(door,"[%s] animationRunnable is null, not cancelling anything!");
             return;
         }
         this.animationRunnable.cancel();
@@ -272,10 +269,7 @@ public class CylindricalMover extends BlockMover
             public synchronized void cancel()
                 throws IllegalStateException
             {
-                plugin.getMyLogger().logMessageToLogFile(String.format(
-                    "[%s] Canceling animationRunnable",
-                    formatDoorInfo()
-                ));
+                plugin.getMyLogger().logMessageToLogFileForDoor(door, "Canceling animationRunnable");
                 super.cancel();
             }
 
@@ -336,9 +330,9 @@ public class CylindricalMover extends BlockMover
                                     CustomCraftFallingBlock fBlock;
                                     // Because the block in savedBlocks is already rotated where applicable, just
                                     // use that block now.
-                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
+                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat, door);
 
-                                    block.getFBlock().remove();
+                                    block.getFBlock().privateRemove();
                                     block.setFBlock(fBlock);
                                     block.getFBlock().setVelocity(veloc);
                                 }
@@ -369,10 +363,7 @@ public class CylindricalMover extends BlockMover
                 }
             }
         };
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%s] Scheduling animationRunnable",
-            formatDoorInfo()
-        ));
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "Scheduling animationRunnable");
         animationRunnable.runTaskTimerAsynchronously(plugin, 14, tickRate);
     }
 
