@@ -77,6 +77,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -942,7 +943,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 fabf = new FallingBlockFactory_V1_19_R3();
                 break;
             case "v1_20_R1":
-                fabf = FallingBlockFactoryProvider_V1_20_R1.getFactory();
+                fabf = FallingBlockFactoryProvider_V1_20_R1.getFactory(getMyLogger());
                 break;
             case "v1_20_R2":
                 fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory(getMyLogger());
@@ -959,8 +960,8 @@ public class BigDoors extends JavaPlugin implements Listener
 
     private int readBuildNumber()
     {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            getClass().getResourceAsStream("/build.number"))))
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/build.number")))))
         {
             for (int idx = 0; idx != 2; ++idx)
                 reader.readLine();

@@ -11,20 +11,33 @@ import net.minecraft.world.entity.EnumMoveType;
 import net.minecraft.world.entity.item.EntityFallingBlock;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.phys.Vec3D;
+import nl.pim16aap2.bigDoors.ILogger;
+import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
 public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implements CustomEntityFallingBlock
 {
-    private IBlockData block;
+    private final ILogger logger;
+    private final ILoggableDoor door;
     private final CraftWorld world;
 
+    private IBlockData block;
+
     public CustomEntityFallingBlock_V1_20_R1(
-        final org.bukkit.World world, final double d0, final double d1, final double d2, final IBlockData iblockdata)
+        final ILogger logger,
+        final ILoggableDoor door,
+        final org.bukkit.World world,
+        final double d0,
+        final double d1,
+        final double d2,
+        final IBlockData iblockdata)
     {
         super(EntityTypes.L, ((CraftWorld) world).getHandle());
         this.world = (CraftWorld) world;
         block = iblockdata;
+        this.logger = logger;
+        this.door = door;
 
         this.e(d0, d1, d2);
         super.b = 0;
@@ -36,8 +49,47 @@ public class CustomEntityFallingBlock_V1_20_R1 extends EntityFallingBlock implem
         spawn();
     }
 
+    public int getUid()
+    {
+        return super.af();
+    }
+
+    void logIllegalRemoval()
+    {
+        logger.logMessageToLogFileForDoor(
+            door,
+            new Exception("Stack trace"),
+            String.format(
+                "Animated block [%3d] illegally removed by external source!",
+                getUid()
+            ));
+    }
+
+    @Override
+    public void a(RemovalReason entity_removalreason) {
+        logIllegalRemoval();
+        this.b(entity_removalreason);
+    }
+
+    void privateRemoval()
+    {
+//        logger.logMessageToLogFileForDoor(
+//            door,
+//            String.format(
+//                "Animated block [%3d] removed properly.",
+//                getUid()
+//        ));
+        super.b(RemovalReason.b);
+    }
+
     public void spawn()
     {
+//        logger.logMessageToLogFileForDoor(
+//            door,
+//            String.format(
+//                "Animated block [%3d] spawned.",
+//                getUid()
+//            ));
         this.world.addEntityToWorld(this, CreatureSpawnEvent.SpawnReason.CUSTOM);
     }
 

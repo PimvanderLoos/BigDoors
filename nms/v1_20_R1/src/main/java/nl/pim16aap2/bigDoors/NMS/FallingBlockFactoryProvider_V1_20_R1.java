@@ -1,5 +1,6 @@
 package nl.pim16aap2.bigDoors.NMS;
 
+import nl.pim16aap2.bigDoors.ILogger;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 
 import java.lang.reflect.Method;
@@ -10,7 +11,7 @@ import java.lang.reflect.Modifier;
  * <p>
  * The exact type of {@link FallingBlockFactory} returned depends on the specific build of Spigot/Paper/etc.
  * <p>
- * Use {@link #getFactory()} to get a new {@link FallingBlockFactory} instance.
+ * Use {@link #getFactory(ILogger)} to get a new {@link FallingBlockFactory} instance.
  */
 public class FallingBlockFactoryProvider_V1_20_R1
 {
@@ -19,9 +20,12 @@ public class FallingBlockFactoryProvider_V1_20_R1
      *
      * @return A new {@link FallingBlockFactory} instance.
      */
-    public static FallingBlockFactory getFactory()
+    public static FallingBlockFactory getFactory(ILogger logger)
     {
-        return new FallingBlockFactory_V1_20_R1(getCraftEntitySupplier());
+        return new FallingBlockFactory_V1_20_R1(
+            getCraftEntitySupplier(),
+            logger
+        );
     }
 
     private static FallingBlockFactory_V1_20_R1.CustomCraftFallingBlockFactory getCraftEntitySupplier()

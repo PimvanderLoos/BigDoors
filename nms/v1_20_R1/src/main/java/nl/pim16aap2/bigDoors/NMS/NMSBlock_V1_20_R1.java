@@ -9,7 +9,9 @@ import net.minecraft.world.level.block.BlockRotatable;
 import net.minecraft.world.level.block.EnumBlockRotation;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.IBlockData;
+import nl.pim16aap2.bigDoors.ILogger;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
+import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import nl.pim16aap2.bigDoors.util.NMSUtil;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import org.bukkit.Location;
@@ -27,18 +29,33 @@ import java.util.Set;
 
 public class NMSBlock_V1_20_R1 extends BlockBase implements NMSBlock
 {
+    private final ILogger logger;
+    private final ILoggableDoor door;
     private IBlockData blockData;
     private CraftBlockData craftBlockData;
     private final XMaterial xmat;
     private Location loc;
 
-    public NMSBlock_V1_20_R1(World world, int x, int y, int z, Info blockInfo)
+    public NMSBlock_V1_20_R1(
+        ILogger logger,
+        ILoggableDoor door,
+        World world,
+        int x, int y, int z,
+        Info blockInfo)
     {
         super(blockInfo);
+        this.logger = logger;
+        this.door = door;
 
         loc = new Location(world, x, y, z);
 
         craftBlockData = (CraftBlockData) world.getBlockAt(x, y, z).getBlockData();
+        logger.logMessageToLogFileForDoor(door, String.format(
+            "Created animated block from [%d, %d, %d]: %s",
+            x, y, z,
+            craftBlockData.getState()
+        ));
+
         if (craftBlockData instanceof Waterlogged)
             ((Waterlogged) craftBlockData).setWaterlogged(false);
 
@@ -89,6 +106,14 @@ public class NMSBlock_V1_20_R1 extends BlockBase implements NMSBlock
 
         if (craftBlockData instanceof MultipleFacing)
             updateCraftBlockDataMultipleFacing();
+
+        logger.logMessageToLogFileForDoor(door, String.format(
+            "Putting block at [%d, %d, %d]: %s",
+            loc.getBlockX(),
+            loc.getBlockY(),
+            loc.getBlockZ(),
+            blockData
+        ));
 
         ((CraftWorld) Objects.requireNonNull(loc.getWorld()))
             .getHandle().a(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), blockData, 1);

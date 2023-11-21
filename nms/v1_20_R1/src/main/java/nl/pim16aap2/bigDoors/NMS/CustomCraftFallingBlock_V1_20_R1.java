@@ -13,11 +13,20 @@ import org.jetbrains.annotations.NotNull;
 
 public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
 {
+    private final CustomEntityFallingBlock_V1_20_R1 customEntity;
+
     public CustomCraftFallingBlock_V1_20_R1(final CraftServer server, final CustomEntityFallingBlock_V1_20_R1 entity)
     {
         super(server, entity);
+        this.customEntity = entity;
         setVelocity(new Vector(0, 0, 0));
         setDropItem(false);
+    }
+
+    @Override
+    public void privateRemove()
+    {
+        this.customEntity.privateRemoval();
     }
 
     @Override
