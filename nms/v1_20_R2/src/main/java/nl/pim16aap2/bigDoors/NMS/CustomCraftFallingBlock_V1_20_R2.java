@@ -1,11 +1,14 @@
 package nl.pim16aap2.bigDoors.NMS;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R2.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R2.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R2.util.CraftMagicNumbers;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
@@ -47,6 +50,30 @@ public class CustomCraftFallingBlock_V1_20_R2 extends CraftEntity implements Fal
     public boolean isVisibleByDefault()
     {
         return true;
+    }
+
+    @Override
+    public boolean isInWorld()
+    {
+        return false;
+    }
+
+    @Override
+    public EntitySnapshot createSnapshot()
+    {
+        return null;
+    }
+
+    @Override
+    public Entity copy()
+    {
+        return null;
+    }
+
+    @Override
+    public Entity copy(@NotNull Location location)
+    {
+        return null;
     }
 
     @Override

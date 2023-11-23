@@ -1,7 +1,7 @@
 # This file contains all the (partial) sentences used in this plugin.
 # If you want to modify anything, make sure to do so in a copy, as this file will be regenerated on startup!
-# You can change which file will be used in the config.yml. 
-# The format is "key=value" (without quotation marks). You can modify the values, but not the keys. 
+# You can change which file will be used in the config.yml.
+# The format is "key=value" (without quotation marks). You can modify the values, but not the keys.
 # Order doesn't matter and you can use comments if you so desire.
 # Please do note that white space does matter! (so spaces at the end of lines, for example).
 GENERAL.TooManyDoors=You already reached your maximum number of doors!
@@ -44,8 +44,8 @@ GUI.NAME.NewDoors=Door Creation Menu
 GUI.SORTED.Change=Change sorting.
 GUI.SORTED.Alphabetically=Alphabetically sorted
 GUI.SORTED.Numerically=Numerically sorted
-GUI.ToPage=Go to page 
-GUI.OutOf= out of 
+GUI.ToPage=Go to page
+GUI.OutOf= out of
 GUI.PreviousPage=Previous page
 GUI.NextPage=Next page
 GUI.DoorInitiation=Initiate door creation process
@@ -53,9 +53,9 @@ GUI.NewDoor=New Door
 GUI.NewDrawbridge=New Drawbridge
 GUI.NewPortcullis=New Portcullis
 GUI.NewSlidingDoor=New Sliding Door
-GUI.NewObjectLong=Initiate process to create a 
-GUI.DoorHasID=This door has ID 
-GUI.MoreInfoMenu=Expanded menu for door 
+GUI.NewObjectLong=Initiate process to create a
+GUI.DoorHasID=This door has ID
+GUI.MoreInfoMenu=Expanded menu for door
 GUI.UnlockDoor=Unlock Door
 GUI.LockDoor=Lock Door
 GUI.UseDoor=Open / Close this door
@@ -74,9 +74,9 @@ GUI.BLOCKSTOMOVE.Name=Change the number of blocks\nthis door will try to move.
 GUI.BLOCKSTOMOVE.Available=Number of blocks this door\nwill try to move:
 GUI.BLOCKSTOMOVE.Unavailable=This door will try to move as many\nblocks as it is long or high.
 GUI.Direction.Name=Change opening direction.
-GUI.Direction.ThisDoorOpens=This door opens in 
-GUI.Direction.ThisDoorGoes=This door goes 
-GUI.Direction.Looking=When looking 
+GUI.Direction.ThisDoorOpens=This door opens in
+GUI.Direction.ThisDoorGoes=This door goes
+GUI.Direction.Looking=When looking
 GUI.Direction.Clock=Clockwise Direction,
 GUI.Direction.Counter=Counterclockwise Direction,
 GUI.Direction.Any=Any Direction
@@ -87,7 +87,7 @@ GUI.Direction.West=West
 GUI.Direction.Down=Down
 GUI.Direction.Up=Up
 GUI.ChangeTimer=Set door auto close timer.
-GUI.ChangeTimerLore=This door automatically closes after 
+GUI.ChangeTimerLore=This door automatically closes after
 GUI.ChangeTimerLoreDisabled=This door is not set\nto close automatically.
 GUI.ADDOWNER=Add another owner for this door.
 GUI.REMOVEOWNER=Remove another owner of this door.
@@ -103,14 +103,16 @@ COMMAND.RemoveOwner.Init=&aType "/BigDoors removeowner <playerName>" in chat. Re
 COMMAND.RemoveOwner.Success=&aSuccessfully removed another owner!
 COMMAND.RemoveOwner.Fail=&aCould not remove owner! Are you sure the name is correct and that you are not trying to remove the original owner?
 COMMAND.SetTime.Init=&aType "/SetAutoCloseTime <time>" in chat. Replace "<time>" by a number in seconds. After that number of seconds, the door will close again.\nSetting a negative amount of time disables it!
-COMMAND.SetTime.Success=&aThe door will now close after 
+COMMAND.SetTime.Success=&aThe door will now close after
 COMMAND.SetTime.Disabled=&aThe door will no longer close automatically.
 COMMAND.SetBlocksToMove.Init=&aType "/SetBlocksToMove <distance>" in chat. Replace "<distance>" by the number of blocks that you want the door to attempt to move.\nAny value lower than 1 will disable this function.
 COMMAND.SetBlocksToMove.ListOfOwners=&aThese are the current owners of this door:
-COMMAND.SetBlocksToMove.Success=&aNumber of blocks this door will now attempt to move: 
+COMMAND.SetBlocksToMove.Success=&aNumber of blocks this door will now attempt to move:
 COMMAND.SetBlocksToMove.Disabled=&aThe door will try to move for as many blocks as it is long again.
 COMMAND.ToggleDisabled=All door toggles have been stopped! Doors will not be able to toggle until you run '/bigdoors enabletoggle'.
 COMMAND.ToggleEnabled=Door toggles have been activated again!
+COMMAND.SetBypassProtections.enabled=This door will now bypass all protections!
+COMMAND.SetBypassProtections.disabled=This door will now respect all protections!
 CREATOR.GENERAL.GiveNameInstruc=&aPlease start by giving the door/drawbridge/portcullis a name using the command: /namedoor <name>
 CREATOR.GENERAL.InvalidPoint=&cInvalid second point selection! Try again!
 CREATOR.GENERAL.InvalidRotation=&cInvalid rotation point selection! Try again!

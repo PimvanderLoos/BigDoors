@@ -83,7 +83,7 @@ public abstract class ToolUser extends Abortable
 
         final Door door = new Door(
             player.getUniqueId(), player.getName(), player.getUniqueId(), world, min, max, engine, name, isOpen, -1,
-            false, 0, type, engineSide, powerB, openDir, -1, false);
+            false, 0, type, engineSide, powerB, openDir, -1, false, false);
 
         final int doorSize = door.getBlockCount();
         final int sizeLimit =

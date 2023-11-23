@@ -444,6 +444,11 @@ public class Commander
         db.updateDoorAutoClose(doorUID, autoClose);
     }
 
+    public void updateBypassProtections(long doorUID, boolean bypass)
+    {
+        db.updateBypassProtections(doorUID, bypass);
+    }
+
     public void updateDoorNotify(long doorUID, boolean notify)
     {
         db.updateNotify(doorUID, notify);

@@ -317,9 +317,11 @@ public class BigDoors extends JavaPlugin implements Listener
         return Optional.empty();
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     private void registerCommands(CommandExecutor commandExecutor)
     {
         getCommand("recalculatepowerblocks").setExecutor(commandExecutor);
+        getCommand("setbypassprotections").setExecutor(commandExecutor);
         getCommand("killbigdoorsentities").setExecutor(commandExecutor);
         getCommand("inspectpowerblockloc").setExecutor(commandExecutor);
         getCommand("changepowerblockloc").setExecutor(commandExecutor);

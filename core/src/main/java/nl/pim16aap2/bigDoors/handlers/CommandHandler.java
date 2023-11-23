@@ -609,6 +609,36 @@ public class CommandHandler implements CommandExecutor
             return true;
         }
 
+        else if (cmd.getName().equalsIgnoreCase("setBypassProtections"))
+        {
+            if (args.length != 2)
+                return false;
+
+            final boolean bypassProtections;
+            try
+            {
+                bypassProtections = Boolean.parseBoolean(args[1]);
+            }
+            catch (NumberFormatException e)
+            {
+                return false;
+            }
+            Door door = plugin.getCommander().getDoor(args[0], player);
+            if (door == null)
+                return true;
+
+            door.setBypassProtections(bypassProtections);
+            plugin.getCommander().updateBypassProtections(door.getDoorUID(), bypassProtections);
+
+            plugin.getMyLogger().returnToSender(
+                sender, Level.INFO, ChatColor.GREEN,
+                bypassProtections ?
+                    plugin.getMessages().getString("COMMAND.SetBypassProtections.enabled") :
+                    plugin.getMessages().getString("COMMAND.SetBypassProtections.disabled"));
+
+            return true;
+        }
+
         // /doordebug
         else if (cmd.getName().equalsIgnoreCase("doordebug"))
         {

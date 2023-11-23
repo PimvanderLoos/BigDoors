@@ -398,6 +398,9 @@ public interface Opener
         if (BigDoors.get().getProtectionCompatManager().registeredCompatsCount() == 0)
             return CompletableFuture.completedFuture(true);
 
+        if (door.bypassProtections())
+            return CompletableFuture.completedFuture(true);
+
         final CompletableFuture<@Nullable String> oldLoc =
             BigDoors.get().canBreakBlocksBetweenLocs(
                 door.getPlayerUUID(), door.getPlayerName(), door.getWorld(), door.getMinimum(), door.getMaximum());

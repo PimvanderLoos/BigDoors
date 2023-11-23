@@ -321,19 +321,38 @@ public final class Util
     public static String getFullDoorInfo(Door door)
     {
 
-        return door == null ? "Door not found!" : door.getDoorUID() + ": " + door.getName() + ", Min("
-            + door.getMinimum().getBlockX() + ";" + door.getMinimum().getBlockY() + ";" + door.getMinimum().getBlockZ()
-            + ")" + ", Max(" + door.getMaximum().getBlockX() + ";" + door.getMaximum().getBlockY() + ";"
-            + door.getMaximum().getBlockZ() + ")" + ", Engine(" + door.getEngine().getBlockX() + ";"
-            + door.getEngine().getBlockY() + ";" + door.getEngine().getBlockZ() + ")" + ", "
-            + (door.isLocked() ? "" : "NOT ") + "locked" + "; Type=" + door.getType()
-            + (door.getEngSide() == null ? "" :
-                ("; EngineSide = " + door.getEngSide().toString() + "; doorLen = " + door.getLength()))
-            + ", PowerBlockPos = (" + door.getPowerBlockLoc().getBlockX() + ";" + door.getPowerBlockLoc().getBlockY()
-            + ";" + door.getPowerBlockLoc().getBlockZ() + ") = (" + door.getPowerBlockChunkHash() + ")" + ". It is "
-            + (door.isOpen() ? "OPEN." : "CLOSED.") + " OpenDir = " + door.getOpenDir().toString() + ", Looking "
-            + door.getLookingDir().toString() + ". It " + (door.getAutoClose() == -1 ? "does not auto close." :
-                ("auto closes after " + door.getAutoClose() + " seconds."));
+        return door == null ? "Door not found!" :
+               door.getDoorUID() + ": " + door.getName()
+                   + ", Min("
+                       + door.getMinimum().getBlockX() + ";"
+                       + door.getMinimum().getBlockY() + ";"
+                       + door.getMinimum().getBlockZ() + ")"
+                   + ", Max("
+                       + door.getMaximum().getBlockX() + ";"
+                       + door.getMaximum().getBlockY() + ";"
+                       + door.getMaximum().getBlockZ() + ")"
+                   + ", Engine("
+                       + door.getEngine().getBlockX() + ";"
+                       + door.getEngine().getBlockY() + ";"
+                       + door.getEngine().getBlockZ() + ")"
+                   + ", "
+                   + (door.isLocked() ? "" : "NOT ") + "locked"
+                   + "; Type=" + door.getType()
+                   + (door.getEngSide() == null ? "" :
+                      ("; EngineSide = " + door.getEngSide().toString()
+                          + "; doorLen = " + door.getLength()))
+                   + ", PowerBlockPos = ("
+                       + door.getPowerBlockLoc().getBlockX() + ";"
+                       + door.getPowerBlockLoc().getBlockY() + ";"
+                       + door.getPowerBlockLoc().getBlockZ() + ") = ("
+                       + door.getPowerBlockChunkHash() + ")"
+                   + ". It is " + (door.isOpen() ? "OPEN." : "CLOSED.")
+                   + " OpenDir = " + door.getOpenDir().toString()
+                   + ", Looking " + door.getLookingDir().toString()
+                   + ". It " + (door.getAutoClose() == -1 ? "does not auto close." :
+                                ("auto closes after " + door.getAutoClose() + " seconds."))
+                   + " It will " + (door.bypassProtections() ? "" : "NOT ") + "bypass protections."
+            ;
     }
 
     private static void playSoundSync(Location loc, String sound, float volume, float pitch)
