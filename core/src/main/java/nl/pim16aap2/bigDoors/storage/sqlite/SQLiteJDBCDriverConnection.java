@@ -1,6 +1,5 @@
 package nl.pim16aap2.bigDoors.storage.sqlite;
 
-import com.google.common.io.Files;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
@@ -17,6 +16,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -36,19 +37,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings("null") // Eclipse likes to complain about connections potentially being null,
-                          // but it's not a problem.
 public class SQLiteJDBCDriverConnection
 {
-    private final BigDoors plugin;
-    private final File dbFile;
-    private final String url;
+    private static final String FAKEUUID = "0000";
     private static final String DRIVER = "org.sqlite.JDBC";
 
-    // The highest database version. If the found db version matches or exceeds
-    // this version, the database cannot be enabled.
-    private static final int MAX_DATABASE_VERSION = 10;
-    private static final int DATABASE_VERSION = 8;
+    // The current database version. This is used to check if the database needs to
+    // be upgraded and to make sure the provided database is compatible with the plugin.
+    private static final int DATABASE_VERSION = 9;
 
     private static final int DOOR_ID = 1;
     private static final int DOOR_NAME = 2;
@@ -74,6 +70,7 @@ public class SQLiteJDBCDriverConnection
     private static final int DOOR_CHUNK_HASH = 22;
     private static final int DOOR_BLOCKS_TO_MOVE = 23;
     private static final int DOOR_NOTIFY = 24;
+    private static final int DOOR_BYPASS_PROTECTIONS = 25;
 
     private static final int PLAYERS_ID = 1;
     private static final int PLAYERS_UUID = 2;
@@ -86,11 +83,25 @@ public class SQLiteJDBCDriverConnection
     private static final int UNION_DOOR_ID = 4;
 
     private final String dbName;
-    private boolean enabled = true;
+
     private boolean validVersion = true;
     private boolean supportsReturningClause = false;
-    private AtomicBoolean locked = new AtomicBoolean(false);
-    private static final String FAKEUUID = "0000";
+
+    private final BigDoors plugin;
+    private final File dbFile;
+    private final String url;
+
+    /**
+     * Keeps track of whether the database is enabled. When false, no operations may be performed on the database.
+     * <p>
+     * Once set to false, it should never be set to true again.
+     */
+    private volatile boolean enabled = true;
+
+    /**
+     * Whether the database is currently locked. When true, no operations may be performed on the database.
+     */
+    private final AtomicBoolean locked = new AtomicBoolean(false);
 
     public SQLiteJDBCDriverConnection(final BigDoors plugin, final String dbName)
     {
@@ -173,6 +184,27 @@ public class SQLiteJDBCDriverConnection
         return getConnectionUnsafe(url);
     }
 
+    /**
+     * Disable the database.
+     * <p>
+     * This will set {@link #enabled} to false and log a message to the console.
+     *
+     * @param reason The reason for disabling the database to show in the log. May be null to not show a reason at all.
+     */
+    private void disableDatabase(@Nullable String reason)
+    {
+        plugin.getMyLogger().severe("The database has been disabled!" + (reason == null ? "" : " Reason: " + reason));
+        enabled = false;
+    }
+
+    /**
+     * Disables the database. See {@link #disableDatabase(String)}.
+     */
+    private void disableDatabase()
+    {
+        disableDatabase(null);
+    }
+
     private @Nonnull String getDriverVersion(Connection conn)
     {
         try
@@ -213,8 +245,7 @@ public class SQLiteJDBCDriverConnection
                 plugin.getMyLogger().severe("SQLite Driver version: " + driverVersion);
                 plugin.getMyLogger().severe("Driver does not support RETURNING clause or getGeneratedKeys()!");
                 plugin.getMyLogger().severe("Please update your driver!");
-                plugin.getMyLogger().severe("Database disabled!");
-                enabled = false;
+                disableDatabase();
                 return;
             }
 
@@ -275,7 +306,7 @@ public class SQLiteJDBCDriverConnection
         catch (SQLException | RuntimeException e)
         {
             logMessage("Database Initialization", e);
-            enabled = false;
+            disableDatabase("Database initialization failed!");
         }
     }
 
@@ -396,7 +427,6 @@ public class SQLiteJDBCDriverConnection
      * @param conn The connection.
      * @throws SQLException
      */
-    @SuppressWarnings("unused")
     private void reEnableForeignKeys(final Connection conn) throws SQLException
     {
         conn.createStatement().execute("PRAGMA foreign_keys=ON");
@@ -560,7 +590,7 @@ public class SQLiteJDBCDriverConnection
 
     /**
      * Retrieves the row ID of a player in the database if one exists for the player with the given UUID.
-     * </p>
+     * <p>
      * If no entry exists for this player, it will be added to the database. The player's name will be retrieved using
      * {@link Util#nameFromUUID(UUID)}.
      *
@@ -697,11 +727,14 @@ public class SQLiteJDBCDriverConnection
                                            rs.getInt(DOOR_POWER_Z));
 
             Door door = new Door(playerUUID, playerName, primeOwner, world, min, max, engine, rs.getString(DOOR_NAME),
-                                 (rs.getInt(DOOR_OPEN) == 1 ? true : false), doorUID,
-                                 (rs.getInt(DOOR_LOCKED) == 1 ? true : false), permission,
+                                 (rs.getInt(DOOR_OPEN) == 1), doorUID,
+                                 (rs.getInt(DOOR_LOCKED) == 1), permission,
                                  DoorType.valueOf(rs.getInt(DOOR_TYPE)),
                                  DoorDirection.valueOf(rs.getInt(DOOR_ENG_SIDE)), powerB,
-                                 RotateDirection.valueOf(rs.getInt(DOOR_OPEN_DIR)), rs.getInt(DOOR_AUTO_CLOSE), rs.getBoolean(DOOR_NOTIFY));
+                                 RotateDirection.valueOf(rs.getInt(DOOR_OPEN_DIR)),
+                                 rs.getInt(DOOR_AUTO_CLOSE),
+                                 rs.getBoolean(DOOR_NOTIFY),
+                                 rs.getBoolean(DOOR_BYPASS_PROTECTIONS));
 
             door.setBlocksToMove(rs.getInt(DOOR_BLOCKS_TO_MOVE));
             return door;
@@ -1484,16 +1517,31 @@ public class SQLiteJDBCDriverConnection
 
     public void updateNotify(final long doorUID, final boolean notify)
     {
-        try(Connection conn = getConnection();)
+        try(Connection conn = Objects.requireNonNull(getConnection());
+            PreparedStatement ps = conn.prepareStatement("UPDATE doors SET notify=? WHERE id = ?;"))
         {
-            conn.setAutoCommit(false);
-            String update = "UPDATE doors SET notify='" + (notify ? 1 : 0) + "' WHERE id = '" + doorUID + "';";
-            conn.prepareStatement(update).executeUpdate();
-            conn.commit();
+            ps.setInt(1, notify ? 1 : 0);
+            ps.setLong(2, doorUID);
+            ps.executeUpdate();
         }
-        catch (SQLException | NullPointerException e)
+        catch (Exception e)
         {
-            logMessage("928", e);
+            logMessage("Updating notify for door " + doorUID, e);
+        }
+    }
+
+    public void updateBypassProtections(final long doorUID, final boolean bypassProtections)
+    {
+        try(Connection conn = Objects.requireNonNull(getConnection());
+            PreparedStatement ps = conn.prepareStatement("UPDATE doors SET bypass_protections=? WHERE id = ?;"))
+        {
+            ps.setInt(1, bypassProtections ? 1 : 0);
+            ps.setLong(2, doorUID);
+            ps.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            logMessage("Updating BypassProtections for door " + doorUID, e);
         }
     }
 
@@ -1640,8 +1688,8 @@ public class SQLiteJDBCDriverConnection
         {
             final long playerID = getOrInsertPlayerID(conn, door.getPlayerUUID());
 
-            String doorInsertsql = "INSERT INTO doors(name,world,isOpen,xMin,yMin,zMin,xMax,yMax,zMax,engineX,engineY,engineZ,isLocked,type,engineSide,powerBlockX,powerBlockY,powerBlockZ,openDirection,autoClose,chunkHash,blocksToMove,notify) "
-                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String doorInsertsql = "INSERT INTO doors(name,world,isOpen,xMin,yMin,zMin,xMax,yMax,zMax,engineX,engineY,engineZ,isLocked,type,engineSide,powerBlockX,powerBlockY,powerBlockZ,openDirection,autoClose,chunkHash,blocksToMove,notify,bypass_protections) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             if (this.supportsReturningClause)
                 doorInsertsql += " RETURNING id";
 
@@ -1673,6 +1721,7 @@ public class SQLiteJDBCDriverConnection
             doorstatement.setLong(DOOR_CHUNK_HASH - 1, door.getPowerBlockChunkHash());
             doorstatement.setLong(DOOR_BLOCKS_TO_MOVE - 1, door.getBlocksToMove());
             doorstatement.setInt(DOOR_NOTIFY - 1, door.notificationEnabled() ? 1 : 0);
+            doorstatement.setInt(DOOR_BYPASS_PROTECTIONS - 1, door.bypassProtections() ? 1 : 0);
 
             final long doorUID;
             ResultSet insertedDoorId = null;
@@ -1945,22 +1994,23 @@ public class SQLiteJDBCDriverConnection
                 return;
             }
 
+            // Until the database is upgraded, the current version is not valid.
+            validVersion = false;
+
             if (dbVersion > DATABASE_VERSION)
             {
                 plugin.getMyLogger()
                     .logMessage("Trying to load a database that is incompatible with this version of the plugin! "
                         + "Database version = " + dbVersion + ". Please update the plugin.", true, false);
                 conn.close();
-                validVersion = false;
                 return;
             }
 
             // If an update is required and backups are enabled, make a backup.
-            if (dbVersion != DATABASE_VERSION && plugin.getConfigLoader().dbBackup())
+            if (plugin.getConfigLoader().dbBackup())
             {
                 conn.close();
-                if (!makeBackup())
-                    return;
+                makeBackup();
                 conn = getConnectionUnsafe();
             }
 
@@ -1997,30 +2047,33 @@ public class SQLiteJDBCDriverConnection
             if (dbVersion < 8)
                 upgradeToV8(conn);
 
-            // If the database upgrade to V5 got interrupted in a previous attempt, the
-            // fakeUUID
-            // will still be in the database. If so, simply continue filling in player names
-            // in the db.
+            if (dbVersion < 9)
+                upgradeToV9(conn);
+
+            // If the database upgrade to V5 got interrupted in a previous attempt, the fakeUUID
+            // will still be in the database. If so, simply continue filling in player names in the db.
             if (!replaceTempPlayerNames && fakeUUIDExists(conn))
                 replaceTempPlayerNames = true;
 
             // Do this at the very end, so the db version isn't altered if anything fails.
-            if (dbVersion != DATABASE_VERSION)
-                setDBVersion(conn, DATABASE_VERSION);
+            setDBVersion(conn, DATABASE_VERSION);
+            validVersion = true;
         }
         catch (SQLException | NullPointerException e)
         {
-            logMessage("1414", e);
+            logMessage("Database Upgrade", e);
+            disableDatabase("Failed to upgrade the database! Please check the logs for more information.");
         }
         finally
         {
             try
             {
-                conn.close();
+                if (conn != null)
+                    conn.close();
             }
             catch (SQLException | NullPointerException e)
             {
-                logMessage("1424", e);
+                logMessage("Closing connection after upgrading the database", e);
             }
         }
         if (replaceTempPlayerNames)
@@ -2041,31 +2094,19 @@ public class SQLiteJDBCDriverConnection
         return false;
     }
 
-    private boolean makeBackup()
+    private void makeBackup()
     {
-        return makeBackup(".BACKUP");
-    }
+        final String extension = ".BACKUP";
+        final File dbFileBackup = new File(plugin.getDataFolder(), dbName + extension);
 
-    private boolean makeBackup(final String extension)
-    {
-        File dbFileBackup = new File(plugin.getDataFolder(), dbName + extension);
-        // Only the most recent backup is kept, so delete the old one if a new one needs
-        // to be created.
-        if (dbFileBackup.exists())
-            dbFileBackup.delete();
         try
         {
-            Files.copy(dbFile, dbFileBackup);
+            Files.copy(dbFile.toPath(), dbFileBackup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e)
         {
-            plugin.getMyLogger().logMessage("Failed to create backup of the database! "
-                + "Database upgrade aborted and access is disabled!" + Util.throwableToString(e), true, true);
-            e.printStackTrace();
-            enabled = false;
-            return false;
+            throw new RuntimeException("Failed to create a backup of the database!", e);
         }
-        return true;
     }
 
     private void setDBVersion(final Connection conn, final int version)
@@ -2076,7 +2117,7 @@ public class SQLiteJDBCDriverConnection
         }
         catch (SQLException | NullPointerException e)
         {
-            logMessage("1458", e);
+            logMessage("Setting DB Version", e);
         }
     }
 
@@ -2203,16 +2244,14 @@ public class SQLiteJDBCDriverConnection
 
     private void upgradeToV2(final Connection conn)
     {
+        plugin.getMyLogger().logMessage("Upgrading database to V2! Adding blocksToMove!", true, true);
         try
         {
-            String addColumn;
-            plugin.getMyLogger().logMessage("Upgrading database to V2! Adding blocksToMove!", true, true);
-            addColumn = "ALTER TABLE doors " + "ADD COLUMN blocksToMove int NOT NULL DEFAULT 0";
-            conn.createStatement().execute(addColumn);
+            conn.createStatement().execute("ALTER TABLE doors ADD COLUMN blocksToMove int NOT NULL DEFAULT 0");
         }
         catch (SQLException | NullPointerException e)
         {
-            logMessage("1238", e);
+            throw new RuntimeException("Failed to upgrade database to v2!", e);
         }
     }
 
@@ -2232,9 +2271,9 @@ public class SQLiteJDBCDriverConnection
      */
     private void upgradeToV3(final Connection conn)
     {
+        plugin.getMyLogger().logMessage("Upgrading database to V3! Recreating sqlUnion!", true, true);
         try
         {
-            plugin.getMyLogger().logMessage("Upgrading database to V3! Recreating sqlUnion!", true, true);
             conn.setAutoCommit(false);
             disableForeignKeys(conn);
 
@@ -2261,29 +2300,38 @@ public class SQLiteJDBCDriverConnection
         {
             try
             {
-                reEnableForeignKeys(conn);
                 conn.rollback();
             }
             catch (SQLException | NullPointerException e1)
             {
-                logMessage("1285", e1);
+                e.addSuppressed(e1);
             }
-            logMessage("1287", e);
+            throw new RuntimeException("Failed to upgrade database to v3!", e);
+        }
+        finally
+        {
+            try
+            {
+                reEnableForeignKeys(conn);
+            }
+            catch (SQLException | NullPointerException e)
+            {
+                logMessage("Re-enabling foreign keys after upgrading to v3", e);
+                disableDatabase();
+            }
         }
     }
 
     private void upgradeToV4(final Connection conn)
     {
+        plugin.getMyLogger().logMessage("Upgrading database to V4! Adding playerName!", true, true);
         try
         {
-            String addColumn;
-            plugin.getMyLogger().logMessage("Upgrading database to V4! Adding playerName!", true, true);
-            addColumn = "ALTER TABLE players " + "ADD COLUMN playerName TEXT DEFAULT NULL";
-            conn.createStatement().execute(addColumn);
+            conn.createStatement().execute("ALTER TABLE players ADD COLUMN playerName TEXT DEFAULT NULL");
         }
-        catch (SQLException | NullPointerException e)
+        catch (Exception e)
         {
-            logMessage("1420", e);
+            throw new RuntimeException("Failed to upgrade database to v4!", e);
         }
     }
 
@@ -2296,10 +2344,8 @@ public class SQLiteJDBCDriverConnection
      */
     private void upgradeToV5()
     {
-        Connection conn = null;
-        try
+        try(Connection conn = getConnectionUnsafe())
         {
-            conn = getConnection();
             plugin.getMyLogger().logMessageToLogFile("Upgrading database to V5!");
 
             String countStr = "SELECT COUNT(*) AS total FROM players WHERE playerName IS NULL";
@@ -2337,59 +2383,57 @@ public class SQLiteJDBCDriverConnection
                 conn.prepareStatement(update).executeUpdate();
             }
         }
-        catch (SQLException | NullPointerException e)
+        catch (Exception e)
         {
-            logMessage("1745", e);
-        }
-        finally
-        {
-            try
-            {
-                conn.close();
-            }
-            catch (SQLException | NullPointerException e)
-            {
-                logMessage("1755", e);
-            }
+            throw new RuntimeException("Failed to upgrade database to V5!", e);
         }
 
-        Connection con = null;
+        Connection conn = null;
         try
         {
-            con = DriverManager.getConnection(url);
-            disableForeignKeys(con);
-            con.setAutoCommit(false);
+            conn = DriverManager.getConnection(url);
+            disableForeignKeys(conn);
+            conn.setAutoCommit(false);
             // Rename sqlUnion.
-            con.createStatement().execute("ALTER TABLE players RENAME TO players_old;");
-            con.createStatement()
+            conn.createStatement().execute("ALTER TABLE players RENAME TO players_old;");
+            conn.createStatement()
                 .execute("CREATE TABLE IF NOT EXISTS players " + "(id          INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + " playerUUID  TEXT    NOT NULL," + " playerName  TEXT    NOT NULL)");
-            con.createStatement().execute("INSERT INTO players SELECT * FROM players_old;");
-            con.createStatement().execute("DROP TABLE IF EXISTS 'players_old';");
-            con.commit();
-            con.setAutoCommit(true);
+            conn.createStatement().execute("INSERT INTO players SELECT * FROM players_old;");
+            conn.createStatement().execute("DROP TABLE IF EXISTS 'players_old';");
+            conn.commit();
+            conn.setAutoCommit(true);
         }
         catch (SQLException | NullPointerException e)
         {
-            try
+            if (conn != null)
             {
-                con.rollback();
+                try
+                {
+                    conn.setAutoCommit(true);
+                    conn.rollback();
+                }
+                catch (Exception e1)
+                {
+                    e.addSuppressed(e1);
+                }
             }
-            catch (SQLException | NullPointerException e1)
-            {
-                logMessage("1770", e1);
-            }
-            logMessage("1772", e);
+            throw new RuntimeException("Failed to upgrade database to V5!", e);
         }
         finally
         {
             try
             {
-                con.close();
+                if (conn != null)
+                {
+                    reEnableForeignKeys(conn);
+                    conn.close();
+                }
             }
             catch (SQLException | NullPointerException e)
             {
-                logMessage("1781", e);
+                logMessage("Cleanup after upgrade to V5", e);
+                disableDatabase();
             }
         }
     }
@@ -2399,12 +2443,13 @@ public class SQLiteJDBCDriverConnection
      */
     private void upgradeToV6()
     {
+        plugin.getMyLogger().logMessage("Upgrading database to V6! Recreating table \"players\"!", true, true);
+
         Connection conn = null;
         try
         {
             conn = DriverManager.getConnection(url);
             disableForeignKeys(conn);
-            plugin.getMyLogger().logMessage("Upgrading database to V6! Recreating table \"players\"!", true, true);
             conn.setAutoCommit(false);
 
             conn.createStatement().execute("ALTER TABLE players RENAME TO players_old;");
@@ -2429,58 +2474,90 @@ public class SQLiteJDBCDriverConnection
 
             conn.commit();
         }
-        catch (SQLException | NullPointerException e)
+        catch (Exception e)
         {
-            try
+            if (conn != null)
             {
-                conn.setAutoCommit(true);
-                reEnableForeignKeys(conn);
-                conn.rollback();
+                try
+                {
+                    conn.setAutoCommit(true);
+                    conn.rollback();
+                }
+                catch (Exception e1)
+                {
+                    e.addSuppressed(e1);
+                }
             }
-            catch (SQLException | NullPointerException e1)
-            {
-                logMessage("2257", e1);
-            }
-            logMessage("2259", e);
+            throw new RuntimeException("Failed to upgrade database to V6!", e);
         }
         finally
         {
             try
             {
-                conn.close();
+                if (conn != null)
+                {
+                    reEnableForeignKeys(conn);
+                    conn.close();
+                }
             }
             catch (SQLException e)
             {
-                logMessage("2280", e);
+                logMessage("Failed to clean up after upgrading to V6! Disabling database", e);
+                disableDatabase("Cleanup after upgrade to V6");
             }
         }
     }
 
     private void upgradeToV7(final Connection conn)
     {
-        try
+        plugin.getMyLogger().logMessage("Upgrading database to V7!", true, true);
+        try (PreparedStatement statement =
+                 conn.prepareStatement("ALTER TABLE doors ADD COLUMN notify INTEGER DEFAULT 0;"))
         {
-            String addColumn;
-            plugin.getMyLogger().logMessage("Upgrading database to V7! Adding notification status!", true, true);
-            addColumn = "ALTER TABLE doors ADD COLUMN notify INTEGER DEFAULT 0";
-            conn.createStatement().execute(addColumn);
+            statement.execute();
         }
-        catch (SQLException | NullPointerException e)
+        catch (Exception e)
         {
-            logMessage("1420", e);
+            throw new RuntimeException("Failed to upgrade database to V7!", e);
         }
     }
 
     private void upgradeToV8(final Connection conn)
     {
+        plugin.getMyLogger().logMessage("Upgrading database to V8!", true, true);
         try(PreparedStatement statement = conn.prepareStatement("UPDATE doors set type = type - 1 WHERE type >= 3;"))
         {
-            plugin.getMyLogger().logMessage("Upgrading database to V8!", true, true);
             statement.execute();
         }
-        catch (SQLException | NullPointerException e)
+        catch (Exception e)
         {
-            logMessage("2670", e);
+            throw new RuntimeException("Failed to upgrade database to V8!", e);
+        }
+    }
+
+    /**
+     * Update the database to version 9.
+     * <p>
+     * Changes in this version:
+     * <ul>
+     *     <li>Added the 'bypass_protections' column to doors table.</li>
+     * </ul>
+     *
+     * @param conn The connection to the database.
+     *
+     * @throws RuntimeException If the upgrade fails.
+     */
+    private void upgradeToV9(final Connection conn)
+    {
+        plugin.getMyLogger().logMessage("Upgrading database to V9!", true, true);
+        try (PreparedStatement statement = conn.prepareStatement(
+            "ALTER TABLE doors ADD COLUMN bypass_protections INTEGER DEFAULT 0"))
+        {
+            statement.execute();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Failed to upgrade database to V9!", e);
         }
     }
 
@@ -2552,13 +2629,13 @@ public class SQLiteJDBCDriverConnection
     private void logMessage(String str, Exception e)
     {
         if (!locked.get())
-            plugin.getMyLogger().logMessageToLogFile(str + " " + Util.throwableToString(e));
+            plugin.getMyLogger().logMessageToLogFile("[" + str + "] " + Util.throwableToString(e));
         else if (!validVersion)
             plugin.getMyLogger()
                 .logMessageToLogFile("This version of the database is not supported by this version of the plugin!");
         else
             plugin.getMyLogger()
-                .logMessageToLogFile("Database locked! Failed at: " + str + ". Message: " + e.getMessage());
+                .logMessageToLogFile("Database locked! Failed at: [" + str + "]. Message: " + e.getMessage());
 
     }
 }

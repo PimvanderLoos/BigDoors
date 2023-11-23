@@ -1,4 +1,8 @@
 Alpha 0.1.8.49
+- Updated database to v9.
+- Added bypassProtections property to doors. Doors with this property set to true will ignore all protection plugins (e.g. WorldGuard, PlotSquared, etc).
+- Added the command `/setBypassProtections <doorName || doorUID> <true || false>` to set the `bypassProtections` property of a door. Permission node: `bigdoors.admin.setbypassprotections`.
+- Added a new GUI button to set the `bypassProtections` property of a door. This button is only visible if you have the `bigdoors.admin.setbypassprotections` permission node.
 
 Alpha 0.1.8.48
 - Add support for MC 1.20.2.

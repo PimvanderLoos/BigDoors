@@ -609,6 +609,36 @@ public class CommandHandler implements CommandExecutor
             return true;
         }
 
+        else if (cmd.getName().equalsIgnoreCase("setBypassProtections"))
+        {
+            if (args.length != 2)
+                return false;
+
+            final boolean bypassProtections;
+            try
+            {
+                bypassProtections = Boolean.parseBoolean(args[1]);
+            }
+            catch (NumberFormatException e)
+            {
+                return false;
+            }
+            Door door = plugin.getCommander().getDoor(args[0], player);
+            if (door == null)
+                return true;
+
+            door.setBypassProtections(bypassProtections);
+            plugin.getCommander().updateDoorBypassProtections(door.getDoorUID(), bypassProtections);
+
+            plugin.getMyLogger().returnToSender(
+                sender, Level.INFO, ChatColor.GREEN,
+                bypassProtections ?
+                    plugin.getMessages().getString("COMMAND.SetBypassProtections.enabled") :
+                    plugin.getMessages().getString("COMMAND.SetBypassProtections.disabled"));
+
+            return true;
+        }
+
         // /doordebug
         else if (cmd.getName().equalsIgnoreCase("doordebug"))
         {
@@ -1056,7 +1086,7 @@ public class CommandHandler implements CommandExecutor
     }
 
     /**
-     * Checks if a player has bypass access for a certain attribute. See {@link DoorAttribute#getAdminPermission(DoorAttribute)}.
+     * Checks if a player has bypass access for a certain attribute. See {@link DoorAttribute#hasAdminPermission(Player)}.
      * <p>
      * OPs (see {@link Player#isOp()} and non-players are considered to have bypass access to everything.
      *
@@ -1067,9 +1097,7 @@ public class CommandHandler implements CommandExecutor
     public boolean hasBypassAccess(final Player player, final DoorAttribute doorAttribute)
     {
         return player != null &&
-            (player.isOp() ||
-                (DoorAttribute.getAdminPermission(doorAttribute) != null &&
-                    player.hasPermission(DoorAttribute.getAdminPermission(doorAttribute))));
+            (player.isOp() || doorAttribute.hasAdminPermission(player));
     }
 
     public void delDoor(Player player, String doorName)
