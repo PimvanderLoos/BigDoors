@@ -353,26 +353,23 @@ public class Commander
         return db.getDoor(playerUUID, doorUID, bypass);
     }
 
-    public boolean hasPermissionNodeForAction(Player player, DoorAttribute atr)
+    public boolean hasPermissionNodeForAction(Player player, @Nullable DoorAttribute attr)
     {
-        if (atr == null)
-            return false;
-        return player.hasPermission(DoorAttribute.getUserPermission(atr)) ||
-               (DoorAttribute.getAdminPermission(atr) != null && player.hasPermission(DoorAttribute.getAdminPermission(atr)));
+        return attr != null && attr.hasAnyPermission(player);
     }
 
-    public boolean hasPermissionForAction(Player player, long doorUID, DoorAttribute atr)
+    public boolean hasPermissionForAction(Player player, long doorUID, DoorAttribute attr)
     {
-        return hasPermissionForAction(player, doorUID, atr, true);
+        return hasPermissionForAction(player, doorUID, attr, true);
     }
 
-    public boolean hasPermissionForAction(Player player, long doorUID, DoorAttribute atr, boolean printMessage)
+    public boolean hasPermissionForAction(Player player, long doorUID, DoorAttribute attr, boolean printMessage)
     {
-        if (player.isOp() || hasPermissionNodeForAction(player, atr))
+        if (player.isOp() || hasPermissionNodeForAction(player, attr))
             return true;
 
         int playerPermission = getPermission(player.getUniqueId().toString(), doorUID);
-        boolean hasPermission = playerPermission >= 0 && playerPermission <= DoorAttribute.getPermissionLevel(atr);
+        boolean hasPermission = playerPermission >= 0 && playerPermission <= attr.getPermissionLevel();
         if (!hasPermission && printMessage)
             Util.messagePlayer(player, plugin.getMessages().getString("GENERAL.NoPermissionForAction"));
         return hasPermission;
@@ -444,7 +441,7 @@ public class Commander
         db.updateDoorAutoClose(doorUID, autoClose);
     }
 
-    public void updateBypassProtections(long doorUID, boolean bypass)
+    public void updateDoorBypassProtections(long doorUID, boolean bypass)
     {
         db.updateBypassProtections(doorUID, bypass);
     }

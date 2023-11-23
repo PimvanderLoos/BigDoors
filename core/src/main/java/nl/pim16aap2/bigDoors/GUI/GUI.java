@@ -45,6 +45,8 @@ public class GUI
     private static final Material REMOVEOWNERMAT = XMaterial.SKELETON_SKULL.parseMaterial();
     private static final Material NOTIFICATIONSMAT_ON = XMaterial.MUSIC_DISC_STAL.parseMaterial();
     private static final Material NOTIFICATIONSMAT_OFF = XMaterial.MUSIC_DISC_11.parseMaterial();
+    private static final Material BYPASS_PROTECTIONS_ON = XMaterial.TNT.parseMaterial();
+    private static final Material BYPASS_PROTECTIONS_OFF = XMaterial.DIAMOND.parseMaterial();
     private static final byte LOCKEDDATA = 14;
     private static final byte UNLOCKEDDATA = 5;
     private static final byte CONFIRMDATA = 14;
@@ -406,6 +408,12 @@ public class GUI
                 plugin.getCommander().updateDoorNotify(door.getDoorUID(), newStatus);
                 update();
                 break;
+            case BYPASS_PROTECTIONS:
+                boolean bypassProtections = !door.bypassProtections();
+                door.setBypassProtections(bypassProtections);
+                plugin.getCommander().updateDoorBypassProtections(door.getDoorUID(), bypassProtections);
+                update();
+                break;
             }
         }
     }
@@ -470,17 +478,17 @@ public class GUI
             Collections.sort(doors, Comparator.comparing(Door::getDoorUID));
     }
 
-    private GUIItem getGUIItem(Door door, DoorAttribute atr)
+    private GUIItem getGUIItem(Door door, DoorAttribute attr)
     {
         // If the permission level is higher than the
-        if (door.getPermission() > DoorAttribute.getPermissionLevel(atr))
+        if (door.getPermission() > attr.getPermissionLevel())
             return null;
 
         ArrayList<String> lore = new ArrayList<>();
         String desc, loreStr;
         GUIItem ret = null;
 
-        switch (atr)
+        switch (attr)
         {
         case LOCK:
             if (door.isLocked())
@@ -519,7 +527,7 @@ public class GUI
                 messages.getString("GUI.ChangeTimerLore") + door.getAutoClose() + "s." :
                 messages.getString("GUI.ChangeTimerLoreDisabled");
             addLore(lore, loreStr);
-            int count = door.getAutoClose() < 1 ? 1 : door.getAutoClose();
+            int count = Math.max(door.getAutoClose(), 1);
             ret = new GUIItem(CHANGETIMEMAT, desc, lore, count);
             break;
 
@@ -571,13 +579,22 @@ public class GUI
                 messages.getString("GUI.ReceiveNotificationsLoreEnabled") :
                     messages.getString("GUI.ReceiveNotificationsLoreDisabled")
                 );
-
             ret = new GUIItem(door.notificationEnabled() ? NOTIFICATIONSMAT_ON : NOTIFICATIONSMAT_OFF, desc, lore, 1);
             break;
 
+        case BYPASS_PROTECTIONS:
+            desc = messages.getString("GUI.BypassProtections");
+            addLore(lore, door.bypassProtections() ?
+                messages.getString("GUI.BypassProtectionsLoreEnabled") :
+                    messages.getString("GUI.BypassProtectionsLoreDisabled")
+                );
+            ret = new GUIItem(door.bypassProtections() ? BYPASS_PROTECTIONS_ON : BYPASS_PROTECTIONS_OFF, desc, lore, 1);
+            break;
+
         }
+
         if (ret != null)
-            ret.setDoorAttribute(atr);
+            ret.setDoorAttribute(attr);
         return ret;
     }
 
@@ -632,10 +649,8 @@ public class GUI
             newOpenDir = curOpenDir == RotateDirection.NONE ? RotateDirection.CLOCKWISE :
                 curOpenDir == RotateDirection.CLOCKWISE ? RotateDirection.COUNTERCLOCKWISE : RotateDirection.CLOCKWISE;
 
+        door.setOpenDir(newOpenDir);
         plugin.getCommander().updateDoorOpenDirection(door.getDoorUID(), newOpenDir);
-        int idx = doors.indexOf(door);
-        doors.get(idx).setOpenDir(newOpenDir);
-        door = doors.get(idx);
         refresh();
     }
 }

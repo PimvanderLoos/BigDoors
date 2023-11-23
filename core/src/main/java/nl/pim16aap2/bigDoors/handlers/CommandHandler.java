@@ -628,7 +628,7 @@ public class CommandHandler implements CommandExecutor
                 return true;
 
             door.setBypassProtections(bypassProtections);
-            plugin.getCommander().updateBypassProtections(door.getDoorUID(), bypassProtections);
+            plugin.getCommander().updateDoorBypassProtections(door.getDoorUID(), bypassProtections);
 
             plugin.getMyLogger().returnToSender(
                 sender, Level.INFO, ChatColor.GREEN,
@@ -1086,7 +1086,7 @@ public class CommandHandler implements CommandExecutor
     }
 
     /**
-     * Checks if a player has bypass access for a certain attribute. See {@link DoorAttribute#getAdminPermission(DoorAttribute)}.
+     * Checks if a player has bypass access for a certain attribute. See {@link DoorAttribute#hasAdminPermission(Player)}.
      * <p>
      * OPs (see {@link Player#isOp()} and non-players are considered to have bypass access to everything.
      *
@@ -1097,9 +1097,7 @@ public class CommandHandler implements CommandExecutor
     public boolean hasBypassAccess(final Player player, final DoorAttribute doorAttribute)
     {
         return player != null &&
-            (player.isOp() ||
-                (DoorAttribute.getAdminPermission(doorAttribute) != null &&
-                    player.hasPermission(DoorAttribute.getAdminPermission(doorAttribute))));
+            (player.isOp() || doorAttribute.hasAdminPermission(player));
     }
 
     public void delDoor(Player player, String doorName)
