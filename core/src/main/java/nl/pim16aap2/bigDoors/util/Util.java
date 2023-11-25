@@ -75,10 +75,17 @@ public final class Util
         throw new IllegalAccessError();
     }
 
-    public static String formatDoorInfo(@Nullable ILoggableDoor door)
+    public static String formatDoorInfo(long doorUID, @Nullable String typeName)
     {
         return String.format(
             "%3d - %-12s",
+            doorUID, typeName
+        );
+    }
+
+    public static String formatDoorInfo(@Nullable ILoggableDoor door)
+    {
+        return formatDoorInfo(
             door == null ? -1 : door.getDoorUID(),
             door == null ? "ERROR: NULL" : door.getTypeName()
         );

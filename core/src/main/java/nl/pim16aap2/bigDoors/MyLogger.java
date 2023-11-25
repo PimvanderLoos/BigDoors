@@ -82,7 +82,7 @@ public class MyLogger implements ILogger
         if (plugin.getConfigLoader() != null && !plugin.getConfigLoader().enableFileLogging())
             return;
 
-        msg = String.format("[%d/%s] %s", Thread.currentThread().getId(), Thread.currentThread().getName(), msg);
+        msg = String.format("[%d/%-34s] %s", Thread.currentThread().getId(), Thread.currentThread().getName(), msg);
 
         try
         {
@@ -134,9 +134,10 @@ public class MyLogger implements ILogger
     }
 
     @Override
-    public void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, Throwable throwable, String message)
+    public void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, @Nullable Throwable throwable, String message)
     {
-        logMessageToLogFileForDoor(door, message + "\n" + Util.throwableToString(throwable));
+        final String appendThrowable = throwable == null ? "" : "\n" + Util.throwableToString(throwable);
+        logMessageToLogFileForDoor(door, message + appendThrowable);
     }
 
     @Override

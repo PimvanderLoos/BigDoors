@@ -108,7 +108,7 @@ public class NMSBlock_V1_20_R2 extends BlockBase implements NMSBlock
             updateCraftBlockDataMultipleFacing();
 
         logger.logMessageToLogFileForDoor(door, String.format(
-            "Putting block at [%d, %d, %d]: %s",
+            "Putting block at            [%d, %d, %d]: %s",
             loc.getBlockX(),
             loc.getBlockY(),
             loc.getBlockZ(),
@@ -213,6 +213,14 @@ public class NMSBlock_V1_20_R2 extends BlockBase implements NMSBlock
     @Override
     public void deleteOriginalBlock(boolean applyPhysics)
     {
+        logger.logMessageToLogFileForDoor(door, String.format(
+            "Deleting original block at  [%d, %d, %d]. Apply physics: %b",
+            loc.getBlockX(),
+            loc.getBlockY(),
+            loc.getBlockZ(),
+            applyPhysics
+        ));
+
         final World world = Objects.requireNonNull(loc.getWorld());
         if (!applyPhysics)
         {

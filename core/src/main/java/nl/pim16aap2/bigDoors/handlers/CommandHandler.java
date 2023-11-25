@@ -16,6 +16,7 @@ import nl.pim16aap2.bigDoors.util.Abortable;
 import nl.pim16aap2.bigDoors.util.DoorAttribute;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
 import nl.pim16aap2.bigDoors.util.DoorType;
+import nl.pim16aap2.bigDoors.util.Pair;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
 import nl.pim16aap2.bigDoors.waitForCommand.WaitForAddOwner;
@@ -34,6 +35,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -1106,6 +1108,12 @@ public class CommandHandler implements CommandExecutor
             Util.messagePlayer(player, ChatColor.GREEN, "Door deleted!");
     }
 
+    private void printReportEnd(Door door)
+    {
+        // We use the door here to make the grep output more readable.
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "================= REPORT END ================\n\n\n\n\n");
+    }
+
     public void doorDebug(Player player, String[] args)
     {
         if (args.length == 0)
@@ -1127,17 +1135,64 @@ public class CommandHandler implements CommandExecutor
             return;
         }
 
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "\n\n\n");
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "================ REPORT START ===============");
+
         final Location min = door.getMinimum();
         final Location max = door.getMaximum();
-        plugin.getMyLogger().logMessageToLogFile(String.format(
-            "[%3d - %-12s] Received debug report for this door. Current coordinates: [%d, %d, %d] - [%d, %d, %d]. Is open: %b, openDir: %s",
-            door.getDoorUID(), door.getType(),
+
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Current coordinates  [%d, %d, %d] - [%d, %d, %d]. Is open: %b, openDir: %s",
             min.getBlockX(), min.getBlockY(), min.getBlockZ(),
             max.getBlockX(), max.getBlockY(), max.getBlockZ(),
             door.isOpen(), door.getOpenDir()
         ));
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, "This door currently has the following blocks:");
+        printBlockTypesInCuboid(door, min, max);
 
+        // Send this information message here because the remaining information is optional.
         player.sendMessage("Door: " + door.getDoorUID() + " (" + door.getName() + ") has been reported!");
+
+        final Opener opener = plugin.getDoorOpener(door.getType());
+        if (opener == null)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "No opener found for type: '" + door.getType() + "'!");
+            printReportEnd(door);
+            return;
+        }
+
+        final @NotNull Optional<Pair<Location, Location>> newCoordinatesOpt = opener.getNewCoordinates(door);
+        if (!newCoordinatesOpt.isPresent())
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "No new coordinates found!");
+            printReportEnd(door);
+            return;
+        }
+
+        final Pair<Location, Location> newCoordinates = newCoordinatesOpt.get();
+        final Location newMin = newCoordinates.first;
+        final Location newMax = newCoordinates.second;
+
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+            "Blocks at new coordinates: [%d, %d, %d] - [%d, %d, %d]",
+            newMin.getBlockX(), newMin.getBlockY(), newMin.getBlockZ(),
+            newMax.getBlockX(), newMax.getBlockY(), newMax.getBlockZ()
+        ));
+        printBlockTypesInCuboid(door, newMin, newMax);
+
+        printReportEnd(door);
+    }
+
+    private void printBlockTypesInCuboid(Door door, Location min, Location max)
+    {
+        final World world = door.getWorld();
+        for (int x = min.getBlockX(); x <= max.getBlockX(); ++x)
+            for (int y = min.getBlockY(); y <= max.getBlockY(); ++y)
+                for (int z = min.getBlockZ(); z <= max.getBlockZ(); ++z)
+                    plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                        " * [%d, %d, %d]: %s",
+                        x, y, z, world.getBlockAt(x, y, z).getType()
+                    ));
     }
 
     private String helpFormat(String command, String explanation)

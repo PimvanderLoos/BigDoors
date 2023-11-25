@@ -5,6 +5,7 @@ import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadMode;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadResult;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
+import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Pair;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
@@ -33,6 +34,12 @@ public class PortcullisOpener implements Opener
     public PortcullisOpener(BigDoors plugin)
     {
         this.plugin = plugin;
+    }
+
+    @Override
+    public DoorType getType()
+    {
+        return DoorType.PORTCULLIS;
     }
 
     @Override
@@ -90,6 +97,8 @@ public class PortcullisOpener implements Opener
         }
 
         final int blocksToMove = getBlocksToMove(door);
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format("Final blocks to move: %d", blocksToMove));
+
         if (blocksToMove == 0)
         {
             plugin.getMyLogger().warn("Received invalid blocksToMove value of 0 for portcullis: " + door);
@@ -162,6 +171,7 @@ public class PortcullisOpener implements Opener
         }
 
         final int blocksToMove = getBlocksToMove(door);
+        plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format("Final blocks to move: %d", blocksToMove));
         if (blocksToMove == 0)
         {
             plugin.getMyLogger().logMessageToLogFileForDoor(

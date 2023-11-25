@@ -6,6 +6,7 @@ import nl.pim16aap2.bigDoors.util.ChunkUtils;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadMode;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadResult;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
+import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Pair;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
@@ -39,6 +40,12 @@ public class SlidingDoorOpener implements Opener
     public @Nonnull List<RotateDirection> getValidRotateDirections()
     {
         return VALID_ROTATE_DIRECTIONS;
+    }
+
+    @Override
+    public DoorType getType()
+    {
+        return DoorType.SLIDINGDOOR;
     }
 
     /**

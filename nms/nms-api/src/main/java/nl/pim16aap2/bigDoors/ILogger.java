@@ -29,7 +29,7 @@ public interface ILogger
 
     void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, String message);
 
-    void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, Throwable throwable, String message);
+    void logMessageToLogFileForDoor(@Nullable ILoggableDoor door, @Nullable Throwable throwable, String message);
 
     void logMessageToConsole(String msg);
 

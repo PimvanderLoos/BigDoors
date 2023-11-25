@@ -231,7 +231,7 @@ public class CylindricalMover extends BlockMover
     {
         if (this.animationRunnable == null)
         {
-            plugin.getMyLogger().logMessageToLogFileForDoor(door,"[%s] animationRunnable is null, not cancelling anything!");
+            plugin.getMyLogger().logMessageToLogFileForDoor(door,"animationRunnable is null, not cancelling anything!");
             return;
         }
         this.animationRunnable.cancel();

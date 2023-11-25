@@ -1,8 +1,10 @@
 package nl.pim16aap2.bigDoors.NMS;
 
+import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import org.bukkit.Location;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 public interface CustomCraftFallingBlock
 {
@@ -30,6 +32,11 @@ public interface CustomCraftFallingBlock
     default void privateRemove()
     {
         remove();
+    }
+
+    default @Nullable ILoggableDoor getDoor()
+    {
+        return null;
     }
 }
 

@@ -7,6 +7,7 @@ import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadMode;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadResult;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
+import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Pair;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
@@ -34,6 +35,12 @@ public class DoorOpener implements Opener
     public DoorOpener(BigDoors plugin)
     {
         this.plugin = plugin;
+    }
+
+    @Override
+    public DoorType getType()
+    {
+        return DoorType.DOOR;
     }
 
     /**
@@ -222,6 +229,7 @@ public class DoorOpener implements Opener
                                                                                       currentDirection);
         if (openingSpecification == null)
         {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "OpeningSpecification is null!");
             plugin.getMyLogger().info("Failed to find open direction for door " + door + " because it is obstructed!");
             return Optional.empty();
         }
@@ -298,6 +306,7 @@ public class DoorOpener implements Opener
                                                                                   currentDirection);
         if (openingSpecification == null)
         {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, "OpeningSpecification is null!");
             plugin.getMyLogger().warn("Could not determine opening direction for door: " + door + "!");
             return CompletableFuture.completedFuture(abort(DoorOpenResult.NODIRECTION, door.getDoorUID()));
         }

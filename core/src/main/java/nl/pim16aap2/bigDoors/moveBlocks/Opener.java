@@ -11,6 +11,7 @@ import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadMode;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadResult;
 import nl.pim16aap2.bigDoors.util.ConfigLoader;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
+import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Pair;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
@@ -341,6 +342,8 @@ public interface Opener
         return Util.minPositive(personalLimit, globalLimit);
     }
 
+    DoorType getType();
+
     /**
      * Checks if there aren't any obstructions between two positions.
      *
@@ -371,8 +374,11 @@ public interface Opener
                     final Material mat = world.getBlockAt(xAxis, yAxis, zAxis).getType();
                     if (!Util.canOverwriteMaterial(mat))
                     {
-                        BigDoors.get().getMyLogger().info("Found a block of material " + mat.name() +
-                                                              " in the way when toggling door " + doorUID);
+                        BigDoors.get().getMyLogger().info(String.format(
+                            "[%s] Found a block of material %s in the way when toggling door %d",
+                            Util.formatDoorInfo(doorUID, getType().name()),
+                            mat.name(), doorUID
+                        ));
                         return false;
                     }
                 }

@@ -38,6 +38,9 @@ public abstract class BlockMover
     private final List<MyBlockData> savedBlocks = new CopyOnWriteArrayList<>();
     private final List<MyBlockData> publicSavedBlocks = Collections.unmodifiableList(savedBlocks);
 
+    protected final @Nullable Location oldMin;
+    protected final @Nullable Location oldMax;
+
     protected final boolean instantOpen;
     protected final AtomicBoolean blocksPlaced = new AtomicBoolean(false);
 
@@ -48,7 +51,14 @@ public abstract class BlockMover
         this.instantOpen = instantOpen;
 
         if (door == null)
+        {
+            this.oldMin = null;
+            this.oldMax = null;
             return;
+        }
+
+        this.oldMin = door.getMinimum();
+        this.oldMax = door.getMaximum();
 
         plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
             "Created new BlockMover; instantOpen: %s",
@@ -85,8 +95,10 @@ public abstract class BlockMover
             return;
 
         plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
-            "Preprocessing blocks; Powerblock outside door; powerBlockLoc: %s, min: %s, max: %s",
-            powerBlockLoc, min, max
+            "Preprocessing blocks; Powerblock outside door; powerBlockLoc: [%d, %d, %d], min: [%d, %d, %d], max: [%d, %d, %d]",
+            powerBlockLoc.getBlockX(), powerBlockLoc.getBlockY(), powerBlockLoc.getBlockZ(),
+            min.getBlockX(), min.getBlockY(), min.getBlockZ(),
+            max.getBlockX(), max.getBlockY(), max.getBlockZ()
         ));
 
         for (MyBlockFace blockFace : MyBlockFace.getValues())
@@ -140,9 +152,50 @@ public abstract class BlockMover
         {
             plugin.getMyLogger().log("Error while putting blocks for door: " + getDoorUID(), e);
         }
+        try
+        {
+            verifyOldBlocks();
+        }
+        catch (Exception e)
+        {
+            plugin.getMyLogger().log("Error while verifying old blocks for door: " + getDoorUID(), e);
+        }
     }
 
     protected abstract void putBlocks0(boolean onDisable);
+
+    protected void verifyOldBlocks()
+    {
+        if (oldMin == null || oldMax == null || door == null)
+        {
+            plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                "Old min/max or door is null; not verifying old blocks. oldMin: %s, oldMax: %s",
+                oldMin, oldMax
+            ));
+            return;
+        }
+
+        for (int x = oldMin.getBlockX(); x <= oldMax.getBlockX(); x++)
+        {
+            for (int y = oldMin.getBlockY(); y <= oldMax.getBlockY(); y++)
+            {
+                for (int z = oldMin.getBlockZ(); z <= oldMax.getBlockZ(); z++)
+                {
+                    final Location loc = new Location(oldMin.getWorld(), x, y, z);
+                    final Block block = loc.getBlock();
+
+                    if (block.getType() == Material.AIR ||
+                        door.isInsideDoor(x, y, z))
+                        continue;
+
+                    plugin.getMyLogger().logMessageToLogFileForDoor(door, String.format(
+                        "Expected AIR at location    [%d, %d, %d] but found: '%s'",
+                        x, y, z, block.getType()
+                    ));
+                }
+            }
+        }
+    }
 
     public abstract long getDoorUID();
 

@@ -49,6 +49,11 @@ public class CustomEntityFallingBlock_V1_20_R2 extends EntityFallingBlock implem
         spawn();
     }
 
+    IBlockData getBlock()
+    {
+        return block;
+    }
+
     public int getUid()
     {
         return super.ah();
@@ -163,5 +168,10 @@ public class CustomEntityFallingBlock_V1_20_R2 extends EntityFallingBlock implem
     public IBlockData t()
     {
         return block;
+    }
+
+    public boolean isInWorld()
+    {
+        return super.inWorld;
     }
 }
