@@ -26,6 +26,7 @@ import nl.pim16aap2.bigDoors.compatibility.FakePlayerCreator;
 import nl.pim16aap2.bigDoors.compatibility.ProtectionCompatManager;
 import nl.pim16aap2.bigDoors.handlers.ChunkUnloadHandler;
 import nl.pim16aap2.bigDoors.handlers.CommandHandler;
+import nl.pim16aap2.bigDoors.handlers.DebugEventHandler;
 import nl.pim16aap2.bigDoors.handlers.EventHandlers;
 import nl.pim16aap2.bigDoors.handlers.FailureCommandHandler;
 import nl.pim16aap2.bigDoors.handlers.GUIHandler;
@@ -265,6 +266,7 @@ public class BigDoors extends JavaPlugin implements Listener
         vaultManager = new VaultManager(this);
         autoCloseScheduler = new AutoCloseScheduler(this);
 
+        Bukkit.getPluginManager().registerEvents(new DebugEventHandler(this), this);
         Bukkit.getPluginManager().registerEvents(new EventHandlers(this), this);
         Bukkit.getPluginManager().registerEvents(new GUIHandler(this), this);
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadHandler(this), this);

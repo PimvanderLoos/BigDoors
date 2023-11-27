@@ -2,24 +2,15 @@ package nl.pim16aap2.bigDoors.handlers;
 
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import nl.pim16aap2.bigDoors.events.DoorEventTogglePrepare;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleStart;
 import nl.pim16aap2.bigDoors.toolUsers.ToolUser;
-import nl.pim16aap2.bigDoors.util.ILoggableDoor;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityEnterBlockEvent;
-import org.bukkit.event.entity.EntityEvent;
-import org.bukkit.event.entity.EntityResurrectEvent;
-import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -31,7 +22,6 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.PlayerInventory;
-import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
 
@@ -65,75 +55,6 @@ public class EventHandlers implements Listener
     public void onDoorTogglePrepare(DoorEventTogglePrepare event)
     {
     }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockChange(EntityChangeBlockEvent event)
-    {
-        if (!(event.getEntity() instanceof FallingBlock))
-            return;
-
-        plugin.getMyLogger().logMessageToLogFileForDoor(getDoorFromEvent(event), String.format(
-            "Falling Block  [%s]: Changed block from '%s' to '%s'",
-            event.getEntity().getUniqueId(),
-            event.getBlock(),
-            event.getTo()
-        ));
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityDeath(EntityDeathEvent event)
-    {
-        handleGeneralEntityEvent(event);
-    }
-
-    private @Nullable ILoggableDoor getDoorFromEvent(EntityEvent event)
-    {
-        if (!(event.getEntity() instanceof CustomCraftFallingBlock))
-            return null;
-
-        return ((CustomCraftFallingBlock) event.getEntity()).getDoor();
-    }
-
-    private void handleGeneralEntityEvent(EntityEvent event)
-    {
-        if (!(event.getEntity() instanceof FallingBlock))
-            return;
-
-        plugin.getMyLogger().logMessageToLogFileForDoor(getDoorFromEvent(event), String.format(
-            "Falling Block  [%s]: Received event: '%s'",
-            event.getEntity().getUniqueId(),
-            event.getEventName()
-        ));
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityTransform(EntityTransformEvent event)
-    {
-        if (!(event.getEntity() instanceof FallingBlock))
-            return;
-
-        plugin.getMyLogger().logMessageToLogFileForDoor(getDoorFromEvent(event), String.format(
-            "Falling Block  [%s]: Transformed! Converted entity '%s', List: %s, Reason: '%s'",
-            event.getEntity().getUniqueId(),
-            event.getTransformedEntity(),
-            event.getTransformedEntities(),
-            event.getTransformReason()
-        ));
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityEnterBlock(EntityEnterBlockEvent event)
-    {
-        handleGeneralEntityEvent(event);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityResurrect(EntityResurrectEvent event)
-    {
-        handleGeneralEntityEvent(event);
-    }
-
-
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDoorToggleStart(DoorEventToggleStart event)
