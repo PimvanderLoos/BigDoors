@@ -351,7 +351,7 @@ public class PortcullisOpener implements Opener
 
                         plugin.getMyLogger().logMessageToLogFileForDoor(
                             door, String.format(
-                                "Found obstruction at [%d, %d, %d] in direction %s: %s! Can be resolved: %b.",
+                                "Found obstruction at        [%d, %d, %d] in direction %s: %s! Can be resolved: %b.",
                                 xAxis, yAxis, zAxis,
                                 upDown.name(),
                                 world.getBlockAt(xAxis, yAxis, zAxis).getType().name(),
