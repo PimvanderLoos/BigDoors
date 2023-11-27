@@ -70,6 +70,18 @@ public class MyLogger implements ILogger
         logMessage(msg, true, false, level);
     }
 
+    private String formatThreadInformation()
+    {
+        String name = Thread.currentThread().getName();
+
+        name = name.replace("ForkJoinPool.commonPool-worker-", "FJPcw-");
+        name = name.replace("Craft Scheduler Thread - ", "CST-");
+        name = name.replace(" - BigDoors", "-BD");
+        name = name.replace("Server thread", "ST");
+
+        return String.format("%d/%-11.11s", Thread.currentThread().getId(), name);
+    }
+
     // Log a message to the log file. Can print to console and/or
     // add some new lines before the message in the logfile to make it stand out.
     @Override
@@ -82,7 +94,7 @@ public class MyLogger implements ILogger
         if (plugin.getConfigLoader() != null && !plugin.getConfigLoader().enableFileLogging())
             return;
 
-        msg = String.format("[%d/%-34s] %s", Thread.currentThread().getId(), Thread.currentThread().getName(), msg);
+        msg = String.format("[%s] %s", formatThreadInformation(), msg);
 
         try
         {
