@@ -19,7 +19,7 @@
 
         <dependency.annotations.version>24.0.1</dependency.annotations.version>
         <dependency.asm.version>9.5</dependency.asm.version>
-        <dependency.bytebuddy.version>1.14.8</dependency.bytebuddy.version>
+        <dependency.bytebuddy.version>1.14.9</dependency.bytebuddy.version>
         <dependency.jcalculator.version>1.8</dependency.jcalculator.version>
         <dependency.jsr305.version>3.0.2</dependency.jsr305.version>
         <dependency.junit.version>5.9.3</dependency.junit.version>
