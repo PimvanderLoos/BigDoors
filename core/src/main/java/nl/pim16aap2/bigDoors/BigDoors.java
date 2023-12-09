@@ -4,6 +4,7 @@ import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R2;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R3;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_11_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_12_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_13_R1;
@@ -884,6 +885,9 @@ public class BigDoors extends JavaPlugin implements Listener
             case "v1_20_R2":
                 fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory();
                 break;
+            case "v1_20_R3":
+                fabf = FallingBlockFactoryProvider_V1_20_R3.getFactory();
+                break;
             default:
                 if (config.allowCodeGeneration())
                     fabf = FallbackGeneratorManager.getFallingBlockFactory();
@@ -1135,14 +1139,23 @@ public class BigDoors extends JavaPlugin implements Listener
         v1_19_R3,
         v1_20_R1,
         v1_20_R2,
+        v1_20_R3,
         v1_21_R1,
+        v1_21_R2,
         v1_22_R1,
+        v1_22_R2,
         v1_23_R1,
+        v1_23_R2,
         v1_24_R1,
+        v1_24_R2,
         v1_25_R1,
+        v1_25_R2,
         v1_26_R1,
+        v1_26_R2,
         v1_27_R1,
+        v1_27_R2,
         v1_28_R1,
+        v1_28_R2,
         ;
 
         public boolean isAtLeast(MCVersion test)

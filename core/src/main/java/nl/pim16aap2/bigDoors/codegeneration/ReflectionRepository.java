@@ -380,6 +380,9 @@ final class ReflectionRepository
                                                                                        cTorPrivateNMSFallingBlockEntity);
         fieldTileEntityData = findField().inClass(classEntityFallingBlock).ofType(classNBTTagCompound)
                                          .withModifiers(Modifier.PUBLIC).get();
+        // This specifically refers to the number of ticks lived as recorded in the FallingBlock class, not the
+        // Spigot-specific ticksLived field in the Entity class.
+        // TODO: Set both fields in the setTicksLived method.
         fieldTicksLived = findField().inClass(classEntityFallingBlock).ofType(int.class)
                                      .withModifiers(Modifier.PUBLIC).get();
 
