@@ -721,7 +721,7 @@ public final class Util
         case OXEYE_DAISY:
         case LILAC:
         case PEONY:
-        case GRASS:
+        case SHORT_GRASS:
         case TALL_GRASS:
         case SEAGRASS:
         case TALL_SEAGRASS:
