@@ -30,7 +30,7 @@ import java.util.logging.Level;
 public class ConfigLoader
 {
     private static final List<Material> DEFAULT_DESTROY_LIST = createParsedMaterialsList(
-        XMaterial.LAVA, XMaterial.WATER, XMaterial.SNOW, XMaterial.FERN, XMaterial.GRASS,
+        XMaterial.LAVA, XMaterial.WATER, XMaterial.SNOW, XMaterial.FERN, XMaterial.SHORT_GRASS, XMaterial.TALL_GRASS,
         XMaterial.TALL_GRASS, XMaterial.SEAGRASS, XMaterial.TALL_SEAGRASS
     );
 

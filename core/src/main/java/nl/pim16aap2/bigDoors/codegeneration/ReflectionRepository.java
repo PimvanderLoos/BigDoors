@@ -321,9 +321,7 @@ final class ReflectionRepository
                                             .get();
         methodSetTypeAndData = findMethod().inClass(classNMSWorld).withReturnType(boolean.class)
                                            .withParameters(classBlockPosition, classIBlockData, int.class).get();
-        methodBlockInfoFromBlockBase = findMethod().inClass(classBlockBaseInfo).withReturnType(classBlockBaseInfo)
-                                                   .withModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                                   .withParameters(classBlockBase).get();
+        methodBlockInfoFromBlockBase = findMethodBlockInfoFromBlockBase();
         methodGetTypeFromBlockPosition = findMethod().inClass(classNMSWorld).withReturnType(classIBlockData)
                                                      .withModifiers(Modifier.PUBLIC)
                                                      .withParameters(classBlockPosition).get();
@@ -340,7 +338,7 @@ final class ReflectionRepository
         methodArrayGetIdx = findMethod().inClass(Array.class).withName("get")
                                         .withParameters(Object.class, int.class).get();
         methodGetClass = findMethod().inClass(Object.class).withName("getClass").get();
-        methodCraftAddEntityToWorld = findMethod().inClass(classCraftWorld).withReturnType(void.class)
+        methodCraftAddEntityToWorld = findMethod().inClass(classCraftWorld).withName("addEntityToWorld")
             .withParameters(classNMSEntity, CreatureSpawnEvent.SpawnReason.class).get();
         methodGetIBlockDataHolderState = ReflectionASMAnalyzers
         .getGetIBlockDataHolderStateMethod(classCraftBlockData, classBlockStateEnum, classIBlockData,
@@ -382,6 +380,9 @@ final class ReflectionRepository
                                                                                        cTorPrivateNMSFallingBlockEntity);
         fieldTileEntityData = findField().inClass(classEntityFallingBlock).ofType(classNBTTagCompound)
                                          .withModifiers(Modifier.PUBLIC).get();
+        // This specifically refers to the number of ticks lived as recorded in the FallingBlock class, not the
+        // Spigot-specific ticksLived field in the Entity class.
+        // TODO: Set both fields in the setTicksLived method.
         fieldTicksLived = findField().inClass(classEntityFallingBlock).ofType(int.class)
                                      .withModifiers(Modifier.PUBLIC).get();
 
@@ -392,6 +393,35 @@ final class ReflectionRepository
             ReflectionBuilder.findField().inClass(classVec3D).allOfType(double.class)
                              .withModifiers(Modifier.PUBLIC, Modifier.FINAL)
                              .exactCount(3).get());
+    }
+
+    private ReflectionRepository()
+    {
+    }
+
+    private static Method findMethodBlockInfoFromBlockBase()
+    {
+        final List<Method> methods = findMethod()
+            .inClass(classBlockBaseInfo)
+            .findMultiple()
+            .withReturnType(classBlockBaseInfo)
+            .withModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .withParameters(classBlockBase)
+            .get();
+        if (methods.size() == 1)
+            return methods.get(0);
+
+        // Remove any methods annotated with '@Deprecated'.
+        final List<Method> filtered = methods
+            .stream()
+            .filter(method -> !method.isAnnotationPresent(Deprecated.class))
+            .collect(Collectors.toList());
+
+        if (filtered.size() == 1)
+            return filtered.get(0);
+
+        throw new IllegalStateException(
+            "Found " + filtered.size() + " methods that could be the block info method: " + filtered);
     }
 
     private static Method findTickMethod()
@@ -411,10 +441,6 @@ final class ReflectionRepository
             throw new IllegalStateException("Found " + filtered.size() +
                                                 " methods that could be the tick method: " + filtered);
         return filtered.get(0);
-    }
-
-    private ReflectionRepository()
-    {
     }
 
     public static Class<?> asArrayType(Class<?> clz)
