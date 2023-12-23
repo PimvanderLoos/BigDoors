@@ -279,7 +279,9 @@ public class SQLiteJDBCDriverConnection
                     + " autoClose     INTEGER    NOT NULL, "
                     + " chunkHash     INTEGER    NOT NULL, "
                     + " blocksToMove  INTEGER    NOT NULL, "
-                    + " notify        INTEGER    NOT NULL) ";
+                    + " notify        INTEGER    NOT NULL, "
+                    + " bypass_protections INTEGER NOT NULL) ";
+
                 stmt1.executeUpdate(sql1);
                 stmt1.close();
 
