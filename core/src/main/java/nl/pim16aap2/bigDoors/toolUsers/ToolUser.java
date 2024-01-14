@@ -8,7 +8,6 @@ import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Messages;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -111,7 +110,7 @@ public abstract class ToolUser extends Abortable
             final Location max = new Location(world, two.getBlockX(), two.getBlockY(), two.getBlockZ());
 
             plugin.canBreakBlocksBetweenLocs(player.getUniqueId(), player.getName(), world, min, max)
-                  .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(
+                  .thenApply(canBreakBlock -> BigDoors.getScheduler().runTask(
                       plugin, () -> finishUp(message, world, min, max, canBreakBlock)));
         }
         else
