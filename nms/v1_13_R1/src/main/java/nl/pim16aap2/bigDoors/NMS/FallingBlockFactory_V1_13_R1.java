@@ -1,25 +1,21 @@
 package nl.pim16aap2.bigDoors.NMS;
 
+import net.minecraft.server.v1_13_R1.Block;
+import net.minecraft.server.v1_13_R1.IBlockData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import net.minecraft.server.v1_13_R1.Block;
-import net.minecraft.server.v1_13_R1.IBlockData;
-
 public class FallingBlockFactory_V1_13_R1 implements FallingBlockFactory
 {
     // Make a falling block.
     @Override
-    public CustomCraftFallingBlock fallingBlockFactory(Location loc, NMSBlock block, byte matData, Material mat)
+    public CustomCraftFallingBlock createFallingBlock(Location loc, NMSBlock block, byte matData, Material mat)
     {
         IBlockData blockData = ((Block) block).getBlockData();
         CustomEntityFallingBlock_V1_13_R1 fBlockNMS = new CustomEntityFallingBlock_V1_13_R1(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), blockData);
-        CustomCraftFallingBlock_V1_13_R1 entity = new CustomCraftFallingBlock_V1_13_R1(Bukkit.getServer(), fBlockNMS);
-        entity.setCustomName("BigDoorsEntity");
-        entity.setCustomNameVisible(false);
-        return entity;
+        return new CustomCraftFallingBlock_V1_13_R1(Bukkit.getServer(), fBlockNMS);
     }
 
     @Override

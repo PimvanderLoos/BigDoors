@@ -14,15 +14,12 @@ public class FallingBlockFactory_V1_17_R1 implements FallingBlockFactory
 {
     // Make a falling block.
     @Override
-    public CustomCraftFallingBlock fallingBlockFactory(Location loc, NMSBlock block, byte matData, Material mat)
+    public CustomCraftFallingBlock createFallingBlock(Location loc, NMSBlock block, byte matData, Material mat)
     {
         IBlockData blockData = ((NMSBlock_V1_17_R1) block).getMyBlockData();
         CustomEntityFallingBlock_V1_17_R1 fBlockNMS
             = new CustomEntityFallingBlock_V1_17_R1(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), blockData);
-        CustomCraftFallingBlock_V1_17_R1 entity = new CustomCraftFallingBlock_V1_17_R1(Bukkit.getServer(), fBlockNMS);
-        entity.setCustomName("BigDoorsEntity");
-        entity.setCustomNameVisible(false);
-        return entity;
+        return new CustomCraftFallingBlock_V1_17_R1(Bukkit.getServer(), fBlockNMS);
     }
 
     @Override

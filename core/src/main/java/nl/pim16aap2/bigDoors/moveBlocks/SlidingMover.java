@@ -98,6 +98,8 @@ public class SlidingMover extends BlockMover
             new ArrayList<>(Math.min(door.getBlockCount(),
                                      (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
+        final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
+
         int yAxis = yMin;
         do
         {
@@ -122,7 +124,7 @@ public class SlidingMover extends BlockMover
 
                         CustomCraftFallingBlock fBlock = null;
                         if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                            fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
                         savedBlocks
                             .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
 

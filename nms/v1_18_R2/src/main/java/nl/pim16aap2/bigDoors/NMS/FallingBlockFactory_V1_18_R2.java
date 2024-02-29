@@ -13,15 +13,12 @@ import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
 public class FallingBlockFactory_V1_18_R2 implements FallingBlockFactory
 {
     @Override
-    public CustomCraftFallingBlock fallingBlockFactory(Location loc, NMSBlock block, byte matData, Material mat)
+    public CustomCraftFallingBlock createFallingBlock(Location loc, NMSBlock block, byte matData, Material mat)
     {
         IBlockData blockData = ((NMSBlock_V1_18_R2) block).getMyBlockData();
         CustomEntityFallingBlock_V1_18_R2 fBlockNMS
             = new CustomEntityFallingBlock_V1_18_R2(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), blockData);
-        CustomCraftFallingBlock_V1_18_R2 entity = new CustomCraftFallingBlock_V1_18_R2(Bukkit.getServer(), fBlockNMS);
-        entity.setCustomName("BigDoorsEntity");
-        entity.setCustomNameVisible(false);
-        return entity;
+        return new CustomCraftFallingBlock_V1_18_R2(Bukkit.getServer(), fBlockNMS);
     }
 
     @Override

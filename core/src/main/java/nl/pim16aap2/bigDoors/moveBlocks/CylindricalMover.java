@@ -94,6 +94,8 @@ public class CylindricalMover extends BlockMover
             new ArrayList<>(Math.min(door.getBlockCount(),
                                      (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
+        final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
+
         int xAxis = turningPoint.getBlockX();
         do
         {
@@ -164,7 +166,7 @@ public class CylindricalMover extends BlockMover
 
                         CustomCraftFallingBlock fBlock = null;
                         if (!instantOpen)
-                            fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                            fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
 
                         savedBlocks.add(new MyBlockData(mat, matByte, fBlock, radius, materialData,
                                                         block2 == null ? block : block2, canRotate, startLocation));
@@ -300,6 +302,8 @@ public class CylindricalMover extends BlockMover
                     if (replace)
                         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                         {
+                            final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
+
                             for (MyBlockData block : savedBlocks)
                                 if (block.canRot() != 0 && block.canRot() != 5)
                                 {
@@ -311,7 +315,7 @@ public class CylindricalMover extends BlockMover
                                     CustomCraftFallingBlock fBlock;
                                     // Because the block in savedBlocks is already rotated where applicable, just
                                     // use that block now.
-                                    fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
+                                    fBlock = fabf.createFallingBlockWithMetadata(spec, loc, block.getBlock(), matData, mat);
 
                                     block.getFBlock().remove();
                                     block.setFBlock(fBlock);

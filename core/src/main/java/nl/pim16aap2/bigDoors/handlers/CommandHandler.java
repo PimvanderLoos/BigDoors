@@ -373,7 +373,7 @@ public class CommandHandler implements CommandExecutor
     {
         for (World world : Bukkit.getWorlds())
             for (Entity entity : world.getEntities())
-                if (entity.getCustomName() != null && entity.getCustomName().equals("BigDoorsEntity"))
+                if (plugin.isBigDoorsEntity(entity))
                     entity.remove();
     }
 
