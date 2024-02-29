@@ -133,8 +133,6 @@ final class ReflectionRepository
     public static final Method methodBlockInfoFromBlockBase;
     public static final Method methodGetTypeFromBlockPosition;
     public static final Method methodGetBukkitServer;
-    public static final Method methodSetCraftEntityCustomName;
-    public static final Method methodSetCraftEntityCustomNameVisible;
     public static final Method methodIsAssignableFrom;
     public static final Method methodSetBlockType;
     public static final Method methodEnumOrdinal;
@@ -326,10 +324,6 @@ final class ReflectionRepository
                                                      .withModifiers(Modifier.PUBLIC)
                                                      .withParameters(classBlockPosition).get();
         methodGetBukkitServer = findMethod().inClass(Bukkit.class).withName("getServer").get();
-        methodSetCraftEntityCustomName = findMethod().inClass(classCraftEntity).withName("setCustomName")
-                                                     .withParameters(String.class).get();
-        methodSetCraftEntityCustomNameVisible = findMethod()
-            .inClass(classCraftEntity).withName("setCustomNameVisible").withParameters(boolean.class).get();
         methodIsAssignableFrom = findMethod().inClass(Class.class).withName("isAssignableFrom")
                                              .withParameters(Class.class).get();
         methodSetBlockType = findMethod().inClass(Block.class).withName("setType")

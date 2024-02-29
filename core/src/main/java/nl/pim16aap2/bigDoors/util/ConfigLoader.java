@@ -58,6 +58,7 @@ public class ConfigLoader
     private String languageFile;
     private int maxDoorCount;
     private int countDoorsLevel;
+    private boolean setCustomName;
     private int cacheTimeout;
     private boolean announceUpdateCheck;
     private boolean autoDLUpdate;
@@ -244,6 +245,9 @@ public class ConfigLoader
         String[] allowNotificationsComment = { "Whether or not to allow toggle notifications. ",
                                                "When enabled, door creators can opt-in to receive notifications whenever a door is toggled.",
                                                "This is on a per-door basis."};
+        String[] setCustomNameComment = { "Sets the custom name 'BigDoorsEntity' for all animated blocks.",
+                                          "This can be useful for identifying animated blocks used by this plugin.",
+                                          "However, the name is visible on 1.20.4+ when you look at the entities." };
         String[] allowCodeGenerationComment = { "On unsupported versions of Minecraft, BigDoors can try to generate the required code itself.",
                                                 "This means that the plugin may work even on unsupported versions, ",
                                                 "but also that unexpected issues might pop up! Be sure to test everything when using this!",
@@ -386,6 +390,9 @@ public class ConfigLoader
 
         allowNotifications = config.getBoolean("allowNotifications", true);
         configOptionsList.add(new ConfigOption("allowNotifications", allowNotifications, allowNotificationsComment));
+
+        setCustomName = config.getBoolean("setCustomName", false);
+        configOptionsList.add(new ConfigOption("setCustomName", setCustomName, setCustomNameComment));
 
         allowCodeGeneration = config.getBoolean("allowCodeGeneration", true);
         configOptionsList.add(new ConfigOption("allowCodeGeneration", allowCodeGeneration, allowCodeGenerationComment));
@@ -848,5 +855,10 @@ public class ConfigLoader
     public int countDoorsLevel()
     {
         return countDoorsLevel;
+    }
+
+    public boolean setCustomName()
+    {
+        return setCustomName;
     }
 }

@@ -3,6 +3,7 @@ package nl.pim16aap2.bigDoors.moveBlocks;
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.events.DoorEventAutoToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
@@ -203,6 +204,21 @@ public abstract class BlockMover
     public final List<MyBlockData> getSavedBlocks()
     {
         return publicSavedBlocks;
+    }
+
+    /**
+     * Creates a new instance of the falling block factory specification.
+     * <p>
+     * This is used to configure the falling block factory.
+     *
+     * @param plugin The BigDoors plugin instance.
+     * @return The falling block factory specification.
+     */
+    protected static FallingBlockFactory.Specification createBlockFactorySpec(BigDoors plugin)
+    {
+        return new FallingBlockFactory.Specification(
+            plugin.getConfigLoader().setCustomName()
+        );
     }
 
     @FunctionalInterface

@@ -136,9 +136,7 @@ public class FallingBlockFactoryClassGenerator extends ClassGenerator
         builder = builder
             .defineMethod(METHOD_POST_PROCESS, craftFallingBlockClassGenerator.getGeneratedClass(), Visibility.PRIVATE)
             .withParameters(craftFallingBlockClassGenerator.getGeneratedClass())
-            .intercept(invoke(methodSetCraftEntityCustomName).onArgument(0).with("BigDoorsEntity").andThen(
-                invoke(methodSetCraftEntityCustomNameVisible).onArgument(0).with(false)).andThen(
-                FixedValue.argument(0)));
+            .intercept(FixedValue.argument(0));
 
         final Method methodGetMyBlockData =
             ReflectionBuilder.findMethod().inClass(nmsBlockClassGenerator.getGeneratedClass())

@@ -15,24 +15,21 @@ class FallingBlockFactory_V1_20_R3 implements FallingBlockFactory
 {
     private final CustomEntityFallingBlockFactory customEntityFallingBlockFactory;
 
+
     FallingBlockFactory_V1_20_R3(CustomEntityFallingBlockFactory customEntityFallingBlockFactory)
     {
         this.customEntityFallingBlockFactory = customEntityFallingBlockFactory;
     }
 
     @Override
-    public CustomCraftFallingBlock fallingBlockFactory(Location loc, NMSBlock block, byte matData, Material mat)
+    public CustomCraftFallingBlock createFallingBlock(Location loc, NMSBlock block, byte matData, Material mat)
     {
         final IBlockData blockData = ((NMSBlock_V1_20_R3) block).getMyBlockData();
         final CustomEntityFallingBlock_V1_20_R3 fBlockNMS =
             customEntityFallingBlockFactory.newEntityFallingBlock(
                 loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), blockData);
 
-        final CustomCraftFallingBlock_V1_20_R3 entity =
-            new CustomCraftFallingBlock_V1_20_R3((CraftServer) Bukkit.getServer(), fBlockNMS);
-        entity.setCustomName("BigDoorsEntity");
-        entity.setCustomNameVisible(false);
-        return entity;
+        return new CustomCraftFallingBlock_V1_20_R3((CraftServer) Bukkit.getServer(), fBlockNMS);
     }
 
     @Override

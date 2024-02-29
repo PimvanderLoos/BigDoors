@@ -57,6 +57,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -1075,6 +1076,22 @@ public class BigDoors extends JavaPlugin implements Listener
     {
         final Door door = getCommander().getDoor(null, doorUID);
         return toggleDoor(door, 0.0, false) == DoorOpenResult.SUCCESS;
+    }
+
+    /**
+     * Checks if a given entity is a BigDoors entity.
+     *
+     * @param entity The entity to check.
+     * @return True if the entity is a BigDoors entity.
+     *
+     * @throws RuntimeException If the plugin is not (correctly) enabled.
+     * You can use {@link #isEnabledSuccessfully()} to ensure the plugin is enabled correctly.
+     */
+    public boolean isBigDoorsEntity(@Nullable Entity entity)
+    {
+        if (fabf == null)
+            throw new RuntimeException("Falling Block Factory is null! The plugin is likely not enabled!");
+        return fabf.isBigDoorsEntity(entity);
     }
 
     // Check the open-status of a door.

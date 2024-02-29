@@ -1,10 +1,11 @@
 package nl.pim16aap2.bigDoors.NMS;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
-public interface CustomCraftFallingBlock
+public interface CustomCraftFallingBlock extends Entity
 {
     boolean teleport(Location newPos);
 
