@@ -1,3 +1,8 @@
+Alpha 0.1.8.50
+- Added a config option `setCustomName` to control whether animated blocks have a constum name. Default: false.
+- Switched to PersistentDataContainer for animated entity identification instead of custom names.
+- Added the method `boolean BigDoors#isBigDoorsEntity(Entity)` so other plugins can easily check if a specific entity is managed by this plugin.
+
 Alpha 0.1.8.49
 - Added support for MC 1.20.4.
 - Updated database to v9.
