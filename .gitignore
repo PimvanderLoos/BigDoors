@@ -43,3 +43,4 @@ updateMirror.sh
 *dependency-reduced-pom.xml
 **/target/*
 */lib/*
+nms_build/
