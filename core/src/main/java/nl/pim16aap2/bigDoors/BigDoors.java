@@ -780,7 +780,6 @@ public class BigDoors extends JavaPlugin implements Listener
         }
         catch (final ArrayIndexOutOfBoundsException | IllegalArgumentException e)
         {
-            e.printStackTrace();
             Bukkit.getLogger().severe("Failed to figure out the current version from input: \"" +
                                           Bukkit.getServer().getClass().getPackage().getName() +
                                           "\"! We'll just assume you're using version " + maxVersion);
@@ -1157,22 +1156,8 @@ public class BigDoors extends JavaPlugin implements Listener
         v1_20_R1,
         v1_20_R2,
         v1_20_R3,
-        v1_21_R1,
-        v1_21_R2,
-        v1_22_R1,
-        v1_22_R2,
-        v1_23_R1,
-        v1_23_R2,
-        v1_24_R1,
-        v1_24_R2,
-        v1_25_R1,
-        v1_25_R2,
-        v1_26_R1,
-        v1_26_R2,
-        v1_27_R1,
-        v1_27_R2,
-        v1_28_R1,
-        v1_28_R2,
+        v1_20_R4,
+        UNKNOWN
         ;
 
         public boolean isAtLeast(MCVersion test)
