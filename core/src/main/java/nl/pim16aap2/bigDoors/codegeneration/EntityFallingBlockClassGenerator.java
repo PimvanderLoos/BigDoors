@@ -298,7 +298,12 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
                 }
             }, IMultiplyVec3D.class));
 
-        builder = builder.method(is(METHOD_DIE)).intercept(invoke(methodDie).onSuper());
+
+        MethodCall methodCallDie = invoke(methodDie).onSuper();
+        if (objectEntityRemoveEventCausePlugin != null)
+            methodCallDie = methodCallDie.with(objectEntityRemoveEventCausePlugin);
+
+        builder = builder.method(is(METHOD_DIE)).intercept(methodCallDie);
         builder = builder.method(is(METHOD_IS_AIR)).intercept(invoke(methodIsAir).onField(FIELD_BLOCK));
         builder = builder
             .method(is(METHOD_MOVE).and(ElementMatchers.takesArguments(Collections.emptyList())))

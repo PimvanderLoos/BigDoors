@@ -1,8 +1,10 @@
 package nl.pim16aap2.bigDoors.codegeneration;
 
+import nl.pim16aap2.bigDoors.reflection.MethodFinder;
 import nl.pim16aap2.bigDoors.reflection.asm.ASMUtil;
 import org.bukkit.Location;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -106,11 +108,23 @@ final class ReflectionASMAnalyzers
         return findMethod().inClass(classBlockData).withName(methodName).withoutParameters().get();
     }
 
-    public static Method getCraftEntityDelegationMethod(Class<?> classCraftEntity, Class<?> classNMSEntity)
+    public static Method getCraftEntityDieMethod(
+        Class<?> classCraftEntity,
+        Class<?> classNMSEntity,
+        @Nullable Class<?> classEntityRemoveEventCause)
     {
         final Method sourceMethod = findMethod().inClass(classCraftEntity).withName("remove").withoutParameters().get();
-        final String methodName = ASMUtil.getMethodNameFromMethodCall(sourceMethod, classNMSEntity, void.class);
-        return findMethod().inClass(classNMSEntity).withName(methodName).withoutParameters().get();
+        final String methodName =
+            ASMUtil.getMethodNameFromMethodCall(sourceMethod, classNMSEntity, void.class, classEntityRemoveEventCause);
+        Objects.requireNonNull(methodName, "Failed to find name of method call in remove method!");
+
+        final MethodFinder.NamedMethodFinder methodFinder = findMethod().inClass(classNMSEntity).withName(methodName);
+        if (classEntityRemoveEventCause != null)
+            methodFinder.withParameters(classEntityRemoveEventCause);
+        else
+            methodFinder.withoutParameters();
+
+        return methodFinder.get();
     }
 
     public static Method getNMSAddEntityMethod(Class<?> classNMSWorldServer, Class<?> classNMSEntity)
