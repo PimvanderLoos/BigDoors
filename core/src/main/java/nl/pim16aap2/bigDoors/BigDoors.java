@@ -1,5 +1,6 @@
 package nl.pim16aap2.bigDoors;
 
+import NMS.FallingBlockFactoryProvider_V1_20_R4;
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R1;
@@ -887,6 +888,9 @@ public class BigDoors extends JavaPlugin implements Listener
                 break;
             case "v1_20_R3":
                 fabf = FallingBlockFactoryProvider_V1_20_R3.getFactory();
+                break;
+            case "v1_20_R4":
+                fabf = FallingBlockFactoryProvider_V1_20_R4.getFactory();
                 break;
             default:
                 if (config.allowCodeGeneration())
