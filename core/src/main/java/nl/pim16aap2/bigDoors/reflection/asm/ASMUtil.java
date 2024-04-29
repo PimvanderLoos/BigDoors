@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -141,9 +142,20 @@ public final class ASMUtil
     public static String[] getMethodNamesFromMethodCall(Executable executable, int limit, @Nullable Class<?> ownerClass,
                                                         Class<?> returnType, Class<?>... parameters)
     {
-        final Type[] paramTypes = new Type[parameters.length];
+
+        final Type[] paramTypesTmp = new Type[parameters.length];
+        int skipped = 0;
         for (int idx = 0; idx < parameters.length; ++idx)
-            paramTypes[idx] = Type.getType(parameters[idx]);
+        {
+            if (parameters[idx] == null)
+            {
+                skipped++;
+                continue;
+            }
+            paramTypesTmp[idx] = Type.getType(parameters[idx]);
+        }
+        final Type[] paramTypes = Arrays.copyOf(paramTypesTmp, parameters.length - skipped);
+
         final Type type = Type.getMethodType(Type.getType(returnType), paramTypes);
 
         try
