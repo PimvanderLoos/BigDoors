@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.reflection;
 
-import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.util.MinecraftVersion;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
@@ -13,6 +14,16 @@ import java.lang.reflect.Method;
 @SuppressWarnings("unused")
 public final class BukkitReflectionUtil
 {
+    /**
+     * The base package of the NMS classes with a trailing dot.
+     */
+    public static final String NMS_BASE = findNMSBase();
+
+    /**
+     * The base package of the CraftBukkit classes with a trailing dot.
+     */
+    public static final String CRAFT_BASE = Bukkit.getServer().getClass().getPackage().getName() + ".";
+
     private static final Class<?> classNMSPlayer;
     private static final Class<?> classPlayerConnection;
     private static final Class<?> classVec3D;
@@ -25,15 +36,12 @@ public final class BukkitReflectionUtil
 
     static
     {
-        final String nmsBase = "net.minecraft.server." + BigDoors.get().getPackageVersion() + ".";
-        final String craftBase = "org.bukkit.craftbukkit." + BigDoors.get().getPackageVersion() + ".";
-
-        classNMSPlayer = ReflectionBuilder.findClass(nmsBase + "EntityPlayer",
+        classNMSPlayer = ReflectionBuilder.findClass(NMS_BASE + "EntityPlayer",
                                                      "net.minecraft.server.level.EntityPlayer").get();
-        classPlayerConnection = ReflectionBuilder.findClass(nmsBase + "PlayerConnection",
+        classPlayerConnection = ReflectionBuilder.findClass(NMS_BASE + "PlayerConnection",
                                                             "net.minecraft.server.network.PlayerConnection").get();
-        classCraftPlayer = ReflectionBuilder.findClass(craftBase + "entity.CraftPlayer").get();
-        classVec3D = ReflectionBuilder.findClass(nmsBase + "Vec3D",
+        classCraftPlayer = ReflectionBuilder.findClass(CRAFT_BASE + "entity.CraftPlayer").get();
+        classVec3D = ReflectionBuilder.findClass(NMS_BASE + "Vec3D",
                                                  "net.minecraft.world.phys.Vec3D").get();
 
         fieldPlayerConnection = ReflectionBuilder.findField()
@@ -84,26 +92,29 @@ public final class BukkitReflectionUtil
     {
         final Field[] fields = new Field[2];
 
-        switch (BigDoors.getMCVersion())
-        {
-            case v1_19_R1:
-                // It is F&H for 1.19.0 and G&I for 1.19.1... Annoying
-                fields[0] = classPlayerConnection.getDeclaredField("F");
-                if (fields[0].getType() == int.class)
-                {
+        final MinecraftVersion version = MinecraftVersion.CURRENT_VERSION;
+        if (version.getMinor() != 19)
+            discoverFlyingCounters(classPlayerConnection, fields);
+        else
+            switch (version.getPatch())
+            {
+                case 0:
+                    fields[0] = classPlayerConnection.getDeclaredField("F");
                     fields[1] = classPlayerConnection.getDeclaredField("H");
-                }
-                else
-                {
+                    break;
+                case 1:
+                case 2:
                     fields[0] = classPlayerConnection.getDeclaredField("G");
                     fields[1] = classPlayerConnection.getDeclaredField("I");
-                }
-            case v1_19_R2:
-                fields[0] = classPlayerConnection.getDeclaredField("H");
-                fields[1] = classPlayerConnection.getDeclaredField("J");
-            default:
-                discoverFlyingCounters(classPlayerConnection, fields);
-        }
+                    break;
+                case 3:
+                case 4:
+                    fields[0] = classPlayerConnection.getDeclaredField("H");
+                    fields[1] = classPlayerConnection.getDeclaredField("J");
+                    break;
+                default:
+                    discoverFlyingCounters(classPlayerConnection, fields);
+            }
 
         for (final Field field : fields)
             field.setAccessible(true);
@@ -156,4 +167,13 @@ public final class BukkitReflectionUtil
      * Empty init method used to ensure initialization of static stuff.
      */
     public static void init() {}
+
+    public static String findNMSBase()
+    {
+        final String[] split = Bukkit.getServer().getClass().getPackage().getName().split("\\.");
+
+        if (split.length < 4)
+            return "net.minecraft.server.";
+        return "net.minecraft.server." + split[3] + ".";
+    }
 }

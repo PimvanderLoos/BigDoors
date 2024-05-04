@@ -1,7 +1,7 @@
 package nl.pim16aap2.bigDoors.codegeneration;
 
 import com.cryptomorin.xseries.XMaterial;
-import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.reflection.BukkitReflectionUtil;
 import nl.pim16aap2.bigDoors.reflection.ParameterGroup;
 import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
 import org.bukkit.Bukkit;
@@ -154,8 +154,8 @@ final class ReflectionRepository
 
     static
     {
-        final String nmsBase = "net.minecraft.server." + BigDoors.get().getPackageVersion() + ".";
-        final String craftBase = "org.bukkit.craftbukkit." + BigDoors.get().getPackageVersion() + ".";
+        final String craftBase = BukkitReflectionUtil.CRAFT_BASE;
+        final String nmsBase = BukkitReflectionUtil.NMS_BASE;
 
         classEntityFallingBlock = findClass(nmsBase + "EntityFallingBlock",
                                             "net.minecraft.world.entity.item.EntityFallingBlock").get();
