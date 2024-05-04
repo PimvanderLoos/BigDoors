@@ -1,6 +1,6 @@
 package nl.pim16aap2.bigDoors.compatibility;
 
-import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.reflection.BukkitReflectionUtil;
 import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -50,8 +50,8 @@ final class FakePlayerInstantiator
     {
         this.plugin = plugin;
 
-        final String nmsBase = "net.minecraft.server." + BigDoors.get().getPackageVersion() + ".";
-        final String craftBase = "org.bukkit.craftbukkit." + BigDoors.get().getPackageVersion() + ".";
+        final String craftBase = BukkitReflectionUtil.CRAFT_BASE;
+        final String nmsBase = BukkitReflectionUtil.NMS_BASE;
 
         classCraftOfflinePlayer = findClass(craftBase + "CraftOfflinePlayer").get();
         classCraftWorld = findClass(craftBase + "CraftWorld").get();

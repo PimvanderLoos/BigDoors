@@ -49,6 +49,7 @@ import nl.pim16aap2.bigDoors.util.ConfigLoader;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Messages;
+import nl.pim16aap2.bigDoors.util.MinecraftVersion;
 import nl.pim16aap2.bigDoors.util.TimedCache;
 import nl.pim16aap2.bigDoors.util.Util;
 import nl.pim16aap2.bigDoors.waitForCommand.WaitForCommand;
@@ -93,8 +94,6 @@ public class BigDoors extends JavaPlugin implements Listener
     public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
 
-    private static final String PACKAGE_VERSION = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
     public static final int MINIMUMDOORDELAY = 15;
 
     private static final Set<String> BLACKLISTED_SERVERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
@@ -132,8 +131,8 @@ public class BigDoors extends JavaPlugin implements Listener
     private VaultManager vaultManager;
     private UpdateManager updateManager;
     private volatile boolean schedulerIsRunning = false;
-    private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
-    private static final boolean IS_ON_FLATTENED_VERSION = MC_VERSION.isAtLeast(MCVersion.v1_13_R1);
+    private static final @NotNull MinecraftVersion MINECRAFT_VERSION = MinecraftVersion.CURRENT_VERSION;
+    private static final boolean IS_ON_FLATTENED_VERSION = MinecraftVersion.CURRENT_VERSION.isAtLeast(1, 13);
     private boolean isEnabled = false;
     private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
@@ -222,11 +221,13 @@ public class BigDoors extends JavaPlugin implements Listener
 
         try
         {
-            validVersion = compatibleMCVer();
+            fabf = createFallingBlockFactory();
+            validVersion = (fabf != null);
         }
         catch (Exception | ExceptionInInitializerError e)
         {
-            logger.logMessageToConsoleOnly("Failed to enable the plugin for this version of Minecraft!");
+            logger.logMessageToConsoleOnly(
+                "Failed to enable the plugin for Minecraft version '" + MINECRAFT_VERSION + "'!");
             getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
             validVersion = false;
         }
@@ -471,11 +472,6 @@ public class BigDoors extends JavaPlugin implements Listener
         ToolUser tu = getToolUser(player);
         if (tu != null)
             tu.abortSilently();
-    }
-
-    public String getPackageVersion()
-    {
-        return PACKAGE_VERSION;
     }
 
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
@@ -737,11 +733,6 @@ public class BigDoors extends JavaPlugin implements Listener
         return locale == null ? "en_US" : locale;
     }
 
-    public static MCVersion getMCVersion()
-    {
-        return MC_VERSION;
-    }
-
     private void readConfigValues()
     {
         // Load the settings from the config file.
@@ -768,137 +759,122 @@ public class BigDoors extends JavaPlugin implements Listener
         return IS_ON_FLATTENED_VERSION;
     }
 
-    private static @NotNull MCVersion calculateMCVersion()
-    {
-        final MCVersion[] values = MCVersion.values();
-        final MCVersion maxVersion = values[values.length - 1];
-
-        String version;
-        try
-        {
-            version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-            return MCVersion.valueOf(version);
-        }
-        catch (final ArrayIndexOutOfBoundsException | IllegalArgumentException e)
-        {
-            Bukkit.getLogger().severe("Failed to figure out the current version from input: \"" +
-                                          Bukkit.getServer().getClass().getPackage().getName() +
-                                          "\"! We'll just assume you're using version " + maxVersion);
-            return maxVersion;
-        }
-    }
-
     // Check + initialize for the correct version of Minecraft.
-    private boolean compatibleMCVer()
+    private @Nullable FallingBlockFactory createFallingBlockFactory()
         throws Exception
     {
         if (config.forceCodeGeneration())
+            return FallbackGeneratorManager.getFallingBlockFactory();
+
+        final MinecraftVersion version = MinecraftVersion.CURRENT_VERSION;
+        if (!version.isAtLeast(1, 11) || version.getMajor() != 1)
         {
-            fabf = FallbackGeneratorManager.getFallingBlockFactory();
-            return true;
+            logger.severe("This version of Minecraft is not supported. Is the plugin up-to-date?");
+            return null;
         }
 
-        String version;
-        try
+        switch (version.getMinor())
         {
-            version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-        }
-        catch (final ArrayIndexOutOfBoundsException useAVersionMentionedInTheDescriptionPleaseException)
-        {
-            useAVersionMentionedInTheDescriptionPleaseException.printStackTrace();
-            return false;
-        }
+            case 11:
+                return new FallingBlockFactory_V1_11_R1();
 
-        final String[] split = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
-        final int minorVersion = Util.parseInt(split.length > 2 ? split[2] : null).orElse(0);
+            case 12:
+                return new FallingBlockFactory_V1_12_R1();
 
-        fabf = null;
-        switch (version)
-        {
-            case "v1_8_R1":
-            case "v1_8_R2":
-            case "v1_8_R3":
-            case "v1_9_R1":
-            case "v1_9_R2":
-            case "v1_10_R1":
-                return false;
-            case "v1_11_R1":
-                fabf = new FallingBlockFactory_V1_11_R1();
-                break;
-            case "v1_12_R1":
-                fabf = new FallingBlockFactory_V1_12_R1();
-                break;
-            case "v1_13_R1":
-                fabf = new FallingBlockFactory_V1_13_R1();
-                break;
-            case "v1_13_R2":
-                if (minorVersion == 0)
+            case 13:
+                switch (version.getPatch())
                 {
-                    logger.severe("Failed to parse minor version from: \"" + Bukkit.getBukkitVersion() + "\"");
-                    return false;
+                    case 0:
+                        return new FallingBlockFactory_V1_13_R1();
+                    case 1:
+                        return new FallingBlockFactory_V1_13_R1_5();
+                    case 2:
+                        return new FallingBlockFactory_V1_13_R2();
+                    default:
+                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.13!");
+                        return null;
                 }
-                // 1.13.1 has the same package version as 1.13.2, but there are actual NMS changes between them.
-                // That's why 1.13.1 is a kinda R1.5 package.
-                if (minorVersion == 1)
-                    fabf = new FallingBlockFactory_V1_13_R1_5();
-                else
-                    fabf = new FallingBlockFactory_V1_13_R2();
-                break;
-            case "v1_14_R1":
-                fabf = new FallingBlockFactory_V1_14_R1();
-                break;
-            case "v1_15_R1":
-                fabf = new FallingBlockFactory_V1_15_R1();
-                break;
-            case "v1_16_R1":
-                fabf = new FallingBlockFactory_V1_16_R1();
-                break;
-            case "v1_16_R2":
-                fabf = new FallingBlockFactory_V1_16_R2();
-                break;
-            case "v1_16_R3":
-                fabf = new FallingBlockFactory_V1_16_R3();
-                break;
-            case "v1_17_R1":
-                fabf = new FallingBlockFactory_V1_17_R1();
-                break;
-            case "v1_18_R1":
-                fabf = new FallingBlockFactory_V1_18_R1();
-                break;
-            case "v1_18_R2":
-                fabf = new FallingBlockFactory_V1_18_R2();
-                break;
-            case "v1_19_R1":
-                if (minorVersion == 0)
-                    fabf = new FallingBlockFactory_V1_19_R1();
-                else
-                    fabf = new FallingBlockFactory_V1_19_R1_1();
-                break;
-            case "v1_19_R2":
-                fabf = new FallingBlockFactory_V1_19_R2();
-                break;
-            case "v1_19_R3":
-                fabf = new FallingBlockFactory_V1_19_R3();
-                break;
-            case "v1_20_R1":
-                fabf = FallingBlockFactoryProvider_V1_20_R1.getFactory();
-                break;
-            case "v1_20_R2":
-                fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory();
-                break;
-            case "v1_20_R3":
-                fabf = FallingBlockFactoryProvider_V1_20_R3.getFactory();
-                break;
-            case "v1_20_R4":
-                fabf = FallingBlockFactoryProvider_V1_20_R4.getFactory();
-                break;
-            default:
-                if (config.allowCodeGeneration())
-                    fabf = FallbackGeneratorManager.getFallingBlockFactory();
-        }
 
-        // Return true if compatible.
-        return fabf != null;
+            case 14:
+                return new FallingBlockFactory_V1_14_R1();
+
+            case 15:
+                return new FallingBlockFactory_V1_15_R1();
+
+            case 16:
+                switch (version.getPatch())
+                {
+                    case 0:
+                    case 1:
+                        return new FallingBlockFactory_V1_16_R1();
+                    case 2:
+                    case 3:
+                        return new FallingBlockFactory_V1_16_R2();
+                    case 4:
+                    case 5:
+                        return new FallingBlockFactory_V1_16_R3();
+                    default:
+                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.16!");
+                        return null;
+                }
+
+            case 17:
+                return new FallingBlockFactory_V1_17_R1();
+
+            case 18:
+                switch (version.getPatch())
+                {
+                    case 0:
+                    case 1:
+                        return new FallingBlockFactory_V1_18_R1();
+                    case 2:
+                        return new FallingBlockFactory_V1_18_R2();
+                    default:
+                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.18!");
+                        return null;
+                }
+
+            case 19:
+                switch (version.getPatch())
+                {
+                    case 0:
+                        return new FallingBlockFactory_V1_19_R1();
+                    case 1:
+                    case 2:
+                        return new FallingBlockFactory_V1_19_R1_1();
+                    case 3:
+                        return new FallingBlockFactory_V1_19_R2();
+                    case 4:
+                        return new FallingBlockFactory_V1_19_R3();
+                    default:
+                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.19!");
+                        return null;
+                }
+
+            case 20:
+                switch (version.getPatch())
+                {
+                    case 0:
+                    case 1:
+                        return FallingBlockFactoryProvider_V1_20_R1.getFactory();
+                    case 2:
+                        return FallingBlockFactoryProvider_V1_20_R2.getFactory();
+                    case 3:
+                        return FallingBlockFactoryProvider_V1_20_R3.getFactory();
+                    case 5:
+                    case 6:
+                        return FallingBlockFactoryProvider_V1_20_R4.getFactory();
+                    default:
+                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.20!");
+                        return null;
+                }
+
+            default:
+                logger.severe("Unsupported version of Minecraft: " + version);
+                if (config.allowCodeGeneration())
+                    return FallbackGeneratorManager.getFallingBlockFactory();
+                return null;
+        }
     }
 
     private int readBuildNumber()
@@ -1121,7 +1097,7 @@ public class BigDoors extends JavaPlugin implements Listener
     {
         try
         {
-            Class.forName("org.bukkit.craftbukkit." + BigDoors.get().getPackageVersion() + ".legacy.CraftLegacy");
+            Class.forName(BukkitReflectionUtil.CRAFT_BASE + "legacy.CraftLegacy");
         }
         catch (ClassNotFoundException e)
         {
@@ -1132,41 +1108,5 @@ public class BigDoors extends JavaPlugin implements Listener
     public RedstoneHandler getRedstoneHandler()
     {
         return redstoneHandler;
-    }
-
-    public enum MCVersion
-    {
-        v1_8_R1,
-        v1_8_R2,
-        v1_8_R3,
-        v1_9_R1,
-        v1_9_R2,
-        v1_10_R1,
-        v1_11_R1,
-        v1_12_R1,
-        v1_13_R1,
-        v1_13_R2,
-        v1_14_R1,
-        v1_15_R1,
-        v1_16_R1,
-        v1_16_R2,
-        v1_16_R3,
-        v1_17_R1,
-        v1_18_R1,
-        v1_18_R2,
-        v1_19_R1,
-        v1_19_R2,
-        v1_19_R3,
-        v1_20_R1,
-        v1_20_R2,
-        v1_20_R3,
-        v1_20_R4,
-        UNKNOWN
-        ;
-
-        public boolean isAtLeast(MCVersion test)
-        {
-            return ordinal() >= test.ordinal();
-        }
     }
 }
