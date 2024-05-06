@@ -15,6 +15,11 @@ import java.util.Objects;
 public interface FallingBlockFactory
 {
     /**
+     * Whether the server supports the PersistentDataContainer.
+     */
+    boolean SUPPORTS_PERSISTENT_DATA_CONTAINER = Helper.supportsPersistentDataContainer();
+
+    /**
      * The custom name of the falling block entity.
      * <p>
      * This used to be the recommended way to identify the falling block as a BigDoorsEntity.
@@ -77,7 +82,8 @@ public interface FallingBlockFactory
             entity.setCustomNameVisible(false);
         }
 
-        entity.getPersistentDataContainer().set(ENTITY_KEY.get(), PersistentDataType.BYTE, (byte) 1);
+        if (SUPPORTS_PERSISTENT_DATA_CONTAINER)
+            entity.getPersistentDataContainer().set(ENTITY_KEY.get(), PersistentDataType.BYTE, (byte) 1);
     }
 
     NMSBlock nmsBlockFactory(World world, int x, int y, int z);
@@ -96,7 +102,8 @@ public interface FallingBlockFactory
         if (ENTITY_NAME.equals(entity.getCustomName()))
             return true;
 
-        return entity.getPersistentDataContainer().has(ENTITY_KEY.get(), PersistentDataType.BYTE);
+        return SUPPORTS_PERSISTENT_DATA_CONTAINER &&
+            entity.getPersistentDataContainer().has(ENTITY_KEY.get(), PersistentDataType.BYTE);
     }
 
     /**
@@ -114,7 +121,31 @@ public interface FallingBlockFactory
          */
         public Specification(boolean setCustomName)
         {
-            this.setCustomName = setCustomName;
+            this.setCustomName = setCustomName || !SUPPORTS_PERSISTENT_DATA_CONTAINER;
+        }
+    }
+
+    /**
+     * Helper class.
+     */
+    final class Helper
+    {
+        /**
+         * Checks whether the server supports the PersistentDataContainer.
+         *
+         * @return True if the server supports the PersistentDataContainer, false otherwise.
+         */
+        private static boolean supportsPersistentDataContainer()
+        {
+            try
+            {
+                Class.forName("org.bukkit.persistence.PersistentDataContainer");
+                return true;
+            }
+            catch (ClassNotFoundException ignored)
+            {
+                return false;
+            }
         }
     }
 }
