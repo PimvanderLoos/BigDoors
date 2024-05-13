@@ -1,3 +1,5 @@
+Alpha 0.1.8.52
+
 Alpha 0.1.8.51
 - Added support for Paper 1.20.6.
 - Updated resource pack list.
