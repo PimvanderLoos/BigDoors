@@ -146,7 +146,10 @@ public class ConfigLoader
                                                   "Not even OPs can bypass it! Use -1 to disable this limit." };
         String[] maxAutocloseTimerComment = { "The maximum value of an autoCloseTimer (specified in ticks). ",
                                               "A value of 6000 is 5 minutes. Use a negative value to allow unlimited values. " };
-        String[] resourcePackComment = { "This plugin uses a support resource pack for things suchs as sound.",
+        String[] resourcePackComment = { "This plugin uses a support resource pack for things such as sound.",
+                                         "Disabling this option means that the plugin will not try to send the resource pack to clients.",
+                                         "However, the sounds will still work if the resource pack is installed in some other way.",
+                                         "For example, when merged with another server resource pack, or when installed locally by the client.",
                                          "Different packs will be used for different versions of Minecraft.",
                                          "The full list of resource packs per version can be found here:",
                                          "https://github.com/PimvanderLoos/BigDoors/blob/master/core/src/main/java/nl/pim16aap2/bigDoors/util/ResourcePackDetails.java" };
