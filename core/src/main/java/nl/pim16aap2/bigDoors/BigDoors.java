@@ -49,7 +49,6 @@ import nl.pim16aap2.bigDoors.util.ConfigLoader;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
 import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Messages;
-import nl.pim16aap2.bigDoors.util.MinecraftVersion;
 import nl.pim16aap2.bigDoors.util.TimedCache;
 import nl.pim16aap2.bigDoors.util.Util;
 import nl.pim16aap2.bigDoors.waitForCommand.WaitForCommand;
@@ -67,6 +66,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.semver4j.Semver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -81,6 +81,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -90,6 +91,9 @@ import java.util.logging.Level;
 
 public class BigDoors extends JavaPlugin implements Listener
 {
+    public static final Semver SERVER_VERSION =
+        Objects.requireNonNull(Semver.coerce(Bukkit.getServer().getBukkitVersion()));
+
     private static BigDoors instance;
     public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
@@ -131,8 +135,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private VaultManager vaultManager;
     private UpdateManager updateManager;
     private volatile boolean schedulerIsRunning = false;
-    private static final @NotNull MinecraftVersion MINECRAFT_VERSION = MinecraftVersion.CURRENT_VERSION;
-    private static final boolean IS_ON_FLATTENED_VERSION = MinecraftVersion.CURRENT_VERSION.isAtLeast(1, 13);
+    private static final boolean IS_ON_FLATTENED_VERSION = SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 13, 0));
     private boolean isEnabled = false;
     private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
@@ -227,7 +230,7 @@ public class BigDoors extends JavaPlugin implements Listener
         catch (Exception | ExceptionInInitializerError e)
         {
             logger.logMessageToConsoleOnly(
-                "Failed to enable the plugin for Minecraft version '" + MINECRAFT_VERSION + "'!");
+                "Failed to enable the plugin for Minecraft version '" + SERVER_VERSION + "'!");
             getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
             validVersion = false;
         }
@@ -766,14 +769,13 @@ public class BigDoors extends JavaPlugin implements Listener
         if (config.forceCodeGeneration())
             return FallbackGeneratorManager.getFallingBlockFactory();
 
-        final MinecraftVersion version = MinecraftVersion.CURRENT_VERSION;
-        if (!version.isAtLeast(1, 11) || version.getMajor() != 1)
+        if (SERVER_VERSION.isLowerThan(Semver.of(1, 11, 0)))
         {
             logger.severe("This version of Minecraft is not supported. Is the plugin up-to-date?");
             return null;
         }
 
-        switch (version.getMinor())
+        switch (SERVER_VERSION.getMinor())
         {
             case 11:
                 return new FallingBlockFactory_V1_11_R1();
@@ -782,7 +784,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 return new FallingBlockFactory_V1_12_R1();
 
             case 13:
-                switch (version.getPatch())
+                switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
                         return new FallingBlockFactory_V1_13_R1();
@@ -791,7 +793,7 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 2:
                         return new FallingBlockFactory_V1_13_R2();
                     default:
-                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.13!");
+                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.13!");
                         return null;
                 }
 
@@ -802,7 +804,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 return new FallingBlockFactory_V1_15_R1();
 
             case 16:
-                switch (version.getPatch())
+                switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
                     case 1:
@@ -814,7 +816,7 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 5:
                         return new FallingBlockFactory_V1_16_R3();
                     default:
-                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.16!");
+                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.16!");
                         return null;
                 }
 
@@ -822,7 +824,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 return new FallingBlockFactory_V1_17_R1();
 
             case 18:
-                switch (version.getPatch())
+                switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
                     case 1:
@@ -830,12 +832,12 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 2:
                         return new FallingBlockFactory_V1_18_R2();
                     default:
-                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.18!");
+                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.18!");
                         return null;
                 }
 
             case 19:
-                switch (version.getPatch())
+                switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
                         return new FallingBlockFactory_V1_19_R1();
@@ -847,12 +849,12 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 4:
                         return new FallingBlockFactory_V1_19_R3();
                     default:
-                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.19!");
+                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.19!");
                         return null;
                 }
 
             case 20:
-                switch (version.getPatch())
+                switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
                     case 1:
@@ -866,12 +868,12 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 6:
                         return FallingBlockFactoryProvider_V1_20_R4.getFactory();
                     default:
-                        logger.severe("Unexpected patch version '" + version.getPatch() + "' for 1.20!");
+                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.20!");
                         return null;
                 }
 
             default:
-                logger.severe("Unsupported version of Minecraft: " + version);
+                logger.severe("Unsupported version of Minecraft: " + SERVER_VERSION);
                 if (config.allowCodeGeneration())
                     return FallbackGeneratorManager.getFallingBlockFactory();
                 return null;
@@ -880,8 +882,8 @@ public class BigDoors extends JavaPlugin implements Listener
 
     private int readBuildNumber()
     {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            getClass().getResourceAsStream("/build.number"))))
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/build.number")))))
         {
             for (int idx = 0; idx != 2; ++idx)
                 reader.readLine();

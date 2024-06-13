@@ -1,6 +1,6 @@
 package nl.pim16aap2.bigDoors.reflection;
 
-import nl.pim16aap2.bigDoors.util.MinecraftVersion;
+import nl.pim16aap2.bigDoors.BigDoors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -92,11 +92,10 @@ public final class BukkitReflectionUtil
     {
         final Field[] fields = new Field[2];
 
-        final MinecraftVersion version = MinecraftVersion.CURRENT_VERSION;
-        if (version.getMinor() != 19)
+        if (BigDoors.SERVER_VERSION.getMinor() != 19)
             discoverFlyingCounters(classPlayerConnection, fields);
         else
-            switch (version.getPatch())
+            switch (BigDoors.SERVER_VERSION.getPatch())
             {
                 case 0:
                     fields[0] = classPlayerConnection.getDeclaredField("F");
