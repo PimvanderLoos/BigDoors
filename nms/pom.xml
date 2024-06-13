@@ -15,26 +15,37 @@
     <modules>
         <module>nms-api</module>
         <module>v1_11_R1</module>
+
         <module>v1_12_R1</module>
+
         <module>v1_13_R1</module>
         <module>v1_13_R1_5</module>
         <module>v1_13_R2</module>
+
         <module>v1_14_R1</module>
+
         <module>v1_15_R1</module>
+
         <module>v1_16_R1</module>
         <module>v1_16_R2</module>
         <module>v1_16_R3</module>
+
         <module>v1_17_R1</module>
+
         <module>v1_18_R1</module>
         <module>v1_18_R2</module>
+
         <module>v1_19_R1</module>
         <module>v1_19_R1_1</module>
         <module>v1_19_R2</module>
         <module>v1_19_R3</module>
+
         <module>v1_20_R1</module>
         <module>v1_20_R2</module>
         <module>v1_20_R3</module>
         <module>v1_20_R4</module>
+
+        <module>v1_21_R1</module>
     </modules>
 
     <dependencies>
