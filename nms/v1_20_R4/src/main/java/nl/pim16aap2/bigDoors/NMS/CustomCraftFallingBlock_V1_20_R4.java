@@ -1,6 +1,5 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;

@@ -1,4 +1,4 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 import net.minecraft.CrashReportSystemDetails;
 import net.minecraft.core.BlockPosition;
@@ -12,7 +12,6 @@ import net.minecraft.world.entity.EnumMoveType;
 import net.minecraft.world.entity.item.EntityFallingBlock;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.phys.Vec3D;
-import nl.pim16aap2.bigDoors.NMS.CustomEntityFallingBlock;
 import org.bukkit.craftbukkit.v1_20_R4.CraftWorld;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityRemoveEvent;

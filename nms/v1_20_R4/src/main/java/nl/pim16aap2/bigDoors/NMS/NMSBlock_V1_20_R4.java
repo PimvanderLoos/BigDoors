@@ -1,4 +1,4 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.mojang.serialization.MapCodec;
@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.EnumBlockRotation;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.IBlockDataHolder;
-import nl.pim16aap2.bigDoors.NMS.NMSBlock;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.LazyInit;
 import nl.pim16aap2.bigDoors.util.NMSUtil;

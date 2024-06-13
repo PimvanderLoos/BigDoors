@@ -1,6 +1,4 @@
-package NMS;
-
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
+package nl.pim16aap2.bigDoors.NMS;
 
 /**
  * Provides a specialized {@link FallingBlockFactory} for the given version.

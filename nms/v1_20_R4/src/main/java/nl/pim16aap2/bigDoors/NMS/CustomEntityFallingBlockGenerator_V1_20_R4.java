@@ -1,4 +1,4 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 /**
  * Represents a class that can generate a subclass of {@link CustomEntityFallingBlock_V1_20_R4}.

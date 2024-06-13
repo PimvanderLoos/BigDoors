@@ -1,13 +1,9 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.BlockBase.Info;
 import net.minecraft.world.level.block.state.IBlockData;
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
-import nl.pim16aap2.bigDoors.NMS.CustomEntityFallingBlock;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
-import nl.pim16aap2.bigDoors.NMS.NMSBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
