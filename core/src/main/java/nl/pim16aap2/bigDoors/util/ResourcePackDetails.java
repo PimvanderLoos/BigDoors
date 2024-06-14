@@ -99,6 +99,13 @@ public enum ResourcePackDetails
         Semver.of(1, 20, 6)
     ),
 
+    FORMAT_34(
+        "https://www.dropbox.com/scl/fi/71jyxjeqfyrcn8hokn6cy/BigDoorsResourcePack-Format34.zip?rlkey=05afk8t5yxdil1w6zm34akzzo&st=9xxocl78&dl=1",
+        "4d81904572cdf0ef7b313f87012b7230a2d2ac12",
+        Semver.of(1, 21, 0),
+        Semver.of(1, 21, 0)
+    )
+
     ;
 
     private static final ResourcePackDetails[] VALUES = values();
@@ -109,6 +116,12 @@ public enum ResourcePackDetails
     private final Semver minVersion;
     private final Semver maxVersion;
 
+    /**
+     * @param url The URL to the resource pack.
+     * @param hash The SHA1 hash of the resource pack.
+     * @param minVersion The minimum version for which the resource pack is suitable (inclusive).
+     * @param maxVersion The maximum version for which the resource pack is suitable (inclusive).
+     */
     ResourcePackDetails(String url, byte[] hash, Semver minVersion, Semver maxVersion)
     {
         this.url = url;
