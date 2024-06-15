@@ -92,7 +92,7 @@ public class ConfigLoader
     public ConfigLoader(BigDoors plugin)
     {
         this.plugin = plugin;
-        resourcePack = ResourcePackDetails.getForVersion(MinecraftVersion.CURRENT_VERSION);
+        resourcePack = ResourcePackDetails.getForVersion(BigDoors.SERVER_VERSION);
         configOptionsList = new ArrayList<>();
         powerBlockTypesMap = new HashSet<>();
         hooksMap = new HashMap<>(ProtectionCompatDefinition.DEFAULT_COMPAT_DEFINITIONS.size());

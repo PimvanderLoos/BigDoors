@@ -1,4 +1,4 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.mojang.serialization.MapCodec;
@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.EnumBlockRotation;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.IBlockDataHolder;
-import nl.pim16aap2.bigDoors.NMS.NMSBlock;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.LazyInit;
 import nl.pim16aap2.bigDoors.util.NMSUtil;
@@ -23,14 +22,14 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Fence;
-import org.bukkit.craftbukkit.v1_20_R4.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R4.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_21_R1.block.data.CraftBlockData;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Set;
 
-public class NMSBlock_V1_20_R4 extends BlockBase implements NMSBlock
+public class NMSBlock_V1_21_R1 extends BlockBase implements NMSBlock
 {
     private static final Field FIELD_BLOCK_MAP_CODEC = getFieldBlockMapCodec();
 
@@ -54,7 +53,7 @@ public class NMSBlock_V1_20_R4 extends BlockBase implements NMSBlock
     private final XMaterial xmat;
     private Location loc;
 
-    public NMSBlock_V1_20_R4(World world, int x, int y, int z, Info blockInfo)
+    public NMSBlock_V1_21_R1(World world, int x, int y, int z, Info blockInfo)
     {
         super(blockInfo);
 
@@ -126,8 +125,11 @@ public class NMSBlock_V1_20_R4 extends BlockBase implements NMSBlock
         if (craftBlockData instanceof MultipleFacing)
             updateCraftBlockDataMultipleFacing();
 
-        ((CraftWorld) Objects.requireNonNull(loc.getWorld()))
-            .getHandle().a(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), blockData, 1);
+        final CraftWorld craftWorld = Objects.requireNonNull((CraftWorld) loc.getWorld());
+
+        craftWorld
+            .getHandle()
+            .a(BlockPosition.a(loc.getX(), loc.getY(), loc.getZ()), blockData, 1);
     }
 
     private void updateCraftBlockDataMultipleFacing()

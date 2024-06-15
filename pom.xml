@@ -18,8 +18,9 @@
         <maven.compiler.target>8</maven.compiler.target>
 
         <dependency.annotations.version>24.0.1</dependency.annotations.version>
-        <dependency.asm.version>9.5</dependency.asm.version>
-        <dependency.bytebuddy.version>1.14.9</dependency.bytebuddy.version>
+        <dependency.asm.version>9.7</dependency.asm.version>
+        <dependency.semver4j.version>5.3.0</dependency.semver4j.version>
+        <dependency.bytebuddy.version>1.14.17</dependency.bytebuddy.version>
         <dependency.jcalculator.version>1.8</dependency.jcalculator.version>
         <dependency.jsr305.version>3.0.2</dependency.jsr305.version>
         <dependency.junit.version>5.9.3</dependency.junit.version>
@@ -28,7 +29,7 @@
         <dependency.mockito.version>5.4.0</dependency.mockito.version>
         <dependency.surefire.version>3.1.2</dependency.surefire.version>
 
-        <dependency.xseries.version>001271d59b</dependency.xseries.version>
+        <dependency.xseries.version>ba5aa590d1</dependency.xseries.version>
         <dependency.xseries.groupid>com.github.PimvanderLoos</dependency.xseries.groupid>
     </properties>
 

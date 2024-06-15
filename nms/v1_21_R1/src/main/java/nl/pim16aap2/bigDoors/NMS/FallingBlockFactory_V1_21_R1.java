@@ -1,26 +1,22 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.BlockBase.Info;
 import net.minecraft.world.level.block.state.IBlockData;
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
-import nl.pim16aap2.bigDoors.NMS.CustomEntityFallingBlock;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
-import nl.pim16aap2.bigDoors.NMS.NMSBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R4.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R4.CraftWorld;
+import org.bukkit.craftbukkit.v1_21_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
 
-class FallingBlockFactory_V1_20_R4 implements FallingBlockFactory
+class FallingBlockFactory_V1_21_R1 implements FallingBlockFactory
 {
     private final CustomEntityFallingBlockFactory customEntityFallingBlockFactory;
 
 
-    FallingBlockFactory_V1_20_R4(CustomEntityFallingBlockFactory customEntityFallingBlockFactory)
+    FallingBlockFactory_V1_21_R1(CustomEntityFallingBlockFactory customEntityFallingBlockFactory)
     {
         this.customEntityFallingBlockFactory = customEntityFallingBlockFactory;
     }
@@ -28,12 +24,12 @@ class FallingBlockFactory_V1_20_R4 implements FallingBlockFactory
     @Override
     public CustomCraftFallingBlock createFallingBlock(Location loc, NMSBlock block, byte matData, Material mat)
     {
-        final IBlockData blockData = ((NMSBlock_V1_20_R4) block).getMyBlockData();
-        final CustomEntityFallingBlock_V1_20_R4 fBlockNMS =
+        final IBlockData blockData = ((NMSBlock_V1_21_R1) block).getMyBlockData();
+        final CustomEntityFallingBlock_V1_21_R1 fBlockNMS =
             customEntityFallingBlockFactory.newEntityFallingBlock(
                 loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), blockData);
 
-        return new CustomCraftFallingBlock_V1_20_R4((CraftServer) Bukkit.getServer(), fBlockNMS);
+        return new CustomCraftFallingBlock_V1_21_R1((CraftServer) Bukkit.getServer(), fBlockNMS);
     }
 
     @Override
@@ -41,7 +37,7 @@ class FallingBlockFactory_V1_20_R4 implements FallingBlockFactory
     {
         final Info blockInfo =
             Info.a((BlockBase) ((CraftWorld) world).getHandle().a_(new BlockPosition(x, y, z)).b());
-        return new NMSBlock_V1_20_R4(world, x, y, z, blockInfo);
+        return new NMSBlock_V1_21_R1(world, x, y, z, blockInfo);
     }
 
     /**
@@ -49,7 +45,7 @@ class FallingBlockFactory_V1_20_R4 implements FallingBlockFactory
      */
     interface CustomEntityFallingBlockFactory
     {
-        CustomEntityFallingBlock_V1_20_R4 newEntityFallingBlock(
+        CustomEntityFallingBlock_V1_21_R1 newEntityFallingBlock(
             World world, double x, double y, double z, IBlockData blockData);
     }
 }

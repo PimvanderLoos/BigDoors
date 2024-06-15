@@ -1,6 +1,4 @@
-package NMS;
-
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
+package nl.pim16aap2.bigDoors.NMS;
 
 /**
  * Provides a specialized {@link FallingBlockFactory} for the given version.
@@ -9,7 +7,7 @@ import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
  * <p>
  * Use {@link #getFactory()} to get a new {@link FallingBlockFactory} instance.
  */
-public class FallingBlockFactoryProvider_V1_20_R4
+public class FallingBlockFactoryProvider_V1_21_R1
 {
     /**
      * Creates a new {@link FallingBlockFactory} instance for a specific version of Minecraft for the current server build.
@@ -18,8 +16,8 @@ public class FallingBlockFactoryProvider_V1_20_R4
      */
     public static FallingBlockFactory getFactory()
     {
-        return new FallingBlockFactory_V1_20_R4(
-            new CustomEntityFallingBlockGenerator_V1_20_R4().getEntityFallingBlockSupplier()
+        return new FallingBlockFactory_V1_21_R1(
+            new CustomEntityFallingBlockGenerator_V1_21_R1().getEntityFallingBlockSupplier()
         );
     }
 }

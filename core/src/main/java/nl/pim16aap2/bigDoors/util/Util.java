@@ -16,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.semver4j.Semver;
 
 import java.io.File;
 import java.io.IOException;
@@ -671,7 +672,7 @@ public final class Util
             return true;
 
         if (name.endsWith("TRAPDOOR"))
-            return MinecraftVersion.CURRENT_VERSION.isAtLeast(new MinecraftVersion(1, 18));
+            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
 
         if (name.endsWith("BANNER") || name.endsWith("SHULKER_BOX") || name.endsWith("DOOR") ||
             name.endsWith("BED") || name.endsWith("SIGN") || name.endsWith("HEAD") || name.endsWith("SKULL"))
@@ -679,7 +680,7 @@ public final class Util
 
         if (name.endsWith("CARPET") || name.endsWith("BUTTON") || name.endsWith("PRESSURE_PLATE") ||
             name.endsWith("SAPLING") || name.endsWith("TORCH") || name.endsWith("RAIL") || name.endsWith("TULIP"))
-            return MinecraftVersion.CURRENT_VERSION.isAtLeast(new MinecraftVersion(1, 18));
+            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
 
         final @Nullable XMaterial xmat = matchXMaterial(mat);
         if (xmat == null)
@@ -740,7 +741,7 @@ public final class Util
         case AMETHYST_CLUSTER:
         case BIG_DRIPLEAF:
         case BIG_DRIPLEAF_STEM:
-            return MinecraftVersion.CURRENT_VERSION.isAtLeast(new MinecraftVersion(1, 18));
+            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
 
 
 

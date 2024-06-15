@@ -1,13 +1,12 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R4.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R4.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_20_R4.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R4.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_21_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_21_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_21_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_21_R1.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.FallingBlock;
@@ -15,9 +14,9 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-public class CustomCraftFallingBlock_V1_20_R4 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
+public class CustomCraftFallingBlock_V1_21_R1 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
 {
-    public CustomCraftFallingBlock_V1_20_R4(final CraftServer server, final CustomEntityFallingBlock_V1_20_R4 entity)
+    public CustomCraftFallingBlock_V1_21_R1(final CraftServer server, final CustomEntityFallingBlock_V1_21_R1 entity)
     {
         super(server, entity);
         setVelocity(new Vector(0, 0, 0));
@@ -25,9 +24,9 @@ public class CustomCraftFallingBlock_V1_20_R4 extends CraftEntity implements Fal
     }
 
     @Override
-    public CustomEntityFallingBlock_V1_20_R4 getHandle()
+    public CustomEntityFallingBlock_V1_21_R1 getHandle()
     {
-        return (CustomEntityFallingBlock_V1_20_R4) entity;
+        return (CustomEntityFallingBlock_V1_21_R1) entity;
     }
 
     @Override
@@ -81,13 +80,13 @@ public class CustomCraftFallingBlock_V1_20_R4 extends CraftEntity implements Fal
     @Deprecated
     public @NotNull Material getMaterial()
     {
-        return CraftMagicNumbers.getMaterial(getHandle().u()).getItemType();
+        return CraftMagicNumbers.getMaterial(getHandle().t()).getItemType();
     }
 
     @Override
     public @NotNull BlockData getBlockData()
     {
-        return CraftBlockData.fromData(this.getHandle().u());
+        return CraftBlockData.fromData(this.getHandle().t());
     }
 
     @Override

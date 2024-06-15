@@ -1,4 +1,4 @@
-package NMS;
+package nl.pim16aap2.bigDoors.NMS;
 
 import net.minecraft.CrashReportSystemDetails;
 import net.minecraft.core.BlockPosition;
@@ -6,13 +6,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.GameProfileSerializer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EnumMoveType;
 import net.minecraft.world.entity.item.EntityFallingBlock;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.phys.Vec3D;
-import nl.pim16aap2.bigDoors.NMS.CustomEntityFallingBlock;
 import org.bukkit.craftbukkit.v1_20_R4.CraftWorld;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityRemoveEvent;
@@ -28,8 +26,6 @@ public class CustomEntityFallingBlock_V1_20_R4 extends EntityFallingBlock implem
         super(EntityTypes.O, ((CraftWorld) world).getHandle());
         this.world = (CraftWorld) world;
         block = iblockdata;
-
-        Entity x;
 
         this.a_(d0, d1, d2);
         super.b = 0;

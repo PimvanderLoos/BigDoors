@@ -187,6 +187,13 @@
         </dependency>
 
         <dependency>
+            <groupId>nl.pim16aap2.BigDoors</groupId>
+            <artifactId>v1_21_R1</artifactId>
+            <version>0.1.8.53-ALPHA</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>${dependency.xseries.groupid}</groupId>
             <artifactId>XSeries</artifactId>
             <version>${dependency.xseries.version}</version>
@@ -219,6 +226,13 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.semver4j</groupId>
+            <artifactId>semver4j</artifactId>
+            <version>${dependency.semver4j.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- bStats -->
         <dependency>
@@ -325,6 +339,10 @@
                         <relocation>
                             <pattern>org.objectweb.asm</pattern>
                             <shadedPattern>nl.pim16aap2.bigDoors.lib.asm</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.semver4j</pattern>
+                            <shadedPattern>nl.pim16aap2.bigDoors.semver4j</shadedPattern>
                         </relocation>
                     </relocations>
                     <filters>
