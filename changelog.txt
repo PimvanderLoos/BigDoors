@@ -1,3 +1,5 @@
+Alpha 0.1.8.54
+
 Alpha 0.1.8.53
 - Add support for Minecraft 1.21.
 - Fix negative `maxAutoCloseTimer` values not counting as unlimited. Thanks, King, for the bug report!
