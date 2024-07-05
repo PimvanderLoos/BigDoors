@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Update these if needed!
-J_8="/usr/lib/jvm/java-8-openjdk-amd64/bin/java"
-J_17="/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
+J_8="/usr/lib/jvm/java-8-openjdk/bin/java"
+J_17="/usr/lib/jvm/java-17-openjdk/bin/java"
 BUILD_DIR="nms_build"
 
 VERSIONS=(     1.11.2 1.12.2 1.13   1.13.1 1.13.2 1.14.4 1.15.2 1.16.1 1.16.2 1.16.3 1.16.5 1.17.1  1.18.1  1.18.2  1.19    1.19.1  1.19.3  1.19.4  1.20.1 )
