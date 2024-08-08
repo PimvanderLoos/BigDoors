@@ -1,4 +1,5 @@
 Alpha 0.1.8.54
+- Register missing commands. Thanks, oldmanbash, for the bug report!
 
 Alpha 0.1.8.53
 - Add support for Minecraft 1.21.

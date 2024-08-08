@@ -334,10 +334,12 @@ public class BigDoors extends JavaPlugin implements Listener
         getCommand("inspectpowerblockloc").setExecutor(commandExecutor);
         getCommand("changepowerblockloc").setExecutor(commandExecutor);
         getCommand("setautoclosetime").setExecutor(commandExecutor);
+        getCommand("newslidingdoor").setExecutor(commandExecutor);
         getCommand("setdoorrotation").setExecutor(commandExecutor);
         getCommand("setblockstomove").setExecutor(commandExecutor);
         getCommand("listplayerdoors").setExecutor(commandExecutor);
         getCommand("setnotification").setExecutor(commandExecutor);
+        getCommand("newdrawbridge").setExecutor(commandExecutor);
         getCommand("newportcullis").setExecutor(commandExecutor);
         getCommand("toggledoor").setExecutor(commandExecutor);
         getCommand("pausedoors").setExecutor(commandExecutor);
