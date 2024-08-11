@@ -240,10 +240,8 @@ public class BigDoors extends JavaPlugin implements Listener
         {
             setDisabled(
                 "This version of Minecraft is not supported. Is the plugin up-to-date?");
-            logger.logMessage("Trying to load the plugin on an incompatible version of Minecraft! (\""
-                                  + (Bukkit.getServer().getClass().getPackage().getName().replace(".", ",")
-                                           .split(",")[3])
-                                  + "\"). This plugin will NOT be enabled!", true, true);
+            logger.logMessage("Trying to load the plugin on an incompatible version of Minecraft! ('"
+                                  + SERVER_VERSION + "'). This plugin will NOT be enabled!", true, true);
             logger.logMessage("If no update is available for this version, you could try to enable " +
                                   "__CODE GENERATION__ in the config.", true, true);
             logger.logMessage("Code generation may add support for this version, but be sure to read the " +
@@ -876,10 +874,10 @@ public class BigDoors extends JavaPlugin implements Listener
                 }
 
             case 21:
-                //noinspection SwitchStatementWithTooFewBranches
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
+                    case 1:
                         return FallingBlockFactoryProvider_V1_21_R1.getFactory();
                 }
 
