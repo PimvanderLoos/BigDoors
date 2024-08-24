@@ -6,7 +6,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.moveBlocks.BlockMover;
 
 public class ChunkUnloadHandler implements Listener
 {
