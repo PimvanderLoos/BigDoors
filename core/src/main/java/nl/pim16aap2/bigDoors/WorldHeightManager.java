@@ -4,6 +4,7 @@ import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
 import nl.pim16aap2.bigDoors.util.WorldHeightLimits;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.semver4j.Semver;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,6 +13,8 @@ import java.util.Map;
 
 public class WorldHeightManager
 {
+    private static final Semver VARIABLE_WORLD_DEPTH_UPDATE_VERSION = Semver.of(1, 18, 0);
+
     private static final MinWorldHeightFinder MIN_WORLD_HEIGHT_FINDER = getMinWorldHeightFinder();
 
     private final Map<World, WorldHeightLimits> limitsMap = new HashMap<>();
@@ -36,7 +39,7 @@ public class WorldHeightManager
 
     private static MinWorldHeightFinder getMinWorldHeightFinder()
     {
-        if (!BigDoors.getMCVersion().isAtLeast(BigDoors.MCVersion.v1_18_R1))
+        if (BigDoors.SERVER_VERSION.isLowerThan(VARIABLE_WORLD_DEPTH_UPDATE_VERSION))
             return legacy -> 0;
 
         try

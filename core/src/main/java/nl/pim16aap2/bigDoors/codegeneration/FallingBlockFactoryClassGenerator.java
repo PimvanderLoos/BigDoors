@@ -36,7 +36,7 @@ public class FallingBlockFactoryClassGenerator extends ClassGenerator
     public static final String METHOD_POST_PROCESS = "generated$postProcessEntity";
 
     public static final Method METHOD_FBLOCK_FACTORY =
-        findMethod().inClass(FallingBlockFactory.class).withName("fallingBlockFactory").get();
+        findMethod().inClass(FallingBlockFactory.class).withName("createFallingBlock").get();
     public static final Method METHOD_NMS_BLOCK_FACTORY =
         findMethod().inClass(FallingBlockFactory.class).withName("nmsBlockFactory").get();
 
@@ -45,10 +45,10 @@ public class FallingBlockFactoryClassGenerator extends ClassGenerator
     private final @NotNull ClassGenerator craftFallingBlockClassGenerator;
     private final @NotNull ClassGenerator entityFallingBlockClassGenerator;
 
-    public FallingBlockFactoryClassGenerator(@NotNull String mappingsVersion,
-                                             @NotNull ClassGenerator nmsBlockClassGenerator,
-                                             @NotNull ClassGenerator craftFallingBlockClassGenerator,
-                                             @NotNull ClassGenerator entityFallingBlockClassGenerator)
+    FallingBlockFactoryClassGenerator(@NotNull String mappingsVersion,
+                                      @NotNull ClassGenerator nmsBlockClassGenerator,
+                                      @NotNull ClassGenerator craftFallingBlockClassGenerator,
+                                      @NotNull ClassGenerator entityFallingBlockClassGenerator)
         throws Exception
     {
         super(mappingsVersion);
@@ -163,8 +163,9 @@ public class FallingBlockFactoryClassGenerator extends ClassGenerator
 
         builder = builder
             .define(METHOD_FBLOCK_FACTORY)
-            .intercept(invoke(named(METHOD_POST_PROCESS)).withMethodCall(createCraftFallingBlock)
-                                                         .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
+            .intercept(invoke(named(METHOD_POST_PROCESS))
+                           .withMethodCall(createCraftFallingBlock)
+                           .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
 
         return builder;
     }

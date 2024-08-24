@@ -2,7 +2,6 @@ package nl.pim16aap2.bigDoors.GUI;
 
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.BigDoors.MCVersion;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.DoorAttribute;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
@@ -59,7 +58,7 @@ public class GUI
     static
     {
         // Ugly hack. I cannot be bothered to fix this properly.
-        if (MCVersion.v1_11_R1.equals(BigDoors.getMCVersion()) || MCVersion.v1_12_R1.equals(BigDoors.getMCVersion()))
+        if (!BigDoors.isOnFlattenedVersion())
         {
             DOORTYPES[0] = Material.getMaterial("WOOD_DOOR"); // Door
             DOORTYPES[1] = Material.getMaterial("TRAP_DOOR"); // DrawBridge

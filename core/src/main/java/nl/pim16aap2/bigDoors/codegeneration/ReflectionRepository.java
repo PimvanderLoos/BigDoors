@@ -1,7 +1,7 @@
 package nl.pim16aap2.bigDoors.codegeneration;
 
 import com.cryptomorin.xseries.XMaterial;
-import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.reflection.BukkitReflectionUtil;
 import nl.pim16aap2.bigDoors.reflection.ParameterGroup;
 import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
 import org.bukkit.Bukkit;
@@ -62,6 +62,7 @@ final class ReflectionRepository
     public static final Class<?> classResourceKey;
     public static final Class<?> classIWorldReader; // net.minecraft.world.level.LevelReader
     public static final @Nullable Class<?> classHolderLookup;
+    public static final @Nullable Class<?> classEntityRemoveEventCause;
 
     public static final Class<?> classEnumBlockState;
     public static final Class<?> classEnumMoveType;
@@ -149,11 +150,12 @@ final class ReflectionRepository
     public static final List<Field> fieldsVec3D;
 
     public static final @Nullable Object objectRegistryBlock;
+    public static final @Nullable Object objectEntityRemoveEventCausePlugin;
 
     static
     {
-        final String nmsBase = "net.minecraft.server." + BigDoors.get().getPackageVersion() + ".";
-        final String craftBase = "org.bukkit.craftbukkit." + BigDoors.get().getPackageVersion() + ".";
+        final String craftBase = BukkitReflectionUtil.CRAFT_BASE;
+        final String nmsBase = BukkitReflectionUtil.NMS_BASE;
 
         classEntityFallingBlock = findClass(nmsBase + "EntityFallingBlock",
                                             "net.minecraft.world.entity.item.EntityFallingBlock").get();
@@ -205,6 +207,7 @@ final class ReflectionRepository
         classResourceKey = findClass("net.minecraft.resources.ResourceKey").get();
         classIWorldReader = findClass("net.minecraft.world.level.IWorldReader").get();
         classHolderLookup = findClass("net.minecraft.core.HolderLookup").setNullable().get();
+        classEntityRemoveEventCause = findClass("org.bukkit.event.entity.EntityRemoveEvent$Cause").setNullable().get();
 
         cTorPrivateNMSFallingBlockEntity =
             findConstructor().inClass(classEntityFallingBlock)
@@ -339,7 +342,8 @@ final class ReflectionRepository
                                            classIBlockState, classIBlockDataHolder);
         methodNMSAddEntity = ReflectionASMAnalyzers.getNMSAddEntityMethod(classNMSWorldServer, classNMSEntity);
         methodIsAir = ReflectionASMAnalyzers.getIsAirMethod(methodTick, classIBlockData, classBlockData);
-        methodDie = ReflectionASMAnalyzers.getCraftEntityDelegationMethod(classCraftEntity, classNMSEntity);
+        methodDie = ReflectionASMAnalyzers.getCraftEntityDieMethod(
+            classCraftEntity, classNMSEntity, classEntityRemoveEventCause);
         methodSetPosition = ReflectionASMAnalyzers.getSetPosition(classNMSEntity);
         methodSetNoGravity = ReflectionASMAnalyzers.getSetNoGravity(classCraftEntity, classNMSEntity);
         methodSetMotVec = ReflectionASMAnalyzers.getSetMotVecMethod(classCraftEntity, classNMSEntity, classVec3D);
@@ -387,6 +391,12 @@ final class ReflectionRepository
             ReflectionBuilder.findField().inClass(classVec3D).allOfType(double.class)
                              .withModifiers(Modifier.PUBLIC, Modifier.FINAL)
                              .exactCount(3).get());
+
+        if (classEntityRemoveEventCause != null)
+            objectEntityRemoveEventCausePlugin =
+                findEnumValues().inClass(classEntityRemoveEventCause).withName("PLUGIN").get();
+        else
+            objectEntityRemoveEventCausePlugin = null;
     }
 
     private ReflectionRepository()

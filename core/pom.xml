@@ -9,7 +9,7 @@
     <parent>
         <groupId>nl.pim16aap2.BigDoors</groupId>
         <artifactId>BigDoors-parent</artifactId>
-        <version>0.1.8.50-ALPHA</version>
+        <version>0.1.8.55-ALPHA</version>
     </parent>
 
     <properties>
@@ -28,154 +28,168 @@
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>hooks-bundle</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>nms-api</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_11_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_12_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_13_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_13_R1_5</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_13_R2</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_14_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_15_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_16_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_16_R2</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_16_R3</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_17_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_18_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_18_R2</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R1_1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R2</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R3</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R1</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R2</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R3</artifactId>
-            <version>0.1.8.50-ALPHA</version>
+            <version>0.1.8.55-ALPHA</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>nl.pim16aap2.BigDoors</groupId>
+            <artifactId>v1_20_R4</artifactId>
+            <version>0.1.8.55-ALPHA</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>nl.pim16aap2.BigDoors</groupId>
+            <artifactId>v1_21_R1</artifactId>
+            <version>0.1.8.55-ALPHA</version>
             <scope>compile</scope>
         </dependency>
 
@@ -212,6 +226,13 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.semver4j</groupId>
+            <artifactId>semver4j</artifactId>
+            <version>${dependency.semver4j.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- bStats -->
         <dependency>
@@ -261,12 +282,6 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${dependency.mockito.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.Anon8281</groupId>
-            <artifactId>UniversalScheduler</artifactId>
-            <version>0.1.6</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -326,8 +341,8 @@
                             <shadedPattern>nl.pim16aap2.bigDoors.lib.asm</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.github.Anon8281.universalScheduler</pattern>
-                            <shadedPattern>>nl.pim16aap2.bigDoors.lib.universalScheduler</shadedPattern>
+                            <pattern>org.semver4j</pattern>
+                            <shadedPattern>nl.pim16aap2.bigDoors.semver4j</shadedPattern>
                         </relocation>
                     </relocations>
                     <filters>

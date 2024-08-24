@@ -41,7 +41,8 @@ public class AutoCloseScheduler
         if (door.getAutoClose() < 0 || !door.isOpen())
             return;
 
-        if (door.getAutoClose() > BigDoors.get().getConfigLoader().maxAutoCloseTimer())
+        final int timeLimit = plugin.getConfigLoader().maxAutoCloseTimer();
+        if (timeLimit >= 0 && door.getAutoClose() > timeLimit)
         {
             BigDoors.get().getMyLogger()
                 .warn("Aborted autoCloseTimer for door: " + door.getDoorUID() + ", because it's autoCloseTimer ("
