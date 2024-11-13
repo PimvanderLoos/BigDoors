@@ -88,6 +88,8 @@ public class VerticalMover extends BlockMover
                     new ArrayList<>(Math.min(door.getBlockCount(),
                             (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
+            final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
+
             int yAxis = yMin;
             do
             {
@@ -100,24 +102,25 @@ public class VerticalMover extends BlockMover
                         Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
                         Block vBlock = world.getBlockAt(startLocation);
                         Material mat = vBlock.getType();
-                        if (Util.isAllowedBlock(mat)) {
+                        if (Util.isAllowedBlock(mat))
+                        {
                             byte matData = vBlock.getData();
                             BlockState bs = vBlock.getState();
                             MaterialData materialData = bs.getData();
                             NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-
-                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+    
+                            if (!BigDoors.isOnFlattenedVersion())
                                 vBlock.setType(Material.AIR);
-
+    
                             CustomCraftFallingBlock fBlock = null;
                             if (!instantOpen)
-                                fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
+                                fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
                             savedBlocks
-                                    .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
-
+                                .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
+    
                             if (xAxis == xMin || xAxis == xMax ||
-                                    yAxis == yMin || yAxis == yMax ||
-                                    zAxis == zMin || zAxis == zMax)
+                                yAxis == yMin || yAxis == yMax ||
+                                zAxis == zMin || zAxis == zMax)
                                 edges.add(block);
                         }
                     }

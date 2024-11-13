@@ -11,10 +11,7 @@ import nl.pim16aap2.bigDoors.moveBlocks.Bridge.getNewLocation.GetNewLocationEast
 import nl.pim16aap2.bigDoors.moveBlocks.Bridge.getNewLocation.GetNewLocationNorth;
 import nl.pim16aap2.bigDoors.moveBlocks.Bridge.getNewLocation.GetNewLocationSouth;
 import nl.pim16aap2.bigDoors.moveBlocks.Bridge.getNewLocation.GetNewLocationWest;
-import nl.pim16aap2.bigDoors.util.DoorDirection;
-import nl.pim16aap2.bigDoors.util.MyBlockData;
-import nl.pim16aap2.bigDoors.util.RotateDirection;
-import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.util.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -198,6 +195,8 @@ public class BridgeMover extends BlockMover
             new ArrayList<>(Math.min(door.getBlockCount(),
                                      (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
+        final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
+
         int xAxis = turningPoint.getBlockX();
         do
         {
@@ -227,69 +226,9 @@ public class BridgeMover extends BlockMover
                     int finalZAxis = zAxis;
                     int finalXAxis = xAxis;
                     double finalRadius = radius;
-                    BigDoors.getScheduler().runTask(vBlock.getLocation(), () -> {
-                        Material mat = vBlock.getType();
-                        if (Util.isAllowedBlock(mat))
-                        {
-                            byte matData = vBlock.getData();
-                            BlockState bs = vBlock.getState();
-                            MaterialData materialData = bs.getData();
-
-                            NMSBlock block = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
-                            NMSBlock block2 = null;
-
-                            int canRotate = 0;
-                            byte matByte = matData;
-
-                            canRotate = Util.canRotate(mat);
-                            // Rotate blocks here so they don't interrupt the rotation animation.
-                            if (canRotate != 4 && canRotate != 5)
-                            {
-                                if (canRotate == 7)
-                                    rotateEndRotBlockData(matData);
-                                if (canRotate != 6 && canRotate < 8)
-                                    matByte = canRotate == 7 ? rotateEndRotBlockData(matData) : rotateBlockData(matData);
-                                Block b = world.getBlockAt(finalXAxis, finalYAxis, finalZAxis);
-                                materialData.setData(matByte);
-
-                                if (BigDoors.isOnFlattenedVersion())
-                                {
-                                    if (canRotate == 6)
-                                    {
-                                        block2 = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
-                                        block2.rotateBlockUpDown(NS);
-                                    }
-                                    else if (canRotate == 8 || canRotate == 9)
-                                    {
-                                        block2 = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
-                                        block2.rotateVerticallyInDirection(openDirection);
-                                    }
-                                    else
-                                    {
-                                        b.setType(mat);
-                                        BlockState bs2 = b.getState();
-                                        bs2.setData(materialData);
-                                        bs2.update();
-                                        block2 = fabf.nmsBlockFactory(world, finalXAxis, finalYAxis, finalZAxis);
-                                    }
-                                }
-                            }
-                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
-                                vBlock.setType(Material.AIR);
-
-                            CustomCraftFallingBlock fBlock = null;
-                            if (!instantOpen)
-                                fBlock = fabf.fallingBlockFactory(newFBlockLocation, block, matData, mat);
-
-                            savedBlocks.add(new MyBlockData(mat, matByte, fBlock, finalRadius, materialData,
-                                    block2 == null ? block : block2, canRotate, startLocation));
-
-                            if (finalXAxis == xMin || finalXAxis == xMax ||
-                                    finalYAxis == yMin || finalYAxis == yMax ||
-                                    finalZAxis == zMin || finalZAxis == zMax)
-                                edges.add(block);
-                        }
-                    });
+                    BigDoors.getScheduler().runTask(vBlock.getLocation(), new BridgeMoverTask(spec, openDirection, NS, savedBlocks, edges, yMax, zMin, zMax, xMin, xMax, yMin, radius,
+                            startLocation, newFBlockLocation, instantOpen, fabf, world,
+                            vBlock, xAxis, yAxis, zAxis));
                 }
                 zAxis += dz;
             }
@@ -406,6 +345,7 @@ public class BridgeMover extends BlockMover
                     {
                         BigDoors.getScheduler().runTaskLater(door.getEngine(), () ->
                         {
+                            final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
                             for (MyBlockData block : savedBlocks)
                             {
                                 if (block.canRot() != 0 && block.canRot() != 4)
@@ -415,17 +355,15 @@ public class BridgeMover extends BlockMover
                                     byte matData = block.getBlockByte();
                                     Vector veloc = block.getFBlock().getVelocity();
 
-                                    BigDoors.getScheduler().runTask(loc, () -> {
-                                      CustomCraftFallingBlock fBlock;
-                                      // Because the block in savedBlocks is already rotated where applicable, just
-                                      // use that block now.
-                                      fBlock = fabf.fallingBlockFactory(loc, block.getBlock(), matData, mat);
+                                    CustomCraftFallingBlock fBlock;
+                                    // Because the block in savedBlocks is already rotated where applicable, just
+                                    // use that block now.
+                                    fBlock = fabf.createFallingBlockWithMetadata(spec, loc, block.getBlock(), matData, mat);
 
-                                      block.getFBlock().remove();
-                                      block.setFBlock(fBlock);
+                                    block.getFBlock().remove();
+                                    block.setFBlock(fBlock);
 
-                                      block.getFBlock().setVelocity(veloc);
-                                    });
+                                    block.getFBlock().setVelocity(veloc);
                                 }
                             }
                         }, 1L);
