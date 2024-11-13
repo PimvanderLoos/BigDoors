@@ -222,13 +222,73 @@ public class BridgeMover extends BlockMover
                     Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
 
                     Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
-                    int finalYAxis = yAxis;
-                    int finalZAxis = zAxis;
-                    int finalXAxis = xAxis;
-                    double finalRadius = radius;
-                    BigDoors.getScheduler().runTask(vBlock.getLocation(), new BridgeMoverTask(spec, openDirection, NS, savedBlocks, edges, yMax, zMin, zMax, xMin, xMax, yMin, radius,
-                            startLocation, newFBlockLocation, instantOpen, fabf, world,
-                            vBlock, xAxis, yAxis, zAxis));
+                    int finalXAxis1 = xAxis;
+                    int finalYAxis1 = yAxis;
+                    int finalZAxis1 = zAxis;
+                    double finalRadius1 = radius;
+                    BigDoors.getScheduler().runTask(vBlock.getLocation(), () -> {
+                        Material mat = vBlock.getType();
+                        if (Util.isAllowedBlock(mat))
+                        {
+                            byte matData = vBlock.getData();
+                            BlockState bs = vBlock.getState();
+                            MaterialData materialData = bs.getData();
+
+                            NMSBlock block = fabf.nmsBlockFactory(world, finalXAxis1, finalYAxis1, finalZAxis1);
+                            NMSBlock block2 = null;
+
+                            int canRotate = 0;
+                            byte matByte = matData;
+
+                            canRotate = Util.canRotate(mat);
+                            // Rotate blocks here so they don't interrupt the rotation animation.
+                            if (canRotate != 4 && canRotate != 5)
+                            {
+                                if (canRotate == 7)
+                                    rotateEndRotBlockData(matData);
+                                if (canRotate != 6 && canRotate < 8)
+                                    matByte = canRotate == 7 ? rotateEndRotBlockData(matData) : rotateBlockData(matData);
+                                Block b = world.getBlockAt(finalXAxis1, finalYAxis1, finalZAxis1);
+                                materialData.setData(matByte);
+
+                                if (BigDoors.isOnFlattenedVersion())
+                                {
+                                    if (canRotate == 6)
+                                    {
+                                        block2 = fabf.nmsBlockFactory(world, finalXAxis1, finalYAxis1, finalZAxis1);
+                                        block2.rotateBlockUpDown(NS);
+                                    }
+                                    else if (canRotate == 8 || canRotate == 9)
+                                    {
+                                        block2 = fabf.nmsBlockFactory(world, finalXAxis1, finalYAxis1, finalZAxis1);
+                                        block2.rotateVerticallyInDirection(openDirection);
+                                    }
+                                    else
+                                    {
+                                        b.setType(mat);
+                                        BlockState bs2 = b.getState();
+                                        bs2.setData(materialData);
+                                        bs2.update();
+                                        block2 = fabf.nmsBlockFactory(world, finalXAxis1, finalYAxis1, finalZAxis1);
+                                    }
+                                }
+                            }
+                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+                                vBlock.setType(Material.AIR);
+
+                            CustomCraftFallingBlock fBlock = null;
+                            if (!instantOpen)
+                                fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
+
+                            savedBlocks.add(new MyBlockData(mat, matByte, fBlock, finalRadius1, materialData,
+                                    block2 == null ? block : block2, canRotate, startLocation));
+
+                            if (finalXAxis1 == xMin || finalXAxis1 == xMax ||
+                                    finalYAxis1 == yMin || finalYAxis1 == yMax ||
+                                    finalZAxis1 == zMin || finalZAxis1 == zMax)
+                                edges.add(block);
+                        }
+                    });
                 }
                 zAxis += dz;
             }
