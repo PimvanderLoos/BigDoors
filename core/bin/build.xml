@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!-- Configuration of the Ant build system to generate a Jar file -->
+<project name="BigDoors" default="all">
+
+    <buildnumber/>
+    <echo>The version is ${pom.project.version}. The build is ${build.number}.</echo>
+
+    <property name="topDir" location="${basedir}/.."/>
+    <property name="jarDir" location="${topDir}/core/target/"/>
+
+    <target name="checksum">
+    	<checksum file="${jarDir}/BigDoors.jar" algorithm="SHA-256" forceOverwrite="yes"/>
+    </target>
+
+    <target name="all" depends="checksum"/>
+</project>
