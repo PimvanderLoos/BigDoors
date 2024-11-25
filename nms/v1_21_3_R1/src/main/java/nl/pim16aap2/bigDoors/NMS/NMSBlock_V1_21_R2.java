@@ -22,14 +22,14 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Fence;
-import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_21_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_21_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_21_R2.block.data.CraftBlockData;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Set;
 
-public class NMSBlock_V1_21_R1 extends BlockBase implements NMSBlock
+public class NMSBlock_V1_21_R2 extends BlockBase implements NMSBlock
 {
     private static final Field FIELD_BLOCK_MAP_CODEC = getFieldBlockMapCodec();
 
@@ -53,7 +53,7 @@ public class NMSBlock_V1_21_R1 extends BlockBase implements NMSBlock
     private final XMaterial xmat;
     private Location loc;
 
-    public NMSBlock_V1_21_R1(World world, int x, int y, int z, Info blockInfo)
+    public NMSBlock_V1_21_R2(World world, int x, int y, int z, Info blockInfo)
     {
         super(blockInfo);
 
@@ -245,14 +245,12 @@ public class NMSBlock_V1_21_R1 extends BlockBase implements NMSBlock
     }
 
     @Override
-    public Item r()
-    {
+    public Item j() {
         return null;
     }
 
     @Override
-    protected Block q()
-    {
+    protected Block o() {
         return null;
     }
 }

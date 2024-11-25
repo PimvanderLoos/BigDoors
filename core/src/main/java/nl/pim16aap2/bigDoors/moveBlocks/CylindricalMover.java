@@ -164,7 +164,7 @@ public class CylindricalMover extends BlockMover
                                     }
                                 }
                             }
-                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+                            // if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
                                 vBlock.setType(Material.AIR);
 
                             CustomCraftFallingBlock fBlock = null;
