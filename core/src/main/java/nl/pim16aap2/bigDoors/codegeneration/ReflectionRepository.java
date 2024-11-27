@@ -163,8 +163,19 @@ final class ReflectionRepository
                                         "net.minecraft.nbt.NBTTagCompound").get();
         classNBTBase = findClass(nmsBase + "NBTBase", "net.minecraft.nbt.NBTBase").get();
         classBlockBase = findClass(nmsBase + "BlockBase", "net.minecraft.world.level.block.state.BlockBase").get();
-        classBlockBaseInfo = findClass(classBlockBase.getName() + "$Info").get();
-        classBlockData = findClass(classBlockBase.getName() + "$BlockData").get();
+
+        classBlockBaseInfo =
+            findClass(
+                classBlockBase.getName() + "$Info",
+                classBlockBase.getName() + "$Properties"
+            ).get();
+
+        classBlockData =
+            findClass(
+                classBlockBase.getName() + "$BlockData",
+                classBlockBase.getName() + "$BlockStateBase"
+            ).get();
+
         classBlock = findClass(nmsBase + "Block", "net.minecraft.world.level.block.Block").get();
         classIBlockState = findClass(nmsBase + "IBlockState",
                                      "net.minecraft.world.level.block.state.properties.IBlockState").get();
