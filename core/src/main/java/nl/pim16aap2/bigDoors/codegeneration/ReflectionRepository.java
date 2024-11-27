@@ -60,6 +60,7 @@ final class ReflectionRepository
     public static final @Nullable Class<?> classHolderGetter;
     public static final @Nullable Class<?> classRegistries;
     public static final Class<?> classResourceKey;
+    public static final @Nullable Class<?> classMinecraftKey;
     public static final Class<?> classIWorldReader; // net.minecraft.world.level.LevelReader
     public static final @Nullable Class<?> classHolderLookup;
     public static final @Nullable Class<?> classEntityRemoveEventCause;
@@ -141,6 +142,9 @@ final class ReflectionRepository
     public static final Method methodGetClass;
     public static final @Nullable Method methodWorldReaderHolderLookup;
     private static final @Nullable Method methodRegistriesRegisterNew;
+    public static final @Nullable Method methodCreateMinecraftKey;
+    public static final @Nullable Method methodCreateResourceKey;
+    public static final @Nullable Method methodApplyResourceKeyToBlockInfo;
 
     public static final Field fieldTileEntityData;
     public static final Field fieldTicksLived;
@@ -219,6 +223,7 @@ final class ReflectionRepository
         classIWorldReader = findClass("net.minecraft.world.level.IWorldReader").get();
         classHolderLookup = findClass("net.minecraft.core.HolderLookup").setNullable().get();
         classEntityRemoveEventCause = findClass("org.bukkit.event.entity.EntityRemoveEvent$Cause").setNullable().get();
+        classMinecraftKey = findClass("net.minecraft.resources.MinecraftKey").setNullable().get();
 
         cTorPrivateNMSFallingBlockEntity =
             findConstructor().inClass(classEntityFallingBlock)
@@ -383,6 +388,43 @@ final class ReflectionRepository
             objectRegistryBlock = invoke(methodRegistriesRegisterNew, null, "block");
             methodWorldReaderHolderLookup = findMethod().inClass(classIWorldReader).withReturnType(classHolderLookup)
                                                         .withParameters(classResourceKey).setNullable().get();
+        }
+
+        if (classMinecraftKey == null || objectRegistryBlock == null)
+        {
+            methodCreateMinecraftKey = null;
+            methodCreateResourceKey = null;
+            methodApplyResourceKeyToBlockInfo = null;
+        }
+        else
+        {
+            methodCreateMinecraftKey = findMethod()
+                .inClass(classMinecraftKey)
+                .findMultiple()
+                .withReturnType(classMinecraftKey)
+                .withParameters(String.class, String.class)
+                .withModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .exactCount(2)
+                .get()
+                // Get the first match. This should work fine, and if it doesn't,
+                // it is no big deal. It simply returns `null` instead of throwing
+                // an exception when the namespace/key pair is invalid, which
+                // shouldn't happen anyway (and if it does, we'll see soon enough.)
+                .get(0);
+
+            methodCreateResourceKey = findMethod()
+                .inClass(classResourceKey)
+                .withReturnType(classResourceKey)
+                .withParameters(classResourceKey, classMinecraftKey)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .get();
+
+            methodApplyResourceKeyToBlockInfo = findMethod()
+                .inClass(classBlockBaseInfo)
+                .withReturnType(classBlockBaseInfo)
+                .withParameters(classResourceKey)
+                .addModifiers(Modifier.PUBLIC)
+                .get();
         }
 
         fieldEntityTypeFallingBlock = ReflectionASMAnalyzers.getEntityTypeFallingBlock(classEntityTypes,
