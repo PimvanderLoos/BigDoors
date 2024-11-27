@@ -109,7 +109,7 @@ public class VerticalMover extends BlockMover
                             MaterialData materialData = bs.getData();
                             NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
     
-                            // if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
                                 vBlock.setType(Material.AIR);
     
                             CustomCraftFallingBlock fBlock = null;
