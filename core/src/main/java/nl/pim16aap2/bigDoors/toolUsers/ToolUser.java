@@ -13,7 +13,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -127,7 +126,7 @@ public abstract class ToolUser extends Abortable
             return;
         hasStick = true;
         ItemStack tool = new ItemStack(Material.STICK, 1);
-        tool.addUnsafeEnchantment(Enchantment.LUCK, 1);
+        tool.addUnsafeEnchantment(ToolVerifier.TOOL_ENCHANTMENT, 1);
         tool.getItemMeta().addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
         ItemMeta itemMeta = tool.getItemMeta();
