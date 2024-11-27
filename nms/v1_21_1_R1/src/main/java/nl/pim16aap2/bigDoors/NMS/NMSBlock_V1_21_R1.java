@@ -193,7 +193,7 @@ public class NMSBlock_V1_21_R1 extends BlockBase implements NMSBlock
             newAxis = ns ? EnumDirection.EnumAxis.b : EnumDirection.EnumAxis.c;
             break;
         }
-        blockData = blockData.b(BlockRotatable.i, newAxis);
+        blockData = blockData.a(BlockRotatable.i, newAxis);
         this.updateCraftBlockData();
     }
 
