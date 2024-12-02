@@ -3,10 +3,10 @@
  */
 package nl.pim16aap2.bigDoors;
 
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import nl.pim16aap2.bigDoors.UpdateChecker.UpdateReason;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public final class UpdateManager
     private volatile boolean updateDownloaded = false;
 
     private final UpdateChecker updater;
-    private BukkitTask updateRunner = null;
+    private MyScheduledTask updateRunner = null;
 
     public UpdateManager(final BigDoors plugin)
     {
@@ -163,14 +163,14 @@ public final class UpdateManager
         // Run the UpdateChecker regularly.
         if (updateRunner == null)
         {
-            updateRunner = new BukkitRunnable()
+            updateRunner = new UniversalRunnable()
             {
                 @Override
                 public void run()
                 {
                     checkForUpdates();
                 }
-            }.runTaskTimer(plugin, 0L, 864000L); // Run immediately, then every 12 hours.
+            }.runTaskTimer(plugin, 1L, 864000L); // Run immediately, then every 12 hours.
         }
     }
 }
