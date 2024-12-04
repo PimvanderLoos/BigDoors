@@ -1,3 +1,6 @@
+Alpha 0.1.8.56
+- Add support for Minecraft 1.21.4.
+
 Alpha 0.1.8.55
 - Add support for Minecraft 1.21.3. Thanks, Danoj, ewof, Anon8281, and Bloody_Mind, for the heads-up!
 
