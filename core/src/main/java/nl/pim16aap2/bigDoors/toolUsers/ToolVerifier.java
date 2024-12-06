@@ -30,9 +30,9 @@ public class ToolVerifier
 
     private static Enchantment findLuck()
     {
-        @Nullable Enchantment luck = Enchantment.getByName("luck");
+        @Nullable Enchantment luck = Enchantment.getByName("LUCK");
         if (luck == null)
-            luck = Enchantment.getByName("luck_of_the_sea");
+            luck = Enchantment.getByName("LUCK_OF_THE_SEA");
         return Objects.requireNonNull(luck, "Could not find the luck enchantment!");
     }
 }
