@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 
 import nl.pim16aap2.bigDoors.BigDoors;
 
@@ -30,7 +30,7 @@ public class LoginMessageHandler implements Listener
         // Because it's part of "bigdoors.admin.*", it'll suffice.
         if (player.hasPermission("bigdoors.admin.version") || player.isOp())
             // Slight delay so the player actually receives the message;
-            new BukkitRunnable()
+            new UniversalRunnable()
             {
                 @Override
                 public void run()

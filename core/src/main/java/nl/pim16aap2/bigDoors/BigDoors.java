@@ -1,5 +1,7 @@
 package nl.pim16aap2.bigDoors;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.schedulers.TaskScheduler;
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R1;
@@ -98,6 +100,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Objects.requireNonNull(Semver.coerce(Bukkit.getServer().getBukkitVersion())).withClearedPreReleaseAndBuild();
 
     private static BigDoors instance;
+    private static TaskScheduler scheduler;
     public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
 
@@ -154,6 +157,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @Override
     public void onEnable()
     {
+        scheduler = UniversalScheduler.getScheduler(this);
         try
         {
             onEnable0();
@@ -170,7 +174,7 @@ public class BigDoors extends JavaPlugin implements Listener
         throws Exception
     {
         if (!schedulerIsRunning)
-            Bukkit.getScheduler().runTask(this, () -> schedulerIsRunning = true);
+            getScheduler().runTask(() -> schedulerIsRunning = true);
 
         updateManager = new UpdateManager(this);
         buildNumber = readBuildNumber();
@@ -262,7 +266,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadHandler(this), this);
 
         // No need to put these in init, as they should not be reloaded.
-        pbCache = new TimedCache<>(this, config.cacheTimeout());
+        pbCache = new TimedCache<>(config.cacheTimeout());
         protCompatMan = new ProtectionCompatManager(this);
         Bukkit.getPluginManager().registerEvents(protCompatMan, this);
         db = new SQLiteJDBCDriverConnection(this, config.dbFile());
@@ -581,6 +585,10 @@ public class BigDoors extends JavaPlugin implements Listener
                 output.put(DoorType.getFriendlyName(type), stats.getOrDefault(type, 0));
             return output;
         }));
+    }
+
+    public static TaskScheduler getScheduler() {
+        return scheduler;
     }
 
     public String getLoginMessage()

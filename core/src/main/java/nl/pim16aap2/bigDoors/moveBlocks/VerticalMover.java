@@ -1,5 +1,6 @@
 package nl.pim16aap2.bigDoors.moveBlocks;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
@@ -9,14 +10,13 @@ import nl.pim16aap2.bigDoors.util.DoorDirection;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.material.MaterialData;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class VerticalMover extends BlockMover
     private int xMin, xMax, yMin;
     private int yMax, zMin, zMax;
     private int endCount;
-    private BukkitRunnable animationRunnable;
+    private UniversalRunnable animationRunnable;
 
     @SuppressWarnings("deprecation")
     public VerticalMover(BigDoors plugin, World world, double time, Door door, boolean instantOpen, int blocksToMove,
@@ -75,75 +75,77 @@ public class VerticalMover extends BlockMover
         }
 
         tickRate = Util.tickRateFromSpeed(speed);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::createAnimatedBlocks, 2L);
+        BigDoors.getScheduler().scheduleSyncDelayedTask(this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
     {
         savedBlocks.ensureCapacity(door.getBlockCount());
+        Location loc = new Location(door.getWorld(), xMin, yMin, zMin);
+        BigDoors.getScheduler().runTask(loc, () -> {
+            // This will reserve a bit too much memory, but not enough to worry about.
+            final List<NMSBlock> edges =
+                    new ArrayList<>(Math.min(door.getBlockCount(),
+                            (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
-        // This will reserve a bit too much memory, but not enough to worry about.
-        final List<NMSBlock> edges =
-            new ArrayList<>(Math.min(door.getBlockCount(),
-                                     (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
+            final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
 
-        final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
-
-        int yAxis = yMin;
-        do
-        {
-            int zAxis = zMin;
+            int yAxis = yMin;
             do
             {
-                for (int xAxis = xMin; xAxis <= xMax; xAxis++)
+                int zAxis = zMin;
+                do
                 {
-                    Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
-                    Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
-                    Block vBlock = world.getBlockAt(startLocation);
-                    Material mat = vBlock.getType();
-                    if (Util.isAllowedBlock(mat))
+                    for (int xAxis = xMin; xAxis <= xMax; xAxis++)
                     {
-                        byte matData = vBlock.getData();
-                        BlockState bs = vBlock.getState();
-                        MaterialData materialData = bs.getData();
-                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-
-                        if (!BigDoors.isOnFlattenedVersion())
-                            vBlock.setType(Material.AIR);
-
-                        CustomCraftFallingBlock fBlock = null;
-                        if (!instantOpen)
-                            fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
-                        savedBlocks
-                            .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
-
-                        if (xAxis == xMin || xAxis == xMax ||
-                            yAxis == yMin || yAxis == yMax ||
-                            zAxis == zMin || zAxis == zMax)
-                            edges.add(block);
+                        Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
+                        Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
+                        Block vBlock = world.getBlockAt(startLocation);
+                        Material mat = vBlock.getType();
+                        if (Util.isAllowedBlock(mat))
+                        {
+                            byte matData = vBlock.getData();
+                            BlockState bs = vBlock.getState();
+                            MaterialData materialData = bs.getData();
+                            NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
+    
+                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+                                vBlock.setType(Material.AIR);
+    
+                            CustomCraftFallingBlock fBlock = null;
+                            if (!instantOpen)
+                                fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
+                            savedBlocks
+                                .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
+    
+                            if (xAxis == xMin || xAxis == xMax ||
+                                yAxis == yMin || yAxis == yMax ||
+                                zAxis == zMin || zAxis == zMax)
+                                edges.add(block);
+                        }
                     }
+                    ++zAxis;
                 }
-                ++zAxis;
+                while (zAxis <= zMax);
+                ++yAxis;
             }
-            while (zAxis <= zMax);
-            ++yAxis;
-        }
-        while (yAxis <= yMax);
+            while (yAxis <= yMax);
 
-        // This is only supported on 1.13
-        if (BigDoors.isOnFlattenedVersion())
-        {
-            savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
-            // Update the physics around the edges after we've removed all our blocks.
-            edges.forEach(block -> block.deleteOriginalBlock(true));
-        }
+            // This is only supported on 1.13
+            if (BigDoors.isOnFlattenedVersion())
+            {
+                savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
+                // Update the physics around the edges after we've removed all our blocks.
+                edges.forEach(block -> block.deleteOriginalBlock(true));
+            }
 
-        savedBlocks.trimToSize();
+            savedBlocks.trimToSize();
 
-        if (!instantOpen)
-            rotateEntities();
-        else
-            putBlocks(false);
+            if (!instantOpen)
+                rotateEntities();
+            else
+                putBlocks(false);
+        });
     }
 
     @Override
@@ -173,7 +175,7 @@ public class VerticalMover extends BlockMover
     {
         endCount = (int) (20.0f / tickRate * time);
 
-        animationRunnable = new BukkitRunnable()
+        animationRunnable = new UniversalRunnable()
         {
             double counter = 0;
             double step = (blocksToMove) / ((double) endCount);
@@ -182,7 +184,7 @@ public class VerticalMover extends BlockMover
             long startTime = System.nanoTime();
             long lastTime;
             long currentTime = System.nanoTime();
-            MyBlockData firstBlockData = savedBlocks.stream().filter(block -> !block.getMat().equals(Material.AIR))
+            final MyBlockData firstBlockData = savedBlocks.stream().filter(block -> !block.getMat().equals(Material.AIR))
                 .findFirst().orElse(null);
 
             @Override
@@ -210,7 +212,7 @@ public class VerticalMover extends BlockMover
                     for (MyBlockData savedBlock : savedBlocks)
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
-                    Bukkit.getScheduler().callSyncMethod(plugin, () ->
+                    BigDoors.getScheduler().callSyncMethod(() ->
                     {
                         putBlocks(false);
                         return null;
