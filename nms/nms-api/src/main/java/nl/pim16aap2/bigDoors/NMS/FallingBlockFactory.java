@@ -34,11 +34,16 @@ public interface FallingBlockFactory
      * The key for the metadata of the falling block entity.
      * <p>
      * This is used to identify the falling block as a BigDoorsEntity.
+     * <p>
+     * If {@link #SUPPORTS_PERSISTENT_DATA_CONTAINER} is {@code false}, this will be {@code null}.
      */
-    LazyInit<NamespacedKey> ENTITY_KEY = new LazyInit<>(
-        () -> new NamespacedKey(
-            Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("BigDoors")),
-            "bigdoors_entity"));
+    @Nullable LazyInit<NamespacedKey> ENTITY_KEY =
+        !SUPPORTS_PERSISTENT_DATA_CONTAINER ?
+            null :
+            new LazyInit<>(
+            () -> new NamespacedKey(
+                Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("BigDoors")),
+                "bigdoors_entity"));
 
     /**
      * Use {@link #createFallingBlockWithMetadata(Specification, Location, NMSBlock, byte, Material)} instead.
@@ -82,7 +87,7 @@ public interface FallingBlockFactory
             entity.setCustomNameVisible(false);
         }
 
-        if (SUPPORTS_PERSISTENT_DATA_CONTAINER)
+        if (ENTITY_KEY != null)
             entity.getPersistentDataContainer().set(ENTITY_KEY.get(), PersistentDataType.BYTE, (byte) 1);
     }
 
@@ -102,7 +107,7 @@ public interface FallingBlockFactory
         if (ENTITY_NAME.equals(entity.getCustomName()))
             return true;
 
-        return SUPPORTS_PERSISTENT_DATA_CONTAINER &&
+        return ENTITY_KEY != null &&
             entity.getPersistentDataContainer().has(ENTITY_KEY.get(), PersistentDataType.BYTE);
     }
 
