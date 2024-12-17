@@ -3,18 +3,17 @@ package nl.pim16aap2.bigDoors;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AutoCloseScheduler
 {
     private final BigDoors plugin;
-    private Map<Long, MyScheduledTask> timers;
+    private final Map<Long, MyScheduledTask> timers= new ConcurrentHashMap<>();
 
     public AutoCloseScheduler(final BigDoors plugin)
     {
         this.plugin = plugin;
-        timers = new HashMap<>();
     }
 
     public boolean isDoorWaiting(long doorUID)
@@ -70,10 +69,8 @@ public class AutoCloseScheduler
                         cancel();
                     }
                     else
-                        BigDoors.getScheduler().runTask(door.getChunkCoords(), () -> {
-                          plugin.getDoorOpener(door.getType())
+                        plugin.getDoorOpener(door.getType())
                             .openDoorFuture(plugin.getCommander().getDoor(null, door.getDoorUID()), time, instantOpen, false);
-                        });
                 }
                 deleteTimer(door.getDoorUID());
             }

@@ -99,6 +99,8 @@ public class BigDoors extends JavaPlugin implements Listener
     public static final Semver SERVER_VERSION =
         Objects.requireNonNull(Semver.coerce(Bukkit.getServer().getBukkitVersion())).withClearedPreReleaseAndBuild();
 
+    public static final boolean IS_FOLIA = "Folia".equals(Bukkit.getName());
+
     private static BigDoors instance;
     private static TaskScheduler scheduler;
     public static final boolean DEVBUILD = true;
