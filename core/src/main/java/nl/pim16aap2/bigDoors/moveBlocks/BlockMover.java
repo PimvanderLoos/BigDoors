@@ -136,7 +136,7 @@ public abstract class BlockMover
         return Math.max(0, 17 - endCount);
     }
 
-    protected synchronized void putBlocks(
+    protected synchronized final void putBlocks(
         boolean onDisable, double time, int endCount, LocationFinder locationUpdater, Runnable coordinateUpdater)
     {
         if (blocksPlaced.getAndSet(true))
@@ -150,7 +150,8 @@ public abstract class BlockMover
             byte matByte = savedBlock.getBlockByte();
             Location newPos = locationUpdater.apply(savedBlock.getRadius(), savedBlock.getStartX(),
                                                     savedBlock.getStartY(), savedBlock.getStartZ());
-            BigDoors.getScheduler().runTask(newPos, () -> {
+
+            final Runnable runnable = () -> {
                 if (!instantOpen) {
                     savedBlock.getFBlock().remove();
                 }
@@ -176,7 +177,15 @@ public abstract class BlockMover
                         bs.update();
                     }
                 }
-            });
+            };
+
+            // Avoid scheduling a task for each individual block if we're already on the region thread.
+            // We skip the check altogether if we're not on Folia, as we already know that this method
+            // is scheduled on the global (region) thread in that case; Let the JVM optimize this away.
+            if (!BigDoors.IS_FOLIA || BigDoors.getScheduler().isRegionThread(newPos))
+                runnable.run();
+            else
+                BigDoors.getScheduler().runTask(newPos, runnable);
         }
 
         coordinateUpdater.run();
