@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import static nl.pim16aap2.bigDoors.moveBlocks.OpenerUtil.rescheduleTaskForLocationIfNeeded;
+
 public class SlidingDoorOpener implements Opener
 {
     private static final List<RotateDirection> VALID_ROTATE_DIRECTIONS = Collections
@@ -198,6 +200,15 @@ public class SlidingDoorOpener implements Opener
 
     @Override
     public @Nonnull CompletableFuture<DoorOpenResult> openDoorFuture(
+        @Nonnull Door door, double time, boolean instantOpen, boolean silent,
+        @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
+    {
+        return rescheduleTaskForLocationIfNeeded(
+            door,
+            () -> openDoorFuture0(door, time, instantOpen, silent, mode, bypassProtectionHooks));
+    }
+
+    private @Nonnull CompletableFuture<DoorOpenResult> openDoorFuture0(
         @Nonnull Door door, double time, boolean instantOpen, boolean silent,
         @Nonnull ChunkLoadMode mode, boolean bypassProtectionHooks)
     {
