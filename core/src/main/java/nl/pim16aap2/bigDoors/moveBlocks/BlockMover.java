@@ -1,10 +1,10 @@
 package nl.pim16aap2.bigDoors.moveBlocks;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
-import nl.pim16aap2.bigDoors.NMS.CustomCraftFallingBlock;
 import nl.pim16aap2.bigDoors.events.DoorEventAutoToggle;
 import nl.pim16aap2.bigDoors.events.DoorEventToggleEnd;
 import nl.pim16aap2.bigDoors.util.MyBlockData;
@@ -21,7 +21,6 @@ import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.material.MaterialData;
-import com.github.Anon8281.universalScheduler.UniversalRunnable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -54,6 +53,30 @@ public abstract class BlockMover
         preprocess();
     }
 
+    /**
+     * Breaks the block naturally if it is a block that breaks naturally.
+     *
+     * @param block The block to break.
+     */
+    private void breakBlockNaturallyIfNeeded(Block block)
+    {
+        final Location location = block.getLocation();
+
+        // If we're already on the region thread (main-thread on Spigot),
+        // we can check the piston move reaction without scheduling a task.
+        if (BigDoors.getScheduler().isRegionThread(location))
+        {
+            if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
+                BigDoors.getScheduler().runTaskLater(location, block::breakNaturally, 1L);
+            return;
+        }
+
+        BigDoors.getScheduler().runTaskLater(location, () -> {
+            if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
+                block.breakNaturally();
+        }, 1L);
+    }
+
     private void preprocess()
     {
         if (this.door == null)
@@ -74,11 +97,7 @@ public abstract class BlockMover
             if (!Util.isPosInCuboid(newLocation, min, max))
                 continue;
 
-            final Block block = newLocation.getBlock();
-            BigDoors.getScheduler().runTask(block.getLocation(), () -> {
-                if (block.getPistonMoveReaction() == PistonMoveReaction.BREAK)
-                    BigDoors.getScheduler().runTaskLater(block.getLocation(), block::breakNaturally, 1L);
-            });
+            breakBlockNaturallyIfNeeded(newLocation.getBlock());
         }
 
         BigDoors.getScheduler().runTask(powerBlockLoc, () -> {
@@ -213,20 +232,21 @@ public abstract class BlockMover
         return publicSavedBlocks;
     }
 
-    /* Creates a new instance of the falling block factory specification.
-    * <p>
-    * This is used to configure the falling block factory.
-    *
-    * @param plugin The BigDoors plugin instance.
-    * @return The falling block factory specification.
-    */
-   protected static FallingBlockFactory.Specification createBlockFactorySpec(BigDoors plugin)
-   {
-       return new FallingBlockFactory.Specification(
-           plugin.getConfigLoader().setCustomName()
-       );
-   }
-    
+    /**
+     * Creates a new instance of the falling block factory specification.
+     * <p>
+     * This is used to configure the falling block factory.
+     *
+     * @param plugin The BigDoors plugin instance.
+     * @return The falling block factory specification.
+     */
+    protected static FallingBlockFactory.Specification createBlockFactorySpec(BigDoors plugin)
+    {
+        return new FallingBlockFactory.Specification(
+            plugin.getConfigLoader().setCustomName()
+        );
+    }
+
     @FunctionalInterface
     public interface LocationFinder
     {
