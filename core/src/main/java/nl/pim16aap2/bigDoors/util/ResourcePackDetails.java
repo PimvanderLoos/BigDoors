@@ -85,9 +85,9 @@ public enum ResourcePackDetails
         Semver.of(1, 20, 2)
     ),
 
-    FORMAT_23(
-        "https://www.dropbox.com/scl/fi/lv8uiy5kfryhqugtih53c/BigDoorsResourcePack-Format23.zip?rlkey=esxnipm5zmytp9pnfszrd6ims&st=tv7vs9ch&dl=1",
-        "c1e2037aa354ace6e929e448c9f288150f8aa646",
+    FORMAT_22(
+        "https://www.dropbox.com/scl/fi/iid6k41zigbk7lr6q4k9p/BigDoorsResourcePack-Format22.zip?rlkey=rxa0yew6pzjelqqmwjno7mta0&st=5taz85qm&dl=1",
+        "c05d5e2e4c327cb40c623b6a91456b0e86ab2987",
         Semver.of(1, 20, 3),
         Semver.of(1, 20, 4)
     ),
@@ -103,7 +103,14 @@ public enum ResourcePackDetails
         "https://www.dropbox.com/scl/fi/71jyxjeqfyrcn8hokn6cy/BigDoorsResourcePack-Format34.zip?rlkey=05afk8t5yxdil1w6zm34akzzo&st=9xxocl78&dl=1",
         "4d81904572cdf0ef7b313f87012b7230a2d2ac12",
         Semver.of(1, 21, 0),
-        Semver.of(1, 21, 0)
+        Semver.of(1, 21, 3)
+    ),
+
+    FORMAT_46(
+        "https://www.dropbox.com/scl/fi/5totedxlfixk7dm7cnukz/BigDoorsResourcePack-Format46.zip?rlkey=fhy152g0rrh42ucu7uu3hgwyh&st=1w7yzm1a&dl=1",
+        "ad5c666f2d37c8b992058fae5e6706b2883baab1",
+        Semver.of(1, 21, 4),
+        Semver.of(1, 21, 4)
     )
 
     ;

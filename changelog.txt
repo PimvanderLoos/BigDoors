@@ -1,5 +1,7 @@
 Alpha 0.1.8.58
 - Add resource pack instead of overwriting other resource packs on supported versions.
+- Fix resource pack on 1.16.2 - 1.16.5.
+- Add format 46 resource pack so it doesn't show up in red on 1.21.4.
 
 Alpha 0.1.8.57
 - Fix support for Minecraft < 1.20. Whoops!
