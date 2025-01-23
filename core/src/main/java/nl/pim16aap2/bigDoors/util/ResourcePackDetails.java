@@ -36,7 +36,7 @@ public enum ResourcePackDetails
     ),
 
     FORMAT_6(
-        "https://www.dropbox.com/scl/fi/frc758gboe5xk1iz2jb4v/BigDoorsResourcePack-Format6.zip?rlkey=tp45b9m6dtgdka23mml535zid&st=zi7c5d2m&dl=6",
+        "https://www.dropbox.com/scl/fi/frc758gboe5xk1iz2jb4v/BigDoorsResourcePack-Format6.zip?rlkey=tp45b9m6dtgdka23mml535zid&st=zi7c5d2m&dl=1",
         Semver.of(1, 16, 2),
         Semver.of(1, 16, 5)
     ),
