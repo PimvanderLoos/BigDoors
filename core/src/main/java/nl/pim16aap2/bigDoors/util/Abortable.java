@@ -4,14 +4,15 @@ import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 
 public abstract class Abortable
 {
-    private MyScheduledTask universalTask;
+    private volatile MyScheduledTask universalTask;
 
     public abstract void abort(boolean onDisable);
 
     protected void cancelTask()
     {
-        if (universalTask != null)
-            universalTask.cancel();
+        final MyScheduledTask universalTask0 = this.universalTask;
+        if (universalTask0 != null)
+            universalTask0.cancel();
     }
 
     public void abort()
