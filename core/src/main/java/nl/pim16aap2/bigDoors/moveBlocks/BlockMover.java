@@ -24,10 +24,10 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.material.MaterialData;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static nl.pim16aap2.bigDoors.events.DoorEventToggle.ToggleType;
@@ -38,7 +38,7 @@ public abstract class BlockMover
     private final @Nullable Door door;
 
     protected final AtomicBoolean blocksPlaced = new AtomicBoolean(false);
-    protected final ArrayList<MyBlockData> savedBlocks = new ArrayList<>();
+    protected final List<MyBlockData> savedBlocks = new CopyOnWriteArrayList<>();
     private final List<MyBlockData> publicSavedBlocks = Collections.unmodifiableList(savedBlocks);
     protected final boolean instantOpen;
 
