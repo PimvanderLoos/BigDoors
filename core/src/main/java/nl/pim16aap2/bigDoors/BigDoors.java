@@ -100,7 +100,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Objects.requireNonNull(Semver.coerce(Bukkit.getServer().getBukkitVersion())).withClearedPreReleaseAndBuild();
 
     private static BigDoors instance;
-    private static TaskScheduler scheduler;
+    private static volatile TaskScheduler scheduler;
     public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
 
