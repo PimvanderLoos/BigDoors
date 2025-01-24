@@ -1,5 +1,6 @@
 package nl.pim16aap2.bigDoors.moveBlocks;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
@@ -16,7 +17,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.material.MaterialData;
-import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -86,79 +86,79 @@ public class SlidingMover extends BlockMover
             this.time = Math.abs(blocksToMove) / speed;
         }
         tickRate = Util.tickRateFromSpeed(speed);
-        BigDoors.getScheduler().scheduleSyncDelayedTask(this::createAnimatedBlocks, 2L);
+
+        // We create the animated blocks from the minimum of the door outwards to the maximum.
+        // Therefore, the task is scheduled in the 'minimum' location, to ensure it runs in the correct region.
+        BigDoors.getScheduler().runTaskLater(door.getMinimum(), this::createAnimatedBlocks, 2L);
     }
 
     private void createAnimatedBlocks()
     {
-        savedBlocks.ensureCapacity(door.getBlockCount());
-        Location loc = new Location(door.getWorld(), xMin, yMin, zMin);
+        final List<MyBlockData> newBlocks = new ArrayList<>(door.getBlockCount());
 
-        BigDoors.getScheduler().runTask(loc, () -> {
-            // This will reserve a bit too much memory, but not enough to worry about.
-            final List<NMSBlock> edges =
-                    new ArrayList<>(Math.min(door.getBlockCount(),
-                            (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
+        final List<NMSBlock> edges =
+                new ArrayList<>(Math.min(door.getBlockCount(),
+                        (xMax - xMin + 1) * 2 + (yMax - yMin + 1) * 2 + (zMax - zMin + 1) * 2));
 
-            final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
+        final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
 
-            int yAxis = yMin;
+        int yAxis = yMin;
+        do
+        {
+            int zAxis = zMin;
             do
             {
-                int zAxis = zMin;
-                do
+                for (int xAxis = xMin; xAxis <= xMax; xAxis++)
                 {
-                    for (int xAxis = xMin; xAxis <= xMax; xAxis++)
+                    Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
+                    Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
+                    Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
+
+                    Material mat = vBlock.getType();
+                    if (Util.isAllowedBlock(mat))
                     {
-                        Location startLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
-                        Location newFBlockLocation = new Location(world, xAxis + 0.5, yAxis, zAxis + 0.5);
-                        Block vBlock = world.getBlockAt(xAxis, yAxis, zAxis);
+                        byte matData = vBlock.getData();
+                        BlockState bs = vBlock.getState();
+                        MaterialData materialData = bs.getData();
+                        NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
 
-                        Material mat = vBlock.getType();
-                        if (Util.isAllowedBlock(mat))
-                        {
-                            byte matData = vBlock.getData();
-                            BlockState bs = vBlock.getState();
-                            MaterialData materialData = bs.getData();
-                            NMSBlock block = fabf.nmsBlockFactory(world, xAxis, yAxis, zAxis);
-    
-                            if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
-                                vBlock.setType(Material.AIR);
-    
-                            CustomCraftFallingBlock fBlock = null;
-                            if (!instantOpen)
-                                fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
-                            savedBlocks
-                                .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
-    
-                            if (xAxis == xMin || xAxis == xMax ||
-                                yAxis == yMin || yAxis == yMax ||
-                                zAxis == zMin || zAxis == zMax)
-                                edges.add(block);
-                        }
+                        if (!BigDoors.isOnFlattenedVersion() || UniversalScheduler.isFolia)
+                            vBlock.setType(Material.AIR);
+
+                        CustomCraftFallingBlock fBlock = null;
+                        if (!instantOpen)
+                            fBlock = fabf.createFallingBlockWithMetadata(spec, newFBlockLocation, block, matData, mat);
+                        newBlocks
+                            .add(new MyBlockData(mat, matData, fBlock, 0, materialData, block, 0, startLocation));
+
+                        if (xAxis == xMin || xAxis == xMax ||
+                            yAxis == yMin || yAxis == yMax ||
+                            zAxis == zMin || zAxis == zMax)
+                            edges.add(block);
                     }
-                    ++zAxis;
                 }
-                while (zAxis <= zMax);
-                ++yAxis;
+                ++zAxis;
             }
-            while (yAxis <= yMax);
+            while (zAxis <= zMax);
+            ++yAxis;
+        }
+        while (yAxis <= yMax);
 
-            // This is only supported on 1.13
-            if (BigDoors.isOnFlattenedVersion())
-            {
-                savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
-                // Update the physics around the edges after we've removed all our blocks.
-                edges.forEach(block -> block.deleteOriginalBlock(true));
-            }
+        savedBlocks.addAll(newBlocks);
 
-            savedBlocks.trimToSize();
 
-            if (!instantOpen)
-                rotateEntities();
-            else
-                putBlocks(false);
-        });
+        // This is only supported on 1.13
+        if (BigDoors.isOnFlattenedVersion())
+        {
+            savedBlocks.forEach(myBlockData -> myBlockData.getBlock().deleteOriginalBlock(false));
+            // Update the physics around the edges after we've removed all our blocks.
+            edges.forEach(block -> block.deleteOriginalBlock(true));
+        }
+
+        if (!instantOpen)
+            rotateEntities();
+        else
+            putBlocks(false);
     }
 
     @Override
