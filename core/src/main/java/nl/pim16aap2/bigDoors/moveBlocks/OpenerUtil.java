@@ -1,5 +1,6 @@
 package nl.pim16aap2.bigDoors.moveBlocks;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.DoorOpenResult;
@@ -40,16 +41,17 @@ class OpenerUtil
     /**
      * Checks if the task for handling a door should be rescheduled.
      * <p>
-     * A task needs to be rescheduled when we run on Folia (see {@link BigDoors#IS_FOLIA}) and the region thread is not
-     * the same as the thread that the door's engine is running on. We use the engine location because it's guaranteed
-     * to be part of the same door. In many cases, it will also be a good indication of where the door will move to.
+     * A task needs to be rescheduled when we run on Folia (see {@link UniversalScheduler#isFolia}) and the region
+     * thread is not the same as the thread that the door's engine is running on. We use the engine location because
+     * it's guaranteed to be part of the same door. In many cases, it will also be a good indication of where the door
+     * will move to.
      *
      * @param door The door for which to check if the task should be rescheduled.
      * @return True if the task should be rescheduled.
      */
     static boolean shouldRescheduleTaskForLocation(Door door)
     {
-        return BigDoors.IS_FOLIA && !BigDoors.getScheduler().isRegionThread(door.getEngine());
+        return UniversalScheduler.isFolia && !BigDoors.getScheduler().isRegionThread(door.getEngine());
     }
 
     /**

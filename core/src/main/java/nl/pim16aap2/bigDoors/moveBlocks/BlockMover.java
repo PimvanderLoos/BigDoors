@@ -2,6 +2,7 @@ package nl.pim16aap2.bigDoors.moveBlocks;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
@@ -182,7 +183,7 @@ public abstract class BlockMover
             // Avoid scheduling a task for each individual block if we're already on the region thread.
             // We skip the check altogether if we're not on Folia, as we already know that this method
             // is scheduled on the global (region) thread in that case; Let the JVM optimize this away.
-            if (!BigDoors.IS_FOLIA || BigDoors.getScheduler().isRegionThread(newPos))
+            if (!UniversalScheduler.isFolia || BigDoors.getScheduler().isRegionThread(newPos))
                 runnable.run();
             else
                 BigDoors.getScheduler().runTask(newPos, runnable);
