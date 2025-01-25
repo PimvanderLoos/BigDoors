@@ -300,11 +300,11 @@ public class CylindricalMover extends BlockMover
                 }
                 else
                 {
-                    // It is not pssible to edit falling block blockdata (client won't update it),
+                    // It is not possible to edit falling block blockdata (client won't update it),
                     // so delete the current fBlock and replace it by one that's been rotated.
                     // Also, this stuff needs to be done on the main thread.
                     if (replace)
-                        BigDoors.getScheduler().runTask(door.getChunkCoords(), () ->
+                        BigDoors.getScheduler().runTask(door.getEngine(), () ->
                         {
                             final FallingBlockFactory.Specification spec = createBlockFactorySpec(plugin);
                             for (MyBlockData block : savedBlocks)

@@ -225,7 +225,7 @@ public class SlidingMover extends BlockMover
                     for (MyBlockData savedBlock : savedBlocks)
                         if (!savedBlock.getMat().equals(Material.AIR))
                             savedBlock.getFBlock().setVelocity(new Vector(0D, 0D, 0D));
-                    BigDoors.getScheduler().runTask(door.getChunkCoords(), () -> putBlocks(false));
+                    BigDoors.getScheduler().runTask(door.getEngine(), () -> putBlocks(false));
                     cancel();
                 }
                 else
