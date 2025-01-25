@@ -121,9 +121,6 @@ public class ProtectionCompatManager implements Listener
             }
             catch (Exception e)
             {
-                if (e instanceof NullPointerException) // no matter what scheduler i run this on (async, player entity thread, loc thread, player.getLocatiom()) inside of the *Creator.java files it still throws warning
-                    break;
-
                 plugin.getMyLogger()
                       .warn("Failed to use \"" + compat.getName() + "\"! Please send this error to pim16aap2:");
                 e.printStackTrace();
@@ -150,9 +147,6 @@ public class ProtectionCompatManager implements Listener
             }
             catch (Exception e)
             {
-                if (e instanceof NullPointerException) // no matter what scheduler i run this on (async, player entity thread, loc thread, player.getLocatiom()) inside of the *Creator.java files it still throws warning
-                    break;
-
                 plugin.getMyLogger()
                       .warn("Failed to use \"" + compat.getName() + "\"! Please send this error to pim16aap2:");
                 e.printStackTrace();
@@ -162,7 +156,33 @@ public class ProtectionCompatManager implements Listener
         return null;
     }
 
-    private CompletableFuture<@Nullable String> checkForPlayer(Player fakePlayer, Callable<@Nullable String> callable)
+    /**
+     * Call a method that needs to be called synchronously at a specific location to ensure that it runs in the correct
+     * region.
+     *
+     * @param location The location to call the method at.
+     * @param callable The method to call.
+     * @return The result of the method.
+     * @param <T> The type of the result.
+     */
+    private static  <T> CompletableFuture<T> callSyncMethod(Location location, Callable<T> callable)
+    {
+        final CompletableFuture<T> ret = new CompletableFuture<>();
+        BigDoors.getScheduler().runTask(location, () ->
+        {
+            try
+            {
+                ret.complete(callable.call());
+            }
+            catch (Exception e)
+            {
+                ret.completeExceptionally(e);
+            }
+        });
+        return ret;
+    }
+
+    private CompletableFuture<@Nullable String> checkForPlayer(Location location, Player fakePlayer, Callable<@Nullable String> callable)
     {
         return canBypass(fakePlayer).thenApplyAsync(
             canBypass ->
@@ -172,9 +192,7 @@ public class ProtectionCompatManager implements Listener
 
                 try
                 {
-                    return BigDoors.getScheduler()
-                        .callSyncMethod(callable)
-                        .get(1, TimeUnit.SECONDS);
+                    return callSyncMethod(location, callable).get(1, TimeUnit.SECONDS);
                 }
                 catch (InterruptedException e)
                 {
@@ -203,6 +221,9 @@ public class ProtectionCompatManager implements Listener
      * Checks something for a player. This can be used to, for example, check if a (fake) player has access to a
      * location.
      *
+     * @param regionLocation
+     *     The location of the region to check the function for. This is used to ensure that the function is scheduled
+     *     in the correct region.
      * @param playerUUID
      *     The UUID of the player.
      * @param playerName
@@ -217,7 +238,7 @@ public class ProtectionCompatManager implements Listener
      * be returned.
      */
     private CompletableFuture<@Nullable String> checkForPlayer(
-        UUID playerUUID, String playerName, World world, Function<Player, @Nullable String> function)
+        Location regionLocation, UUID playerUUID, String playerName, World world, Function<Player, @Nullable String> function)
     {
         if (protectionCompats.isEmpty())
             return CompletableFuture.completedFuture(null);
@@ -226,7 +247,7 @@ public class ProtectionCompatManager implements Listener
         if (fakePlayer == null)
             return CompletableFuture.completedFuture("InvalidFakePlayer");
 
-        return checkForPlayer(fakePlayer, () -> function.apply(fakePlayer));
+        return checkForPlayer(regionLocation, fakePlayer, () -> function.apply(fakePlayer));
     }
 
     /**
@@ -243,7 +264,7 @@ public class ProtectionCompatManager implements Listener
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
         return checkForPlayer(
-            playerUUID, playerName, loc.getWorld(), fakePlayer -> canBreakBlockSync(fakePlayer, loc))
+            loc, playerUUID, playerName, loc.getWorld(), fakePlayer -> canBreakBlockSync(fakePlayer, loc))
             .exceptionally(
                 ex ->
                 {
@@ -271,7 +292,7 @@ public class ProtectionCompatManager implements Listener
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
         return checkForPlayer(
-            playerUUID, playerName, world, fakePlayer -> canBreakBlocksBetweenLocsSync(fakePlayer, world, loc1, loc2))
+            loc1, playerUUID, playerName, world, fakePlayer -> canBreakBlocksBetweenLocsSync(fakePlayer, world, loc1, loc2))
             .exceptionally(
                 ex ->
                 {
