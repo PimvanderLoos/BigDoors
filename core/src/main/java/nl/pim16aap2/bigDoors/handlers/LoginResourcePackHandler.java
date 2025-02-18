@@ -28,8 +28,6 @@ public class LoginResourcePackHandler implements Listener
         this.plugin = plugin;
         this.resourcePackDetails = resourcePackDetails;
         this.resourcePackSender = METHOD_ADD_RESOURCE_PACK == null ? this::sendResourcePack : this::addResourcePack;
-
-        System.out.println("Found method: " + METHOD_ADD_RESOURCE_PACK);
     }
 
     @EventHandler
@@ -65,7 +63,6 @@ public class LoginResourcePackHandler implements Listener
 
     private void sendResourcePack(@NotNull Player player, @NotNull ResourcePackDetails resourcePackDetails)
     {
-        System.out.println("Sending resource pack to player: " + player.getName() + " with pack: " + resourcePackDetails.name());
         if (resourcePackDetails.getHash().length != 20)
             player.setResourcePack(resourcePackDetails.getUrl());
         else
