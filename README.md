@@ -2,7 +2,7 @@
 BigDoors is a plugin for the Minecraft server mod [Spigot](https://spigotmc.org). Its aim is to enhance your server with
 animated blocks that can be used to create, amongst other things, big (animated) doors.
 
-This is the repository for v1 of the BigDoors plugin for SpigotMC. A new v2 version is in development [here](https://github.com/PimvanderLoos/AnimatedArchitecture).
+This is the repository for v1 of the BigDoors plugin for SpigotMC. A new version named AnimatedArchitecture is in development [here](https://github.com/PimvanderLoos/AnimatedArchitecture).
 
 If you have a problem with this plugin, please create an issue or join our [Discord](https://discord.gg/5ykb943).
 
@@ -24,7 +24,7 @@ Download the latest dev-build [here](https://pim16aap2.nl/BigDoors/). If you dec
 * These builds might not be tested as thoroughly as the release builds.
 * Dev builds may not always be backward compatible with the latest release build. This can occur if the database schema is changed in a dev-build for example (then the old version can no longer read the data). So be sure to make backups!
 
-An updated list of the changelog can be found [here](https://github.com/PimvanderLoos/BigDoors/blob/v1/changelog.txt).
+An updated changelog list can be found [here](https://github.com/PimvanderLoos/BigDoors/blob/master/changelog.txt).
 
 
 # List of features:
@@ -38,7 +38,7 @@ An updated list of the changelog can be found [here](https://github.com/Pimvande
 * Door creator to guide you through the door creation process.
 * Translation support.
 * Active developer support.
-* [Support for various protection plugins](https://github.com/PimvanderLoos/BigDoors/tree/v1/hooks) such as:
+* [Support for various protection plugins](https://github.com/PimvanderLoos/BigDoors/tree/master/hooks) such as:
   * [GriefDefender](https://www.spigotmc.org/resources/68900/)
   * [GriefPrevention](https://www.spigotmc.org/resources/1884/)
   * [Konquest](https://www.spigotmc.org/resources/92220/)
