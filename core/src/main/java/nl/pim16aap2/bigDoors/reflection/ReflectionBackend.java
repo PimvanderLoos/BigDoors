@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -242,15 +243,20 @@ final class ReflectionBackend
      * @return The method matching the specified description.
      */
     private static List<Method> findMethods(@NotNull Class<?> source, @Nullable String name, int modifiers,
-                                            @Nullable ParameterGroup parameters, @Nullable Class<?> returnType)
+                                            @Nullable ParameterGroup parameters, @Nullable Type returnType)
     {
         final List<Method> ret = new ArrayList<>();
         for (Method method : source.getDeclaredMethods())
         {
             if (modifiers != 0 && method.getModifiers() != modifiers)
                 continue;
-            if (returnType != null && !method.getReturnType().equals(returnType))
-                continue;
+            if (returnType != null)
+            {
+                if (returnType instanceof Class<?> && !method.getReturnType().equals(returnType))
+                    continue;
+                if (!method.getGenericReturnType().equals(returnType))
+                    continue;
+            }
             if (name != null && !method.getName().equals(name))
                 continue;
             if (parameters != null && !parameters.matches(method.getParameterTypes()))
@@ -286,7 +292,7 @@ final class ReflectionBackend
     @Contract("true, _, _, _, _, _, _, _ -> !null")
     public static Method findMethod(boolean nonNull, final boolean checkSuperClasses, final boolean checkInterfaces,
                                     @NotNull Class<?> source, @Nullable String name, int modifiers,
-                                    @Nullable ParameterGroup parameters, @Nullable Class<?> returnType)
+                                    @Nullable ParameterGroup parameters, @Nullable Type returnType)
     {
         final List<Method> ret = new ArrayList<>();
         findMethods(ret, checkSuperClasses, checkInterfaces, source, name, modifiers, parameters, returnType);
@@ -306,10 +312,10 @@ final class ReflectionBackend
 
     public static String methodSearchRequestToString(final boolean checkSuperClasses, final boolean checkInterfaces,
                                                      @NotNull Class<?> source, @Nullable String name, int modifiers,
-                                                     @Nullable ParameterGroup parameters, @Nullable Class<?> returnType)
+                                                     @Nullable ParameterGroup parameters, @Nullable Type returnType)
     {
         return String.format("[%s %s %s#%s(%s)]. %s superclasses, %s interfaces", optionalModifiersToString(modifiers),
-                             formatOptionalValue(returnType, Class::getName), source.getName(),
+                             formatOptionalValue(returnType, Type::getTypeName), source.getName(),
                              formatOptionalValue(name), formatOptionalValue(parameters),
                              checkSuperClasses ? "including" : "excluding",
                              checkInterfaces ? "including" : "excluding");
@@ -347,7 +353,7 @@ final class ReflectionBackend
 
     private static void findMethods(List<Method> list, final boolean checkSuperClasses, final boolean checkInterfaces,
                                     @NotNull Class<?> source, @Nullable String name, int modifiers,
-                                    @Nullable ParameterGroup parameters, @Nullable Class<?> returnType)
+                                    @Nullable ParameterGroup parameters, @Nullable Type returnType)
     {
         final List<Method> methods = findMethods(source, name, modifiers, parameters, returnType);
         if (!methods.isEmpty())

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,7 +65,7 @@ public final class MethodFinder
          * @return The new {@link TypedMethodFinder}.
          */
         @Contract("_ -> new")
-        public TypedMethodFinder withReturnType(@NotNull Class<?> returnType)
+        public TypedMethodFinder withReturnType(@NotNull Type returnType)
         {
             return new TypedMethodFinder(source, returnType);
         }
@@ -198,9 +199,9 @@ public final class MethodFinder
      */
     public static final class TypedMethodFinder extends MethodFinderBase<Method, TypedMethodFinder>
     {
-        private final @NotNull Class<?> returnType;
+        private final @NotNull Type returnType;
 
-        private TypedMethodFinder(Class<?> source, @NotNull Class<?> returnType)
+        private TypedMethodFinder(Class<?> source, @NotNull Type returnType)
         {
             super(source);
             this.returnType = Objects.requireNonNull(returnType, "Return type of typed method cannot be null!");
