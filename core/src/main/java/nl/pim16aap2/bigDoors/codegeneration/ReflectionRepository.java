@@ -264,7 +264,7 @@ final class ReflectionRepository
         methodTick = findTickMethod();
         methodHurtEntities = findMethod().inClass(classEntityFallingBlock).withReturnType(boolean.class)
                                          .withParameters(parameterBuilder()
-                                                             .withRequiredParameters(float.class, float.class)
+                                                             .withRequiredParameters(double.class, float.class)
                                                              .withOptionalParameters(classNMSDamageSource)).get();
         methodMove = findMethod().inClass(classNMSEntity).withReturnType(void.class)
                                  .withParameters(classEnumMoveType, classVec3D).get();
@@ -292,7 +292,7 @@ final class ReflectionRepository
         methodNBTTagCompoundGetCompound = findMethod().inClass(classNBTTagCompound).withReturnType(classNBTTagCompound)
                                                       .withParameters(String.class).get();
         methodNBTTagCompoundGetInt = findMethod().inClass(classNBTTagCompound).withReturnType(int.class)
-                                                 .withParameters(String.class).get();
+                                                 .withParameters(String.class, int.class).get();
         methodNBTTagCompoundHasKeyOfType = findMethod().inClass(classNBTTagCompound).withReturnType(boolean.class)
                                                        .withParameters(String.class, int.class).get();
         methodIBlockDataSerializer = findMethod().inClass(classGameProfileSerializer)

@@ -235,7 +235,7 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
             .define(methodLoadData)
             .intercept(deserializedInvocation.setsField(named(FIELD_BLOCK)).andThen(
                     invoke(methodNBTTagCompoundGetInt)
-                        .onArgument(0).with("Time").setsField(fieldTicksLived)).andThen(
+                        .onArgument(0).with("Time", 0).setsField(fieldTicksLived)).andThen(
                     invoke(named(METHOD_NAME_LOAD_DATA_CONDITIONAL))
                         .withThis().withArgument(0)
                         .withMethodCall(invoke(methodNBTTagCompoundHasKeyOfType)
