@@ -1,4 +1,4 @@
-package nl.pim16aap2.bigDoors.reflection;
+package nl.pim16aap2.bigDoors.reflection.type;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -89,6 +89,7 @@ public final class MethodFinder
         extends ReflectionFinder.ReflectionFinderWithParameters<T, U>
     {
         protected final @NotNull Class<?> source;
+
         protected boolean checkSuperClasses = false;
         protected boolean checkInterfaces = false;
 
@@ -189,8 +190,16 @@ public final class MethodFinder
         @Override
         public Method get()
         {
-            return ReflectionBackend.findMethod(nonnull, checkSuperClasses, checkInterfaces,
-                                                source, name, modifiers, parameters, null);
+            return ReflectionBackend.findMethod(
+                nonnull,
+                checkSuperClasses,
+                checkInterfaces,
+                source,
+                name,
+                modifiers,
+                parameters,
+                null
+            );
         }
     }
 
@@ -216,8 +225,16 @@ public final class MethodFinder
         @Override
         public Method get()
         {
-            return ReflectionBackend.findMethod(nonnull, checkSuperClasses, checkInterfaces,
-                                                source, null, modifiers, parameters, returnType);
+            return ReflectionBackend.findMethod(
+                nonnull,
+                checkSuperClasses,
+                checkInterfaces,
+                source,
+                null,
+                modifiers,
+                parameters,
+                returnType
+            );
         }
     }
 
@@ -229,7 +246,7 @@ public final class MethodFinder
         implements IBoundedRetriever<List<Method>, MultipleMethodsFinder>
     {
         private @Nullable String name;
-        private @Nullable Class<?> returnType;
+        private @Nullable Type returnType;
         private int expected = -1;
         private int atMost = -1;
         private int atLeast = -1;
@@ -271,7 +288,7 @@ public final class MethodFinder
          * @return The current {@link MultipleMethodsFinder}.
          */
         @Contract("_ -> this")
-        public MultipleMethodsFinder withReturnType(@NotNull Class<?> returnType)
+        public MultipleMethodsFinder withReturnType(@NotNull Type returnType)
         {
             this.returnType = returnType;
             return this;
@@ -281,8 +298,15 @@ public final class MethodFinder
         public List<Method> get()
         {
             final List<Method> found =
-                ReflectionBackend.findMethods(checkSuperClasses, checkInterfaces, source,
-                                              name, modifiers, parameters, returnType);
+                ReflectionBackend.findMethods(
+                    checkSuperClasses,
+                    checkInterfaces,
+                    source,
+                    name,
+                    modifiers,
+                    parameters,
+                    returnType
+                );
 
             if (expected >= 0 && expected != found.size())
                 return handleInvalid(found,
@@ -302,8 +326,15 @@ public final class MethodFinder
         {
             if (nonnull)
                 throw new IllegalStateException(str + ReflectionBackend
-                    .methodSearchRequestToString(checkSuperClasses, checkInterfaces, source, name,
-                                                 modifiers, parameters, returnType) + "\nFound methods: " + found);
+                    .methodSearchRequestToString(
+                        checkSuperClasses,
+                        checkInterfaces,
+                        source,
+                        name,
+                        modifiers,
+                        parameters,
+                        returnType
+                    ) + "\nFound methods: " + found);
             return null;
         }
 

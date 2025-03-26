@@ -4,6 +4,7 @@ import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.reflection.BukkitReflectionUtil;
 import nl.pim16aap2.bigDoors.reflection.ParameterGroup;
 import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
+import nl.pim16aap2.bigDoors.reflection.type.ParameterizedTypeImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -113,7 +115,8 @@ final class ReflectionRepository
     public static final Method methodNBTTagCompoundSetInt;
     public static final Method methodNBTTagCompoundSetBoolean;
     public static final Method methodNBTTagCompoundSetFloat;
-    public static final Method methodNBTTagCompoundHasKeyOfType;
+    public static final Method methodNBTTagCompoundGetOptionalCompound;
+    public static final Method methodNewNBTTagCompoundCopy;
     public static final Method methodNBTTagCompoundGetCompound;
     public static final Method methodNBTTagCompoundGetInt;
     public static final Method methodIBlockDataSerializer;
@@ -293,8 +296,19 @@ final class ReflectionRepository
                                                       .withParameters(String.class).get();
         methodNBTTagCompoundGetInt = findMethod().inClass(classNBTTagCompound).withReturnType(int.class)
                                                  .withParameters(String.class, int.class).get();
-        methodNBTTagCompoundHasKeyOfType = findMethod().inClass(classNBTTagCompound).withReturnType(boolean.class)
-                                                       .withParameters(String.class, int.class).get();
+        methodNewNBTTagCompoundCopy = ReflectionBuilder
+            .findMethod()
+            .inClass(classNBTTagCompound)
+            .withReturnType(classNBTTagCompound)
+            .withoutParameters()
+            .withModifiers(Modifier.PUBLIC)
+            .get();
+        methodNBTTagCompoundGetOptionalCompound = ReflectionBuilder
+            .findMethod()
+            .inClass(classNBTTagCompound)
+            .withReturnType(new ParameterizedTypeImpl(Optional.class, classNBTTagCompound))
+            .withParameters(String.class)
+            .get();
         methodIBlockDataSerializer = findMethod().inClass(classGameProfileSerializer)
                                                  .withReturnType(classNBTTagCompound)
                                                  .withModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -313,13 +327,20 @@ final class ReflectionRepository
         methodBlockBaseGetItem = findMethod().inClass(classBlockBase).withReturnType(classNMSItem)
                                              .withoutParameters()
                                              .withModifiers(Modifier.ABSTRACT, Modifier.PUBLIC).get();
+
         // In 1.19.3, there are 2 methods that fit this lookup. They both do basically the same thing
         // and for our use-case, it doesn't matter which one we use.
-        methodSetIBlockDataHolderState = ReflectionBuilder.findMethod().inClass(classIBlockDataHolder)
-                                                          .findMultiple().atLeast(1).atMost(2)
-                                                          .withReturnType(Object.class)
-                                                          .withParameters(classIBlockState, Comparable.class)
-                                                          .get().get(0);
+        methodSetIBlockDataHolderState = ReflectionBuilder
+            .findMethod()
+            .inClass(classIBlockDataHolder)
+            .findMultiple()
+            .atLeast(1)
+            .atMost(2)
+            .withParameters(classIBlockState, Comparable.class)
+            .withReturnType(classIBlockDataHolder.getTypeParameters()[1])
+            .get()
+            .getFirst();
+
         methodCraftMagicNumbersGetMaterial = findMethod()
             .inClass(classCraftMagicNumbers).withName("getMaterial").withParameters(classIBlockData).get();
         methodGetItemType = findMethod().inClass(MaterialData.class).withName("getItemType").get();
@@ -426,6 +447,7 @@ final class ReflectionRepository
                 .addModifiers(Modifier.PUBLIC)
                 .get();
         }
+
 
         fieldEntityTypeFallingBlock = ReflectionASMAnalyzers.getEntityTypeFallingBlock(classEntityTypes,
                                                                                        cTorPrivateNMSFallingBlockEntity);
