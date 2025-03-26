@@ -20,13 +20,6 @@
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.21.5-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.11.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
@@ -210,6 +203,13 @@
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R3</artifactId>
+            <version>0.1.8.58-ALPHA</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>nl.pim16aap2.BigDoors</groupId>
+            <artifactId>v1_21_R4</artifactId>
             <version>0.1.8.58-ALPHA</version>
             <scope>compile</scope>
         </dependency>
