@@ -792,6 +792,8 @@ public final class Util
             /* 1.15 end */
 
         case FROGSPAWN:
+        case TEST_BLOCK:
+        case TEST_INSTANCE_BLOCK:
 
             return false;
         default:
