@@ -111,7 +111,14 @@ public enum ResourcePackDetails
         "ad5c666f2d37c8b992058fae5e6706b2883baab1",
         Semver.of(1, 21, 4),
         Semver.of(1, 21, 4)
-    )
+    ),
+
+    FORMAT_51(
+        "https://www.dropbox.com/scl/fi/c6yv4ellokzp8blf91nlu/BigDoorsResourcePack-Format51.zip?rlkey=db4qkpjnxeziw9h2jzpjzp9o2&st=hhv1xigd&dl=1",
+        "eacaccec6e755f871ef420a336bacafa0526eeca",
+        Semver.of(1, 21, 5),
+        Semver.of(1, 21, 5)
+    ),
 
     ;
 
