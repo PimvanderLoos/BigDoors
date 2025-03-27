@@ -1,10 +1,9 @@
 package nl.pim16aap2.bigDoors.reflection;
 
-import junit.framework.TestCase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ParameterGroupTest extends TestCase
+class ParameterGroupTest
 {
     @Test
     void testBasic()

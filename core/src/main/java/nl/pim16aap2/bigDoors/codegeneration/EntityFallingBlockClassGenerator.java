@@ -32,8 +32,6 @@ import static nl.pim16aap2.bigDoors.reflection.ReflectionBuilder.findMethod;
 
 /**
  * Represents an implementation of a {@link ClassGenerator} to generate a subclass of {@link CustomEntityFallingBlock}.
- *
- * @author Pim
  */
 final class EntityFallingBlockClassGenerator extends ClassGenerator
 {
@@ -46,16 +44,9 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
     public static final String FIELD_CRAFT_WORLD = "generated$craftWorld";
 
     public static final String METHOD_MULTIPLY_VEC = "generated$multiplyVec";
-    public static final String METHOD_NAME_LOAD_DATA_CONDITIONAL = methodLoadData.getName() + "$conditional";
-    public static final String METHOD_NAME_SAVE_DATA_CONDITIONAL = methodSaveData.getName() + "$conditional";
     public static final String METHOD_TICK = "generated$tick";
     public static final String METHOD_SPAWN = "generated$spawn";
 
-
-    public static final Method METHOD_LOAD_DATA =
-        findMethod().inClass(IGeneratedFallingBlockEntity.class).withName("generated$loadTileEntityData").get();
-    public static final Method METHOD_SAVE_DATA =
-        findMethod().inClass(IGeneratedFallingBlockEntity.class).withName("generated$saveTileEntityData").get();
     public static final Method METHOD_DIE =
         findMethod().inClass(IGeneratedFallingBlockEntity.class).withName("generated$die").get();
     public static final Method METHOD_IS_AIR =
@@ -121,7 +112,6 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
             .defineField(fieldTicksLived.getName(), fieldTicksLived.getType(), Visibility.PROTECTED)
             .defineField(fieldHurtEntities.getName(), fieldHurtEntities.getType(), Visibility.PROTECTED)
             .defineField(fieldNoClip.getName(), fieldNoClip.getType(), Visibility.PROTECTED)
-            .defineField(fieldTileEntityData.getName(), fieldTileEntityData.getType(), Visibility.PROTECTED)
             .defineField(FIELD_BLOCK, classIBlockData, Visibility.PRIVATE)
             .defineField(FIELD_CRAFT_WORLD, classCraftWorld, Visibility.PRIVATE)
             .defineField(FIELD_MOVE_TYPE_VALUES, asArrayType(classEnumMoveType), Visibility.PRIVATE);
@@ -198,21 +188,6 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
 
     private DynamicType.Builder<?> addLoadDataMethod(DynamicType.Builder<?> builder)
     {
-        builder = builder
-            .define(METHOD_LOAD_DATA)
-            .intercept(invoke(methodNBTTagCompoundGetCompound)
-                           .onArgument(0).with("TileEntityData").setsField(fieldTileEntityData)
-                           .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
-
-        builder = builder
-            .defineMethod(METHOD_NAME_LOAD_DATA_CONDITIONAL, void.class, Visibility.PRIVATE)
-            .withParameters(IGeneratedFallingBlockEntity.class, classNBTTagCompound, boolean.class)
-            .intercept(MethodDelegation.to((ILoadDataDelegation) (baseObject, compound, hasKey) ->
-            {
-                if (!hasKey)
-                    baseObject.generated$loadTileEntityData(compound);
-            }, ILoadDataDelegation.class));
-
         final MethodCall deserializedInvocation;
         if (methodIBlockDataDeserializer.getParameterCount() == 1)
         {
@@ -233,49 +208,44 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
 
         builder = builder
             .define(methodLoadData)
-            .intercept(deserializedInvocation.setsField(named(FIELD_BLOCK)).andThen(
-                    invoke(methodNBTTagCompoundGetInt)
-                        .onArgument(0).with("Time").setsField(fieldTicksLived)).andThen(
-                    invoke(named(METHOD_NAME_LOAD_DATA_CONDITIONAL))
-                        .withThis().withArgument(0)
-                        .withMethodCall(invoke(methodNBTTagCompoundHasKeyOfType)
-                                            .onArgument(0).with("TileEntityData", 10))));
+            .intercept(
+                invoke(methodLoadData).onSuper().withAllArguments()
+                .andThen(deserializedInvocation.setsField(named(FIELD_BLOCK)))
+            );
 
         return builder;
     }
 
     private DynamicType.Builder<?> addSaveDataMethod(DynamicType.Builder<?> builder)
     {
-        builder = builder
-            .define(METHOD_SAVE_DATA)
-            .intercept(invoke(methodNBTTagCompoundSet)
-                           .onArgument(0).with("TileEntityData").withField(fieldTileEntityData.getName())
-                           .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
-
-        builder = builder
-            .defineMethod(METHOD_NAME_SAVE_DATA_CONDITIONAL, void.class, Visibility.PRIVATE)
-            .withParameters(IGeneratedFallingBlockEntity.class, classNBTTagCompound, classNBTTagCompound)
-            .intercept(MethodDelegation.to((ISaveDataDelegation) (baseObject, compound, block) ->
-            {
-                if (block != null)
-                    baseObject.generated$saveTileEntityData(compound);
-            }, ISaveDataDelegation.class));
-
         return builder
             .define(methodSaveData)
-            .intercept(invoke(methodNBTTagCompoundSet)
-                           .onArgument(0).with("BlockState")
-                           .withMethodCall(invoke(methodIBlockDataSerializer).withField(FIELD_BLOCK)).andThen(
-                    invoke(methodNBTTagCompoundSetInt)
-                        .onArgument(0).with("Time").withField(fieldTicksLived.getName())).andThen(
-                    invoke(methodNBTTagCompoundSetBoolean).onArgument(0).with("DropItem", false)).andThen(
+            .intercept(
+                FieldAccessor.of(fieldTicksLived).setsValue(0)
+                .andThen(
+                    invoke(methodSaveData)
+                        .onSuper()
+                        .withAllArguments())
+                .andThen(
+                    invoke(methodNBTTagCompoundSet)
+                        .onArgument(0)
+                        .with("BlockState")
+                        .withMethodCall(invoke(methodIBlockDataSerializer).withField(FIELD_BLOCK)))
+                .andThen(
                     invoke(methodNBTTagCompoundSetBoolean)
-                        .onArgument(0).with("HurtEntities").withField(fieldHurtEntities.getName())).andThen(
-                    invoke(methodNBTTagCompoundSetFloat).onArgument(0).with("FallHurtAmount", 0.0f)).andThen(
-                    invoke(methodNBTTagCompoundSetInt).onArgument(0).with("FallHurtMax", 0)).andThen(
-                    invoke(named(METHOD_NAME_SAVE_DATA_CONDITIONAL)).withThis().withArgument(0)
-                                                                    .withField(fieldTileEntityData.getName())).andThen(
-                    FixedValue.argument(0)));
+                        .onArgument(0)
+                        .with("DropItem", false))
+                .andThen(
+                    invoke(methodNBTTagCompoundSetFloat)
+                        .onArgument(0)
+                        .with("FallHurtAmount", 0.0f))
+                .andThen(
+                    invoke(methodNBTTagCompoundSetInt)
+                        .onArgument(0)
+                        .with("FallHurtMax", 0))
+                .andThen(
+                    FixedValue.argument(0))
+            );
     }
 
     private DynamicType.Builder<?> addAuxiliaryMethods(DynamicType.Builder<?> builder)
@@ -354,12 +324,6 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
         return builder;
     }
 
-    public interface ILoadDataDelegation
-    {
-        @RuntimeType
-        void intercept(@This IGeneratedFallingBlockEntity baseObject, @RuntimeType Object compound, boolean hasKey);
-    }
-
     public interface ISaveDataDelegation
     {
         @RuntimeType
@@ -375,8 +339,6 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
         int generated$getTicksLived();
         void generated$setTicksLived(int val);
         void generated$updateMot();
-        void generated$saveTileEntityData(Object target);
-        void generated$loadTileEntityData(Object target);
     }
 
     public interface IMultiplyVec3D
