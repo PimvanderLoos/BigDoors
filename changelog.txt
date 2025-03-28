@@ -1,3 +1,5 @@
+Alpha 0.1.8.59
+
 Alpha 0.1.8.58
 - Add support for MC 1.21.5.
 - Add support for Folia. Thanks, Anon8281 and ewof for both your PR and your patience!
