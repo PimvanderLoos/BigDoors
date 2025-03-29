@@ -234,18 +234,20 @@ public class Door
             return false;
 
         getChunkCoords();
-        getLength();
+        int roundedLength0 = getRoundedLength();
 
         int difX = Math.abs(chunk.getX() - chunkLoc.getBlockX());
         int difZ = Math.abs(chunk.getZ() - chunkLoc.getBlockZ());
 
-        return difX <= roundedLength && difZ <= roundedLength;
+        return difX <= roundedLength0 && difZ <= roundedLength0;
     }
 
     public int getRoundedLength()
     {
-        if (roundedLength == null)
-            getLength();
+        if (roundedLength != null)
+            return roundedLength;
+
+        roundedLength = length / 16 + 1;
         return roundedLength;
     }
 
@@ -275,8 +277,6 @@ public class Door
         // Portcullis engine is in the middle and doesn't rotate.
         if (type.equals(DoorType.PORTCULLIS))
             length /= 2;
-
-        roundedLength = length / 16 + 1;
 
         return length;
     }
