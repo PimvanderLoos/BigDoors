@@ -247,7 +247,9 @@ public class Door
         if (roundedLength != null)
             return roundedLength;
 
-        roundedLength = length / 16 + 1;
+        int length0 = getLength();
+
+        roundedLength = length0 / 16 + 1;
         return roundedLength;
     }
 
@@ -255,6 +257,7 @@ public class Door
     {
         if (length != null)
             return length;
+
         int xLen = max.getBlockX() - min.getBlockX();
         int zLen = max.getBlockZ() - min.getBlockZ();
 
