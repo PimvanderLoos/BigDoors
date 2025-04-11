@@ -387,7 +387,7 @@ This project is hosted on [EldoNexus](https://eldonexus.de/#browse/browse:maven-
   <dependency>
     <groupId>nl.pim16aap2</groupId>
     <artifactId>BigDoors</artifactId>
-    <version>0.1.8.43</version>
+    <version>0.1.8.58</version>
     <scope>provided</scope>
   </dependency>
 </dependencies>
@@ -401,7 +401,7 @@ maven {
 }
 
 dependencies {
-  compileOnly 'nl.pim16aap2:BigDoors:0.1.8.43'
+  compileOnly 'nl.pim16aap2:BigDoors:0.1.8.58'
 }
 ```
 
