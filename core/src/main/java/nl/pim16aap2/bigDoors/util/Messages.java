@@ -9,13 +9,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
 public class Messages
 {
-    private HashMap<String, String> messageMap = new HashMap<>();
+    private static final List<String> DEFAULT_LOCALES = Collections.unmodifiableList(Arrays.asList(
+        "en_US.txt",
+        "zh_CN.txt"
+    ));
+
+    private final HashMap<String, String> messageMap = new HashMap<>();
     private final BigDoors plugin;
     private String locale;
     private File textFile;
@@ -37,21 +45,23 @@ public class Messages
         readFile();
     }
 
-    private void writeDefaultFile()
+    private void writeDefaultFile(String fileName)
     {
-        final File defaultFile = new File(plugin.getDataFolder(), "en_US.txt");
+        final File defaultFile = new File(plugin.getDataFolder(), fileName);
         if (defaultFile.exists() && !defaultFile.setWritable(true))
             plugin.getMyLogger().myLogger(Level.SEVERE, "Failed to make file \"" + defaultFile + "\" writable!");
 
-        // Load the default en_US from the resources folder.
-        plugin.saveResource("en_US.txt", true);
+        // For a long time, only en_US.txt was replaced, so we keep that behavior to avoid surprises for users.
+        // The other files will need to be manually deleted to update them.
+        final boolean replace = "en_US.txt".equals(fileName);
+
+        plugin.saveResource(fileName, replace);
         defaultFile.setWritable(false);
     }
 
-    // Read locale file.
     private void readFile()
     {
-        writeDefaultFile();
+        DEFAULT_LOCALES.forEach(this::writeDefaultFile);
 
         try (BufferedReader br =
                  new BufferedReader(new InputStreamReader(new FileInputStream(textFile), StandardCharsets.UTF_8)))
