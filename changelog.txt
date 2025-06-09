@@ -1,6 +1,7 @@
 Alpha 0.1.8.59
 - Fix exception that could occur when unloading chunks. Thanks, ewof, for the bug report!
 - Add some missing materials.
+- Fix incorrect text case in command instructions. Thanks, Evonuts, for pointing it out!
 
 Alpha 0.1.8.58
 - Add support for MC 1.21.5.
