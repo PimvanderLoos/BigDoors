@@ -55,8 +55,11 @@ public class Messages
         // The other files will need to be manually deleted to update them.
         final boolean replace = "en_US.txt".equals(fileName);
 
-        plugin.saveResource(fileName, replace);
-        defaultFile.setWritable(false);
+        if (replace || !defaultFile.exists())
+        {
+            plugin.saveResource(fileName, replace);
+            defaultFile.setWritable(false);
+        }
     }
 
     private void readFile()
