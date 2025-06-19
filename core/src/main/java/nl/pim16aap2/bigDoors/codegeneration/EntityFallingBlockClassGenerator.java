@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.Objects;
 
 import static net.bytebuddy.implementation.FixedValue.value;
 import static net.bytebuddy.implementation.MethodCall.construct;
@@ -188,29 +187,11 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
 
     private DynamicType.Builder<?> addLoadDataMethod(DynamicType.Builder<?> builder)
     {
-        final MethodCall deserializedInvocation;
-        if (methodIBlockDataDeserializer.getParameterCount() == 1)
-        {
-            deserializedInvocation = invoke(methodIBlockDataDeserializer)
-                .withMethodCall(invoke(methodNBTTagCompoundGetCompound).onArgument(0).with("BlockState"));
-        }
-        else if (methodIBlockDataDeserializer.getParameterCount() == 2)
-        {
-            Objects.requireNonNull(methodWorldReaderHolderLookup);
-            deserializedInvocation = invoke(methodIBlockDataDeserializer)
-                .withMethodCall(invoke(methodWorldReaderHolderLookup)
-                                    .onMethodCall(invoke(methodGetNMSWorld))
-                                    .with(objectRegistryBlock))
-                .withMethodCall(invoke(methodNBTTagCompoundGetCompound).onArgument(0).with("BlockState"));
-        }
-        else
-            throw new IllegalStateException("Method IBlockDataDeserializer has unexpected number of parameters!");
-
         builder = builder
             .define(methodLoadData)
-            .intercept(
-                invoke(methodLoadData).onSuper().withAllArguments()
-                .andThen(deserializedInvocation.setsField(named(FIELD_BLOCK)))
+            .intercept(invoke(methodLoadData).onSuper().withAllArguments()
+                .andThen(
+                    invoke(methodGetIBlockData).onSuper().setsField(named(FIELD_BLOCK)))
             );
 
         return builder;
@@ -223,24 +204,21 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
             .intercept(
                 FieldAccessor.of(fieldTicksLived).setsValue(0)
                 .andThen(
-                    invoke(methodSaveData)
-                        .onSuper()
-                        .withAllArguments())
-                .andThen(
-                    invoke(methodNBTTagCompoundSet)
+                    invoke(methodValueOutputSetCodec)
                         .onArgument(0)
                         .with("BlockState")
-                        .withMethodCall(invoke(methodIBlockDataSerializer).withField(FIELD_BLOCK)))
+                        .with(objectIBlockDataCodec)
+                        .withField(FIELD_BLOCK))
                 .andThen(
-                    invoke(methodNBTTagCompoundSetBoolean)
+                    invoke(methodValueOutputSetBoolean)
                         .onArgument(0)
                         .with("DropItem", false))
                 .andThen(
-                    invoke(methodNBTTagCompoundSetFloat)
+                    invoke(methodValueOutputSetFloat)
                         .onArgument(0)
                         .with("FallHurtAmount", 0.0f))
                 .andThen(
-                    invoke(methodNBTTagCompoundSetInt)
+                    invoke(methodValueOutputSetInt)
                         .onArgument(0)
                         .with("FallHurtMax", 0))
                 .andThen(
