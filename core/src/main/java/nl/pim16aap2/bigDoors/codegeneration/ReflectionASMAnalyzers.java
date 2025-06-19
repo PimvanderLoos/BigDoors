@@ -56,37 +56,6 @@ final class ReflectionASMAnalyzers
                            .withParameters(double.class, double.class, double.class).get();
     }
 
-    /**
-     * Gets the saveData and loadData methods.
-     *
-     * @param classEntityFallingBlock
-     *     The nms.EntityFallingBlock class.
-     * @param classNBTTagCompound
-     *     The nms.NBTTagCompound class.
-     * @param methodNBTTagCompoundSetInt
-     *     The setInt method of the nms.NBTTagCompound class.
-     * @return An array containing the non-null saveData and loadData methods respectively.
-     */
-    public static Method[] getSaveLoadDataMethods(Class<?> classEntityFallingBlock,
-                                                  Class<?> classNBTTagCompound,
-                                                  Method methodNBTTagCompoundSetInt)
-    {
-        // The saveData and loadData methods have the same signature.
-        // The difference is that one (saveData) has a bunch of nbtTagCompound.set___(data), while loadData
-        // only uses nbtTagCompound's data.
-        final List<Method> methodsSaveLoadData = findMethod()
-            .inClass(classEntityFallingBlock).findMultiple().withReturnType(void.class)
-            .withParameters(classNBTTagCompound).exactCount(2).get();
-        final Method method0 = Objects.requireNonNull(methodsSaveLoadData.get(0), "Save/load object 0 cannot be null");
-        final Method method1 = Objects.requireNonNull(methodsSaveLoadData.get(1), "Save/load object 1 cannot be null");
-
-        // If method0 has the setInt method, it means that method0 is the saveData method
-        // and method1 the loadData method. If it doesn't, it can only be the other way round.
-        if (ASMUtil.executableContainsMethodCall(method0, methodNBTTagCompoundSetInt))
-            return new Method[]{method0, method1};
-        return new Method[]{method1, method0};
-    }
-
     public static Method getSetMotVecMethod(Class<?> classCraftEntity, Class<?> classNMSEntity, Class<?> classVec3D)
     {
         final Method sourceMethod = findMethod().inClass(classCraftEntity).withName("setVelocity").get();
@@ -146,10 +115,18 @@ final class ReflectionASMAnalyzers
                                                            Class<?> classIBlockData, Class<?> classIBlockState,
                                                            Class<?> classIBlockDataHolder)
     {
-        final Method sourceMethod = findMethod().inClass(classCraftBlockData).withName("get")
-                                                .withParameters(classBlockStateEnum, Class.class).get();
-        final String methodName = ASMUtil.getMethodNameFromMethodCall(sourceMethod, classIBlockData,
-                                                                      Comparable.class, classIBlockState);
+        final Method sourceMethod = findMethod()
+            .inClass(classCraftBlockData)
+            .findMultiple()
+            .withReturnType(Enum.class)
+            .withName("get")
+            .exactCount(1)
+            .get()
+            .getFirst();
+
+        final String methodName =
+            ASMUtil.getMethodNameFromMethodCall(sourceMethod, classIBlockData, Comparable.class, classIBlockState);
+
         return findMethod().inClass(classIBlockDataHolder).withName(methodName).withParameters(classIBlockState).get();
     }
 
