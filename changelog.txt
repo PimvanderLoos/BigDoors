@@ -1,3 +1,5 @@
+Alpha 0.1.8.60
+
 Alpha 0.1.8.59
 - Add support for Minecraft 1.21.6.
 - Fix exception that could occur when unloading chunks. Thanks, ewof, for the bug report!
