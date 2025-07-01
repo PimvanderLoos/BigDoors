@@ -103,7 +103,7 @@ public class BigDoors extends JavaPlugin implements Listener
 
     private static BigDoors instance;
     private static volatile TaskScheduler scheduler;
-    public static final boolean DEVBUILD = false;
+    public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
 
     public static final int MINIMUMDOORDELAY = 15;
