@@ -29,7 +29,7 @@
         <dependency.mockito.version>5.4.0</dependency.mockito.version>
         <dependency.surefire.version>3.1.2</dependency.surefire.version>
 
-        <dependency.xseries.version>618fba8e29</dependency.xseries.version>
+        <dependency.xseries.version>6e5dc64498</dependency.xseries.version>
         <dependency.xseries.groupid>com.github.PimvanderLoos</dependency.xseries.groupid>
     </properties>
 
