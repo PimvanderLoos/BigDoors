@@ -93,21 +93,19 @@ public class ProtectionCompatManager implements Listener
      *
      * @param playerUUID
      *     The {@link UUID} of the player to get.
-     * @param playerName
-     *     The name of the player. Used in case the player isn't online.
-     * @param world
-     *     The {@link World} the player is in.
+     * @param location
+     *     The {@link Location} of the player (used for fake player creation).
      * @return An online {@link Player}. Either fake or real.
      *
      * @see FakePlayerCreator
      */
-    private @Nullable Player getPlayer(UUID playerUUID, String playerName, World world)
+    private @Nullable Player getPlayer(UUID playerUUID, Location location)
     {
         final Player player = Bukkit.getPlayer(playerUUID);
         if (player != null)
             return player;
 
-        return fakePlayerCreator.getFakePlayer(Bukkit.getOfflinePlayer(playerUUID), playerName, world);
+        return fakePlayerCreator.getFakePlayer(Bukkit.getOfflinePlayer(playerUUID), location);
     }
 
     // Needs to be called from the main thread!
@@ -226,10 +224,6 @@ public class ProtectionCompatManager implements Listener
      *     in the correct region.
      * @param playerUUID
      *     The UUID of the player.
-     * @param playerName
-     *     The name of the player.
-     * @param world
-     *     The world in which to check the function.
      * @param function
      *     A function that accept a player and returns a String or null. The player argument may either be a real player
      *     or a fake player created by {@link #fakePlayerCreator}.
@@ -238,12 +232,12 @@ public class ProtectionCompatManager implements Listener
      * be returned.
      */
     private CompletableFuture<@Nullable String> checkForPlayer(
-        Location regionLocation, UUID playerUUID, String playerName, World world, Function<Player, @Nullable String> function)
+        Location regionLocation, UUID playerUUID, Function<Player, @Nullable String> function)
     {
         if (protectionCompats.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        final @Nullable Player fakePlayer = getPlayer(playerUUID, playerName, world);
+        final @Nullable Player fakePlayer = getPlayer(playerUUID, regionLocation);
         if (fakePlayer == null)
             return CompletableFuture.completedFuture("InvalidFakePlayer");
 
@@ -264,7 +258,7 @@ public class ProtectionCompatManager implements Listener
     public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
     {
         return checkForPlayer(
-            loc, playerUUID, playerName, loc.getWorld(), fakePlayer -> canBreakBlockSync(fakePlayer, loc))
+            loc, playerUUID, fakePlayer -> canBreakBlockSync(fakePlayer, loc))
             .exceptionally(
                 ex ->
                 {
@@ -292,7 +286,7 @@ public class ProtectionCompatManager implements Listener
         UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
     {
         return checkForPlayer(
-            loc1, playerUUID, playerName, world, fakePlayer -> canBreakBlocksBetweenLocsSync(fakePlayer, world, loc1, loc2))
+            loc1, playerUUID, fakePlayer -> canBreakBlocksBetweenLocsSync(fakePlayer, world, loc1, loc2))
             .exceptionally(
                 ex ->
                 {
