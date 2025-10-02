@@ -1,5 +1,5 @@
 Alpha 0.1.8.62
-- Add initial support for Minecraft 1.21.9 (new Materials still unsupported).
+- Add initial support for Minecraft 1.21.9.
 
 Alpha 0.1.8.61
 - Add full support for Minecraft 1.21.8.
