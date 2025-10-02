@@ -583,7 +583,7 @@ public final class Util
             return 8;
 
         // Panes only have to rotate on 1.13+. On versions before, rotating it only changes its color...
-        if ((BigDoors.isOnFlattenedVersion()) && (mat.toString().endsWith("GLASS_PANE")))
+        if ((BigDoors.isOnFlattenedVersion()) && (mat.name().endsWith("GLASS_PANE")))
             return 3;
 
         final @Nullable XMaterial xmat = matchXMaterial(mat);
@@ -601,7 +601,7 @@ public final class Util
              xmat.equals(XMaterial.RED_SANDSTONE_STAIRS) || xmat.equals(XMaterial.PURPUR_STAIRS)))
             return 2;
 
-        if (mat.toString().endsWith("STAIRS"))
+        if (mat.name().endsWith("STAIRS"))
             return 9;
 
         if (xmat.equals(XMaterial.ACACIA_LOG) || xmat.equals(XMaterial.BIRCH_LOG) ||
@@ -613,11 +613,11 @@ public final class Util
         if (xmat.equals(XMaterial.STRIPPED_ACACIA_LOG) || xmat.equals(XMaterial.STRIPPED_BIRCH_LOG) ||
             xmat.equals(XMaterial.STRIPPED_SPRUCE_LOG) || xmat.equals(XMaterial.STRIPPED_DARK_OAK_LOG) ||
             xmat.equals(XMaterial.STRIPPED_JUNGLE_LOG) || xmat.equals(XMaterial.STRIPPED_OAK_LOG) ||
-            xmat.equals(XMaterial.CHAIN))
+            mat.name().endsWith("CHAIN"))
             return 6;
         if (xmat.equals(XMaterial.END_ROD))
             return 7;
-        if (xmat.equals(XMaterial.LIGHTNING_ROD) || xmat.equals(XMaterial.REDSTONE_WIRE) ||
+        if (xmat.name().endsWith("LIGHTNING_ROD") || xmat.equals(XMaterial.REDSTONE_WIRE) ||
             xmat.equals(XMaterial.REPEATER) || xmat.equals(XMaterial.TRIPWIRE_HOOK) ||
             xmat.equals(XMaterial.WALL_TORCH) || xmat.equals(XMaterial.SOUL_WALL_TORCH) ||
             xmat.equals(XMaterial.REDSTONE_WALL_TORCH) || xmat.equals(XMaterial.VINE) ||
@@ -669,7 +669,8 @@ public final class Util
             return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
 
         if (name.endsWith("BANNER") || name.endsWith("SHULKER_BOX") || name.endsWith("DOOR") ||
-            name.endsWith("BED") || name.endsWith("SIGN") || name.endsWith("HEAD") || name.endsWith("SKULL"))
+            name.endsWith("BED") || name.endsWith("SIGN") || name.endsWith("HEAD") || name.endsWith("SKULL") ||
+            name.endsWith("CHEST") || name.endsWith("GOLEM_STATUE"))
             return false;
 
         if (name.endsWith("CARPET") || name.endsWith("BUTTON") || name.endsWith("PRESSURE_PLATE") ||
@@ -749,10 +750,8 @@ public final class Util
         case ARMOR_STAND:
         case BREWING_STAND:
         case CAULDRON:
-        case CHEST:
         case DROPPER:
         case DRAGON_EGG:
-        case ENDER_CHEST:
         case HOPPER:
         case JUKEBOX:
         case PAINTING:
@@ -762,7 +761,6 @@ public final class Util
         case FURNACE_MINECART:
 
         case REDSTONE:
-        case TRAPPED_CHEST:
 
         case COMMAND_BLOCK:
         case COMMAND_BLOCK_MINECART:
