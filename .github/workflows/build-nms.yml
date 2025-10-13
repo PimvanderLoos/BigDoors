@@ -4,7 +4,7 @@ on:
     inputs:
       groups-file:
         type: string
-        default: .github/workflows/nms-groups.yml
+        default: .github/nms-groups.yml
       cache-key:
         type: string
         required: true

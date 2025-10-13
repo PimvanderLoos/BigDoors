@@ -15,14 +15,14 @@ jobs:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - id: compute
         run: |
-          HASH=$(sha256sum .github/workflows/nms-groups.yml | cut -c1-16)
+          HASH=$(sha256sum .github/nms-groups.yml | cut -c1-16)
           echo "cache-key=nms-cache-${HASH}" >> "$GITHUB_OUTPUT"
 
   nms-cache:
     needs: compute-cache-key
     uses: ./.github/workflows/build-nms.yml
     with:
-      groups-file: .github/workflows/nms-groups.yml
+      groups-file: .github/nms-groups.yml
       cache-key: ${{ needs.compute-cache-key.outputs.cache-key }}
 
   build:
