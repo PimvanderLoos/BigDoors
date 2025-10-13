@@ -7,13 +7,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  compute-cache-key:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.compute.outputs.cache-key }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: compute
+        run: |
+          HASH=$(sha256sum .github/workflows/nms-groups.yml | cut -c1-16)
+          echo "cache-key=nms-cache-${HASH}" >> "$GITHUB_OUTPUT"
+
   nms-cache:
+    needs: compute-cache-key
     uses: ./.github/workflows/build-nms.yml
     with:
-      cache-key-suffix: ${{ hashFiles('.github/nms-groups.yml') }}
+      groups-file: .github/workflows/nms-groups.yml
+      cache-key: ${{ needs.compute-cache-key.outputs.cache-key }}
 
   build:
-    needs: nms-cache
+    needs: [compute-cache-key, nms-cache]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -28,9 +41,9 @@ jobs:
       - name: Restore NMS Maven cache
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          key: nms-${{ runner.os }}-${{ hashFiles('.github/nms-groups.yml') }}
+          key: ${{ needs.compute-cache-key.outputs.cache-key }}
           restore-keys: |
-            nms-${{ runner.os }}-
+            nms-cache-
           path: |
             ~/.m2/repository/org/spigotmc/spigot
 

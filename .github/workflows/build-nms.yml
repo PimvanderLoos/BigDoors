@@ -3,20 +3,17 @@ on:
   workflow_call:
     inputs:
       groups-file:
-        required: false
         type: string
-        default: .github/nms-groups.yml
-      cache-key-suffix:
-        required: false
+        default: .github/workflows/nms-groups.yml
+      cache-key:
         type: string
-        default: v1
-  workflow_dispatch:
+        required: true
 
 jobs:
   compile:
     runs-on: ubuntu-latest
     env:
-      CACHE_KEY: nms-${{ runner.os }}-${{ inputs.cache-key-suffix }}
+      CACHE_KEY: ${{ inputs.cache-key }}
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
@@ -37,7 +34,7 @@ jobs:
         with:
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
-            nms-${{ runner.os }}-
+            nms-cache-
           path: |
             ~/.m2/repository/org/spigotmc/spigot
 
