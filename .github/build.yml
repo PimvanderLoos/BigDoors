@@ -1,0 +1,43 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  nms-cache:
+    uses: ./.github/workflows/build-nms.yml
+    with:
+      cache-key-suffix: ${{ hashFiles('.github/nms-groups.yml') }}
+
+  build:
+    needs: nms-cache
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: maven
+
+      - name: Restore NMS Maven cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          key: nms-${{ runner.os }}-${{ hashFiles('.github/nms-groups.yml') }}
+          restore-keys: |
+            nms-${{ runner.os }}-
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot
+
+      - name: Build and Test
+        run: |
+          mvn --batch-mode --show-version --no-transfer-progress \
+          clean \
+          test \
+          verify
+
