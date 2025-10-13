@@ -23,12 +23,12 @@ jobs:
       - id: load-groups
         run: |
           python <<'PY'
-          import yaml, json
+          import yaml, json, os
           with open("${{ inputs.groups-file }}", encoding="utf-8") as f:
               groups = yaml.safe_load(f) or {}
           for key in ("java8","java16","java17","java21"):
               versions = ",".join(groups.get(key, []))
-              print(f"::set-output name={key}::{versions}")
+              print(f"{key}={versions}", file=open(os.environ['GITHUB_OUTPUT'], 'a'))
           PY
 
       - name: Restore aggregated Maven repo
