@@ -10,82 +10,105 @@ on:
         required: true
 
 jobs:
-  compile:
+  resolve-groups:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.to-matrix.outputs.matrix }}
+      has-work: ${{ steps.to-matrix.outputs.has-work }}
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - id: to-matrix
+        shell: python
+        env:
+          GROUPS_FILE: ${{ inputs.groups-file }}
+        run: |
+          import json, yaml, os
+          version_map = {"java8": 8, "java16": 16, "java17": 17, "java21": 21}
+          with open(os.environ["GROUPS_FILE"], encoding="utf-8") as fh:
+              groups = yaml.safe_load(fh) or {}
+          include = []
+          for name, java in version_map.items():
+              for version in groups.get(name) or []:
+                  safe = version.replace('.', '-')
+                  include.append({
+                      "group": name,
+                      "java": java,
+                      "version": version,
+                      "artifact": f"{name}-{safe}"
+                  })
+          matrix_json = json.dumps({"include": include})
+          has_work = "true" if include else "false"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as gh:
+              gh.write(f"matrix={matrix_json}\n")
+              gh.write(f"has-work={has_work}\n")
+
+  compile:
+    needs: resolve-groups
+    if: ${{ needs.resolve-groups.outputs.has-work == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.resolve-groups.outputs.matrix) }}
+      fail-fast: true
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
 
-      - id: load-groups
-        run: |
-          python <<'PY'
-          import yaml, json, os
-          with open("${{ inputs.groups-file }}", encoding="utf-8") as f:
-              groups = yaml.safe_load(f) or {}
-          for key in ("java8","java16","java17","java21"):
-              versions = ",".join(groups.get(key, []))
-              print(f"{key}={versions}", file=open(os.environ['GITHUB_OUTPUT'], 'a'))
-          PY
-
-      - name: Restore aggregated Maven repo
-        id: cache-restore
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - name: Restore Maven slice
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
             nms-cache-
-          path: |
-            ~/.m2/repository/org/spigotmc/spigot
+          path: ~/.m2/repository/org/spigotmc/spigot
 
-      - name: Build Java 8 NMS
-        if: ${{ steps.load-groups.outputs.java8 != '' }}
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - name: Set up JDK
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
         with:
           distribution: temurin
-          java-version: 8
-      - if: ${{ steps.load-groups.outputs.java8 != '' }}
-        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac # v5.2.0
-        with:
-          versions: ${{ steps.load-groups.outputs.java8 }}
+          java-version: ${{ matrix.java }}
 
-      - name: Build Java 16 NMS
-        if: ${{ steps.load-groups.outputs.java16 != '' }}
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - name: Build NMS
+        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac
         with:
-          distribution: temurin
-          java-version: 16
-      - if: ${{ steps.load-groups.outputs.java16 != '' }}
-        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac # v5.2.0
-        with:
-          versions: ${{ steps.load-groups.outputs.java16 }}
+          versions: ${{ matrix.version }}
 
-      - name: Build Java 17 NMS
-        if: ${{ steps.load-groups.outputs.java17 != '' }}
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
-        with:
-          distribution: temurin
-          java-version: 17
-      - if: ${{ steps.load-groups.outputs.java17 != '' }}
-        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac # v5.2.0
-        with:
-          versions: ${{ steps.load-groups.outputs.java17 }}
+      - name: Package Maven fragment
+        run: |
+          mkdir -p fragments
+          tar -C ~/.m2/repository -czf fragments/spigot-${{ matrix.artifact }}.tgz org/spigotmc/spigot
+        shell: bash
 
-      - name: Build Java 21 NMS
-        if: ${{ steps.load-groups.outputs.java21 != '' }}
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          distribution: temurin
-          java-version: 21
-      - if: ${{ steps.load-groups.outputs.java21 != '' }}
-        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac # v5.2.0
+          name: spigot-${{ matrix.artifact }}
+          path: fragments/spigot-${{ matrix.artifact }}.tgz
+          retention-days: 7
+
+  aggregate-cache:
+    needs: [resolve-groups, compile]
+    if: ${{ needs.resolve-groups.outputs.has-work == 'true' && needs.compile.result == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      CACHE_KEY: ${{ inputs.cache-key }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          versions: ${{ steps.load-groups.outputs.java21 }}
+          pattern: spigot-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Merge Maven fragments
+        run: |
+          mkdir -p ~/.m2/repository
+          shopt -s nullglob
+          for tgz in artifacts/spigot-*.tgz; do
+            tar -C ~/.m2/repository -xzf "$tgz"
+          done
+        shell: bash
 
       - name: Save aggregated Maven repo
-        if: ${{ always() }}
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           key: ${{ env.CACHE_KEY }}
-          path: |
-            ~/.m2/repository/org/spigotmc/spigot
+          path: ~/.m2/repository/org/spigotmc/spigot
