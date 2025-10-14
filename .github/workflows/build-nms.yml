@@ -16,25 +16,24 @@ jobs:
       matrix: ${{ steps.to-matrix.outputs.matrix }}
       has-work: ${{ steps.to-matrix.outputs.has-work }}
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - id: to-matrix
         shell: python
         env:
           GROUPS_FILE: ${{ inputs.groups-file }}
         run: |
           import json, yaml, os
-          version_map = {"java8": 8, "java16": 16, "java17": 17, "java21": 21}
+          versions = {"java8": 8, "java16": 16, "java17": 17, "java21": 21}
           with open(os.environ["GROUPS_FILE"], encoding="utf-8") as fh:
               groups = yaml.safe_load(fh) or {}
           include = []
-          for name, java in version_map.items():
+          for name, java in versions.items():
               for version in groups.get(name) or []:
-                  safe = version.replace('.', '-')
                   include.append({
                       "group": name,
                       "java": java,
                       "version": version,
-                      "artifact": f"{name}-{safe}"
+                      "artifact": f"{name}-{version.replace('.', '-')}"
                   })
           matrix_json = json.dumps({"include": include})
           has_work = "true" if include else "false"
@@ -52,38 +51,46 @@ jobs:
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Restore Maven slice
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+      - name: Restore aggregated Maven cache (best effort)
+        id: aggregate-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
             nms-cache-
-          path: ~/.m2/repository/org/spigotmc/spigot
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot
+            ~/.m2/repository/org/spigotmc/spigot-parent
+            ~/.m2/repository/net/md-5
 
       - name: Set up JDK
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
 
       - name: Build NMS
-        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac
+        if: ${{ inputs.force-rebuild || steps.aggregate-cache.outputs.cache-hit != 'true' || !hashFiles(format('~/.m2/repository/org/spigotmc/spigot/*{0}*/spigot-*.jar', matrix.version)) }}
+        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac # v5.2.0
         with:
           versions: ${{ matrix.version }}
 
       - name: Package Maven fragment
         run: |
           mkdir -p fragments
-          tar -C ~/.m2/repository -czf fragments/spigot-${{ matrix.artifact }}.tgz org/spigotmc/spigot
+          tar -C ~/.m2/repository -czf fragments/nms-${{ matrix.artifact }}.tgz \
+            org/spigotmc/spigot \
+            org/spigotmc/spigot-parent \
+            net/md-5
         shell: bash
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: spigot-${{ matrix.artifact }}
-          path: fragments/spigot-${{ matrix.artifact }}.tgz
-          retention-days: 7
+          name: nms-${{ matrix.artifact }}
+          path: fragments/nms-${{ matrix.artifact }}.tgz
+          retention-days: 1
 
   aggregate-cache:
     needs: [resolve-groups, compile]
@@ -94,7 +101,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          pattern: spigot-*
+          pattern: nms-*
           path: artifacts
           merge-multiple: true
 
@@ -102,13 +109,25 @@ jobs:
         run: |
           mkdir -p ~/.m2/repository
           shopt -s nullglob
-          for tgz in artifacts/spigot-*.tgz; do
+          for tgz in artifacts/nms-*.tgz; do
             tar -C ~/.m2/repository -xzf "$tgz"
           done
         shell: bash
 
       - name: Save aggregated Maven repo
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: ${{ env.CACHE_KEY }}
-          path: ~/.m2/repository/org/spigotmc/spigot
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot
+            ~/.m2/repository/org/spigotmc/spigot-parent
+            ~/.m2/repository/net/md-5
+
+  cleanup-artifacts:
+    needs: aggregate-cache
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: nms-*

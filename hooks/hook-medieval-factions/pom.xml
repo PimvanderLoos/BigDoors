@@ -17,6 +17,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>dansplugins</id>
+            <url>https://repo.dansplugins.com/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
