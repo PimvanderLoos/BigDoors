@@ -8,8 +8,31 @@ on:
       cache-key:
         type: string
         required: true
+    outputs:
+      cache-hit:
+        value: ${{ jobs.check-cache.outputs.cache-hit }}
+
+concurrency:
+  group: nms-${{ inputs.cache-key }}
+  cancel-in-progress: false
 
 jobs:
+  check-cache:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.check-cache.outputs.cache-hit }}
+    steps:
+      - name: Check if aggregated cache exists
+        id: check-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          key: ${{ inputs.cache-key }}
+          path: |
+            ~/.m2/repository/org/spigotmc/spigot
+            ~/.m2/repository/org/spigotmc/spigot-parent
+            ~/.m2/repository/net/md-5
+          lookup-only: true
+
   resolve-groups:
     runs-on: ubuntu-latest
     outputs:
@@ -17,6 +40,7 @@ jobs:
       has-work: ${{ steps.to-matrix.outputs.has-work }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
       - id: to-matrix
         shell: python
         env:
@@ -42,11 +66,11 @@ jobs:
               gh.write(f"has-work={has_work}\n")
 
   compile:
-    needs: resolve-groups
-    if: ${{ needs.resolve-groups.outputs.has-work == 'true' }}
+    needs: [check-cache, resolve-groups]
+    if: ${{ needs.check-cache.outputs.cache-hit != 'true' && needs.resolve-groups.outputs.has-work == 'true' }}
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.resolve-groups.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.check-cache.outputs.matrix) }}
       fail-fast: true
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
@@ -93,8 +117,8 @@ jobs:
           retention-days: 1
 
   aggregate-cache:
-    needs: [resolve-groups, compile]
-    if: ${{ needs.resolve-groups.outputs.has-work == 'true' && needs.compile.result == 'success' }}
+    needs: [check-cache, resolve-groups, compile]
+    if: ${{ needs.check-cache.outputs.cache-hit != 'true' && needs.resolve-groups.outputs.has-work == 'true' && needs.compile.result == 'success' }}
     runs-on: ubuntu-latest
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
