@@ -1,3 +1,5 @@
+![Static Badge](https://img.shields.io/nexus/r/nl.pim16aap2/BigDoors?color=green&label=BigDoors&logo=BigDoors&logoColor=red&server=https%3A%2F%2Feldonexus.de&style=flat-square)
+
 # BigDoors v1
 BigDoors is a plugin for the Minecraft server mod [Spigot](https://spigotmc.org). Its aim is to enhance your server with
 animated blocks that can be used to create, amongst other things, big (animated) doors.
@@ -374,6 +376,10 @@ this means that you can use either the door's name or its (numerical) UID.
 
 This project is hosted on [EldoNexus](https://eldonexus.de/#browse/browse:maven-public:nl%2Fpim16aap2%2FBigDoors).
 
+There are 2 modules available:
+* `core`: The core module containing the main API and functionality.
+* `hooks-api`: The hooks API module containing interfaces for creating hooks for protection plugins.
+
 #### As a Maven dependency
 ```xml
 <repositories>
@@ -385,9 +391,9 @@ This project is hosted on [EldoNexus](https://eldonexus.de/#browse/browse:maven-
 
 <dependencies>
   <dependency>
-    <groupId>nl.pim16aap2</groupId>
-    <artifactId>BigDoors</artifactId>
-    <version>0.1.8.58</version>
+    <groupId>nl.pim16aap2.BigDoors</groupId>
+    <artifactId>core</artifactId>
+    <version>0.1.8.64</version>
     <scope>provided</scope>
   </dependency>
 </dependencies>
@@ -401,11 +407,9 @@ maven {
 }
 
 dependencies {
-  compileOnly 'nl.pim16aap2:BigDoors:0.1.8.58'
+  compileOnly 'nl.pim16aap2.BigDoors:core:0.1.8.64'
 }
 ```
-
-
 
 ## Thanks
 
