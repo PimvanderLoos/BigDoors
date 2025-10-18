@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>core</artifactId>
     <packaging>jar</packaging>
@@ -9,7 +7,7 @@
     <parent>
         <groupId>nl.pim16aap2.BigDoors</groupId>
         <artifactId>BigDoors-parent</artifactId>
-        <version>0.1.8.64-SNAPSHOT</version>
+        <version>0.1.8.64</version>
     </parent>
 
     <properties>
@@ -28,203 +26,203 @@
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>hooks-bundle</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>nms-api</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_11_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_12_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_13_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_13_R1_5</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_13_R2</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_14_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_15_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_16_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_16_R2</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_16_R3</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_17_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_18_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_18_R2</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R1_1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R2</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_19_R3</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R2</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R3</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_20_R4</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R1</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R2</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R3</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R4</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R5</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>v1_21_R6</artifactId>
-            <version>0.1.8.64-SNAPSHOT</version>
+            <version>0.1.8.64</version>
             <scope>compile</scope>
         </dependency>
 
@@ -456,12 +454,12 @@
                         <configuration>
                             <exportAntProperties>true</exportAntProperties>
                             <target>
-                                <property environment="env"/>
+                                <property environment="env" />
                                 <condition property="actions.run.number" value="${env.GITHUB_RUN_NUMBER}" else="-1">
-                                    <isset property="env.GITHUB_RUN_NUMBER"/>
+                                    <isset property="env.GITHUB_RUN_NUMBER" />
                                 </condition>
                                 <condition property="actions.run.id" value="${env.GITHUB_RUN_ID}" else="-1">
-                                    <isset property="env.GITHUB_RUN_ID"/>
+                                    <isset property="env.GITHUB_RUN_ID" />
                                 </condition>
                             </target>
                         </configuration>
@@ -501,7 +499,7 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <ant antfile="${basedir}/build.xml"/>
+                                        <ant antfile="${basedir}/build.xml" />
                                     </target>
                                 </configuration>
                             </execution>

@@ -1,11 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.pim16aap2.BigDoors</groupId>
     <artifactId>BigDoors-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.8.64-SNAPSHOT</version>
+    <version>0.1.8.64</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Create 3D animated objects such as doors from blocks in Minecraft</description>
@@ -188,7 +186,7 @@
         <url>https://github.com/PimvanderLoos/BigDoors.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.1.8.64</tag>
     </scm>
 
     <distributionManagement>
