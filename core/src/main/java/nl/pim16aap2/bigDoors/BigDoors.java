@@ -156,6 +156,7 @@ public class BigDoors extends JavaPlugin implements Listener
         instance = this;
         logFile = new File(getDataFolder(), "log.txt");
         logger = new MyLogger(this, logFile);
+        logger.logMessageToLogFile("Initializing BigDoors build:\n" + BUILD_DATA);
         initLegacyMaterials();
     }
 
