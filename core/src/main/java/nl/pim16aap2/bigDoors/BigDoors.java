@@ -59,6 +59,8 @@ import nl.pim16aap2.bigDoors.util.DoorType;
 import nl.pim16aap2.bigDoors.util.Messages;
 import nl.pim16aap2.bigDoors.util.TimedCache;
 import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.versioning.BuildData;
+import nl.pim16aap2.bigDoors.versioning.BuildDataReader;
 import nl.pim16aap2.bigDoors.waitForCommand.WaitForCommand;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
@@ -76,9 +78,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.semver4j.Semver;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,10 +102,12 @@ public class BigDoors extends JavaPlugin implements Listener
     public static final Semver SERVER_VERSION =
         Objects.requireNonNull(Semver.coerce(Bukkit.getServer().getBukkitVersion())).withClearedPreReleaseAndBuild();
 
+    public static final BuildData BUILD_DATA = BuildDataReader.getBuildData();
+    public static final boolean DEVBUILD = BUILD_DATA.isDevBuild();
+    public static final int buildNumber = BUILD_DATA.getBuildSeqNumber();
+
     private static BigDoors instance;
     private static volatile TaskScheduler scheduler;
-    public static final boolean DEVBUILD = false;
-    private int buildNumber = -1;
 
     public static final int MINIMUMDOORDELAY = 15;
 
@@ -174,13 +176,11 @@ public class BigDoors extends JavaPlugin implements Listener
     }
 
     private void onEnable0()
-        throws Exception
     {
         if (!schedulerIsRunning)
             getScheduler().runTask(() -> schedulerIsRunning = true);
 
         updateManager = new UpdateManager(this);
-        buildNumber = readBuildNumber();
         overrideVersion();
 
         try
@@ -913,21 +913,6 @@ public class BigDoors extends JavaPlugin implements Listener
                 if (config.allowCodeGeneration())
                     return FallbackGeneratorManager.getFallingBlockFactory();
                 return null;
-        }
-    }
-
-    private int readBuildNumber()
-    {
-        try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/build.number")))))
-        {
-            for (int idx = 0; idx != 2; ++idx)
-                reader.readLine();
-            return Integer.parseInt(reader.readLine().replace("build.number=", ""));
-        }
-        catch (Exception e)
-        {
-            return -1;
         }
     }
 
