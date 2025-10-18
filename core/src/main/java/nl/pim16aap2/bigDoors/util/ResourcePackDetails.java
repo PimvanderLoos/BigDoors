@@ -131,7 +131,14 @@ public enum ResourcePackDetails
         "https://www.dropbox.com/scl/fi/d2q7f2ss2vjzvsr4gd5e6/BigDoorsResourcePack-Format64.zip?rlkey=3oqrm9yctb5vp87mw8id7bhto&st=qm8wqgei&dl=1",
         "8a672d4e57d1190d571571e2a35a0f3fad2fdefb",
         Semver.of(1, 21, 7),
-        Semver.of(1, 21, 7)
+        Semver.of(1, 21, 8)
+    ),
+
+    FORMAT_69(
+        "https://www.dropbox.com/scl/fi/pfr1rvlozumyfkkuqmel9/BigDoorsResourcePack-Format69.zip?rlkey=54hufiiuzly76nmi4jgmgipd4&st=68441xta&dl=1",
+        "60ea5d6d3ac59663c950a40219c42857fef9012b",
+        Semver.of(1, 21, 9),
+        Semver.of(1, 21, 10)
     ),
 
     ;
