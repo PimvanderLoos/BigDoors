@@ -166,7 +166,7 @@ jobs:
         run: |
           echo "$GPG_KEY" | gpg --batch --import
           
-          version_line=$(echo "${{ env.RELEASE_VERSION }}" | sed 's/-SNAPSHOT//g')
+          version_line=$(echo "${{ env.NEXT_DEV_VERSION }}" | sed 's/-SNAPSHOT//g')
           { printf '%s\n\n' "$version_line"; cat changelog.txt; } > changelog.tmp
           mv changelog.tmp changelog.txt
           
