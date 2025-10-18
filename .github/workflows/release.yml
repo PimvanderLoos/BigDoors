@@ -161,7 +161,9 @@ jobs:
           body_path: ${{ steps.notes.outputs.body_path }}
           generate_release_notes: ${{ steps.notes.outputs.body_path == '' && 'true' || 'false' }}
           files: |
-            core/target/BigDoors*
+            core/target/BigDoors.jar
+            core/target/BigDoors.jar.asc
+            core/target/BigDoors.jar.SHA-256
 
       - name: Clear changelog for next release
         env:
