@@ -7,6 +7,10 @@
     <packaging>pom</packaging>
     <version>0.1.8.64-SNAPSHOT</version>
 
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Create 3D animated objects such as doors from blocks in Minecraft</description>
+    <url>https://github.com/PimvanderLoos/BigDoors</url>
+
     <modules>
         <module>core</module>
         <module>nms</module>
