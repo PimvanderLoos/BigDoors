@@ -1,4 +1,5 @@
 0.1.8.64
+- Change versioning scheme: The 'ALPHA' suffix is removed.
 - Update resource pack for Minecraft 1.21.8-1.21.10.
 
 Alpha 0.1.8.63
