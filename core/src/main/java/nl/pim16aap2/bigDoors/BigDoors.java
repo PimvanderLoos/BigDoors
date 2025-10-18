@@ -150,6 +150,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private boolean isEnabled = false;
     private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
+    private boolean hasOverriddenVersion = false;
 
     public BigDoors()
     {
@@ -182,7 +183,8 @@ public class BigDoors extends JavaPlugin implements Listener
             getScheduler().runTask(() -> schedulerIsRunning = true);
 
         updateManager = new UpdateManager(this);
-        overrideVersion();
+        if (DEVBUILD)
+            overrideVersion();
 
         try
         {
@@ -919,6 +921,10 @@ public class BigDoors extends JavaPlugin implements Listener
 
     private void overrideVersion()
     {
+        if (hasOverriddenVersion)
+            return;
+        hasOverriddenVersion = true;
+
         try
         {
             String version = getDescription().getVersion() + " (b" + buildNumber + ")";
