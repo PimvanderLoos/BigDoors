@@ -418,12 +418,65 @@
                     <useFile>false</useFile>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.2</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+                    <dotGitDirectory>${project.root-dir}/.git</dotGitDirectory>
+                </configuration>
+            </plugin>
+
+            <!-- Set the build number/id of the GitHub Actions build      -->
+            <!-- This is used to set the build information in build_data  -->
+            <!-- We use ant so we can set these values to '-1' when unset -->
+            <!-- Otherwise, it would not replace the placeholder at all   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <property environment="env"/>
+                                <condition property="actions.run.number" value="${env.GITHUB_RUN_NUMBER}" else="-1">
+                                    <isset property="env.GITHUB_RUN_NUMBER"/>
+                                </condition>
+                                <condition property="actions.run.id" value="${env.GITHUB_RUN_ID}" else="-1">
+                                    <isset property="env.GITHUB_RUN_ID"/>
+                                </condition>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
             <id>release</id>
+            <properties>
+                <project.is-release>true</project.is-release>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

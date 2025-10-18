@@ -1,0 +1,4 @@
+${project.is-release}
+${git.branch}: ${git.commit.id} dirty:${git.dirty} (${git.commit.time})
+${actions.run.number}
+${actions.run.id}
