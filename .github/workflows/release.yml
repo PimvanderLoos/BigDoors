@@ -95,15 +95,13 @@ jobs:
           cache: maven
           gpg-private-key: ${{ secrets.MAVEN_GPG_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-          server-id: |
-            eldonexus-releases
-            eldonexus-snapshots
-          server-username: |
-            NEXUS_USERNAME
-            NEXUS_USERNAME
-          server-password: |
-            NEXUS_PASSWORD
-            NEXUS_PASSWORD
+          server-id: eldonexus-releases
+          server-username: NEXUS_USERNAME
+          server-password: NEXUS_PASSWORD
+
+      - name: Check config
+        id: check-config
+        run: cat ~/.m2/settings.xml
 
       - name: Restore NMS Maven cache
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
