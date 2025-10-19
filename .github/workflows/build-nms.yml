@@ -70,7 +70,7 @@ jobs:
     if: ${{ needs.check-cache.outputs.cache-hit != 'true' && needs.resolve-groups.outputs.has-work == 'true' }}
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.check-cache.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.resolve-groups.outputs.matrix) }}
       fail-fast: true
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
