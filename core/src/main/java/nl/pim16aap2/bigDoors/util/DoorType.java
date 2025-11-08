@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.util;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public enum DoorType
@@ -49,7 +50,7 @@ public enum DoorType
         this.nameKey = nameKey;
         this.permission = permission;
         this.attributes = attributes;
-        friendlyName = this.name().substring(0, 1) + this.name().substring(1).toLowerCase();
+        friendlyName = this.name().substring(0, 1) + this.name().substring(1).toLowerCase(Locale.ROOT);
     }
 
     public static int             getValue       (DoorType type) {  return type.val;           }
