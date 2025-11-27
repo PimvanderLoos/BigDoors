@@ -620,7 +620,8 @@ public final class Util
         if (xmat.name().endsWith("LIGHTNING_ROD") || xmat.equals(XMaterial.REDSTONE_WIRE) ||
             xmat.equals(XMaterial.REPEATER) || xmat.equals(XMaterial.TRIPWIRE_HOOK) ||
             xmat.equals(XMaterial.WALL_TORCH) || xmat.equals(XMaterial.SOUL_WALL_TORCH) ||
-            xmat.equals(XMaterial.REDSTONE_WALL_TORCH) || xmat.equals(XMaterial.VINE) ||
+            xmat.equals(XMaterial.REDSTONE_WALL_TORCH) || xmat.equals(XMaterial.COPPER_WALL_TORCH) ||
+            xmat.equals(XMaterial.VINE) ||
             xmat.equals(XMaterial.COMPARATOR) || xmat.equals(XMaterial.LADDER) ||
             xmat.equals(XMaterial.LEVER) || xmat.equals(XMaterial.BIG_DRIPLEAF) ||
             xmat.equals(XMaterial.BIG_DRIPLEAF_STEM) || xmat.equals(XMaterial.SMALL_DRIPLEAF) ||
