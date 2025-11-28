@@ -1,7 +1,7 @@
-0.1.8.65
+Version 0.1.8.65
 - Add some accidentally omitted materials in #61. Thanks, Strahilchu, for the bug report!
 
-0.1.8.64
+Version 0.1.8.64
 - Change versioning scheme: The 'ALPHA' suffix is removed.
 - Fix accidentally marking previous release as dev-build. The new system is automated so this shouldn't happen again. Thanks, DjeyMute, for the bug report!
 - Update resource pack for Minecraft 1.21.8-1.21.10.
