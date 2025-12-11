@@ -1,0 +1,2 @@
+- Add full support for Minecraft 1.21.11.
+- Add some accidentally omitted materials in #61. Thanks, Strahilchu, for the bug report!
