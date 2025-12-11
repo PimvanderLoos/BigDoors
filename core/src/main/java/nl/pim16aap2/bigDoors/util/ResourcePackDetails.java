@@ -141,32 +141,39 @@ public enum ResourcePackDetails
         Semver.of(1, 21, 10)
     ),
 
+    FORMAT_75(
+        "https://www.dropbox.com/scl/fi/kczu66cqd6px9j709or73/BigDoorsResourcePack-Format75.zip?rlkey=l0xjfykpj0mtjbftllkqu693q&st=1ixd3obx&dl=1",
+        "8ddb4e0ec0bdde9ac3851112cf1f857d27b46c9a",
+        Semver.of(1, 21, 11),
+        Semver.of(1, 21, 11)
+    ),
+
     ;
 
     private static final ResourcePackDetails[] VALUES = values();
     private static final ResourcePackDetails LATEST = VALUES[VALUES.length - 1];
 
     private final String url;
-    private final byte[] hash;
+    private final byte[] sha1Hash;
     private final Semver minVersion;
     private final Semver maxVersion;
 
     /**
      * @param url The URL to the resource pack.
-     * @param hash The SHA1 hash of the resource pack.
+     * @param sha1Hash The SHA1 hash of the resource pack.
      * @param minVersion The minimum version for which the resource pack is suitable (inclusive).
      * @param maxVersion The maximum version for which the resource pack is suitable (inclusive).
      */
-    ResourcePackDetails(String url, byte[] hash, Semver minVersion, Semver maxVersion)
+    ResourcePackDetails(String url, byte[] sha1Hash, Semver minVersion, Semver maxVersion)
     {
         this.url = url;
-        this.hash = hash;
+        this.sha1Hash = sha1Hash;
 
         this.minVersion = minVersion;
         this.maxVersion = maxVersion;
 
-        if (this.hash.length != 0 && this.hash.length != 20)
-            throw new IllegalArgumentException("The hash must be empty or 20 bytes long! Got: " + this.hash.length + " bytes.");
+        if (this.sha1Hash.length != 0 && this.sha1Hash.length != 20)
+            throw new IllegalArgumentException("The hash must be empty or 20 bytes long! Got: " + this.sha1Hash.length + " bytes.");
     }
 
     ResourcePackDetails(String url, String hash, Semver minVersion, Semver maxVersion)
@@ -242,6 +249,6 @@ public enum ResourcePackDetails
      */
     public byte[] getHash()
     {
-        return hash;
+        return sha1Hash;
     }
 }
