@@ -1,0 +1,1 @@
+- Update ByteBuddy to fix support for up to Java 26. Thanks, Strahilchu, for the bug report!
