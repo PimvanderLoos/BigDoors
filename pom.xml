@@ -24,7 +24,7 @@
         <dependency.annotations.version>24.0.1</dependency.annotations.version>
         <dependency.asm.version>9.7</dependency.asm.version>
         <dependency.semver4j.version>5.3.0</dependency.semver4j.version>
-        <dependency.bytebuddy.version>1.14.17</dependency.bytebuddy.version>
+        <dependency.bytebuddy.version>1.18.2</dependency.bytebuddy.version>
         <dependency.jcalculator.version>1.8</dependency.jcalculator.version>
         <dependency.jsr305.version>3.0.2</dependency.jsr305.version>
         <dependency.junit.version>5.9.3</dependency.junit.version>
