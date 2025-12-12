@@ -21,17 +21,31 @@
 
         <project.is-release>false</project.is-release>
 
+        <spigot-baseline.version>1.11.2-R0.1-SNAPSHOT</spigot-baseline.version>
+
         <dependency.annotations.version>24.0.1</dependency.annotations.version>
         <dependency.asm.version>9.7</dependency.asm.version>
-        <dependency.semver4j.version>5.3.0</dependency.semver4j.version>
+        <dependency.bstats.version>3.0.0</dependency.bstats.version>
         <dependency.bytebuddy.version>1.18.2</dependency.bytebuddy.version>
+        <dependency.git-commit-id-maven.version>9.0.2</dependency.git-commit-id-maven.version>
         <dependency.jcalculator.version>1.8</dependency.jcalculator.version>
         <dependency.jsr305.version>3.0.2</dependency.jsr305.version>
         <dependency.junit.version>5.9.3</dependency.junit.version>
-        <dependency.maven-compiler.version>3.11.0</dependency.maven-compiler.version>
-        <dependency.maven-shade.version>3.5.0</dependency.maven-shade.version>
         <dependency.mockito.version>5.4.0</dependency.mockito.version>
+        <dependency.semver4j.version>5.3.0</dependency.semver4j.version>
         <dependency.surefire.version>3.1.2</dependency.surefire.version>
+        <dependency.universalscheduler.version>0.1.7</dependency.universalscheduler.version>
+        <dependency.vault.version>1.7</dependency.vault.version>
+
+        <dependency.maven-antrun.version>3.1.0</dependency.maven-antrun.version>
+        <dependency.maven-clean.version>3.5.0</dependency.maven-clean.version>
+        <dependency.maven-compiler.version>3.11.0</dependency.maven-compiler.version>
+        <dependency.maven-deploy.version>3.1.4</dependency.maven-deploy.version>
+        <dependency.maven-gpg.version>3.2.8</dependency.maven-gpg.version>
+        <dependency.maven-javadoc.version>3.11.2</dependency.maven-javadoc.version>
+        <dependency.maven-release.version>3.1.1</dependency.maven-release.version>
+        <dependency.maven-shade.version>3.5.0</dependency.maven-shade.version>
+        <dependency.maven-source.version>3.3.1</dependency.maven-source.version>
 
         <dependency.xseries.version>ef9634c036</dependency.xseries.version>
         <dependency.xseries.groupid>com.github.PimvanderLoos</dependency.xseries.groupid>
@@ -82,13 +96,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>${dependency.maven-clean.version}</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>${dependency.maven-release.version}</version>
                 <configuration>
                     <signTag>true</signTag>
                     <tagNameFormat>@{project.version}</tagNameFormat>
@@ -101,7 +115,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.4</version>
+                <version>${dependency.maven-deploy.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -117,7 +131,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.2</version>
+                        <version>${dependency.maven-javadoc.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -134,7 +148,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>${dependency.maven-source.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -148,7 +162,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
+                        <version>${dependency.maven-gpg.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

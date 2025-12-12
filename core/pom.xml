@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.11.2-R0.1-SNAPSHOT</version>
+            <version>${spigot-baseline.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -271,7 +271,7 @@
         <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>3.0.0</version>
+            <version>${dependency.bstats.version}</version>
             <scope>compile</scope>
         </dependency>
 
@@ -279,7 +279,7 @@
         <dependency>
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
+            <version>${dependency.vault.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -319,7 +319,7 @@
         <dependency>
             <groupId>com.github.Anon8281</groupId>
             <artifactId>UniversalScheduler</artifactId>
-            <version>0.1.6</version>
+            <version>${dependency.universalscheduler.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -420,7 +420,7 @@
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
-                <version>9.0.2</version>
+                <version>${dependency.git-commit-id-maven.version}</version>
                 <executions>
                     <execution>
                         <id>get-the-git-infos</id>
@@ -444,7 +444,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>${dependency.maven-antrun.version}</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
@@ -470,7 +470,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.4</version>
+                <version>${dependency.maven-deploy.version}</version>
                 <configuration>
                     <skip>false</skip>
                 </configuration>
@@ -489,7 +489,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.8</version>
+                        <version>${dependency.maven-antrun.version}</version>
                         <executions>
                             <execution>
                                 <id>antrunner</id>
