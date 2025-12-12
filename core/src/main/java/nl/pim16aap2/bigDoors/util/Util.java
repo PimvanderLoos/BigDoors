@@ -667,7 +667,7 @@ public final class Util
             return true;
 
         if (name.endsWith("TRAPDOOR"))
-            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
+            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.create(1, 18, 0));
 
         if (name.endsWith("BANNER") || name.endsWith("SHULKER_BOX") || name.endsWith("DOOR") ||
             name.endsWith("BED") || name.endsWith("SIGN") || name.endsWith("HEAD") || name.endsWith("SKULL") ||
@@ -676,7 +676,7 @@ public final class Util
 
         if (name.endsWith("CARPET") || name.endsWith("BUTTON") || name.endsWith("PRESSURE_PLATE") ||
             name.endsWith("SAPLING") || name.endsWith("TORCH") || name.endsWith("RAIL") || name.endsWith("TULIP"))
-            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
+            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.create(1, 18, 0));
 
         final @Nullable XMaterial xmat = matchXMaterial(mat);
         if (xmat == null)
@@ -737,7 +737,7 @@ public final class Util
         case AMETHYST_CLUSTER:
         case BIG_DRIPLEAF:
         case BIG_DRIPLEAF_STEM:
-            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
+            return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.create(1, 18, 0));
 
 
 

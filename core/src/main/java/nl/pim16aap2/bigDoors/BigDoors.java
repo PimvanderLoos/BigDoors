@@ -146,7 +146,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private VaultManager vaultManager;
     private UpdateManager updateManager;
     private volatile boolean schedulerIsRunning = false;
-    private static final boolean IS_ON_FLATTENED_VERSION = SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 13, 0));
+    private static final boolean IS_ON_FLATTENED_VERSION = SERVER_VERSION.isGreaterThanOrEqualTo(Semver.create(1, 13, 0));
     private boolean isEnabled = false;
     private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
@@ -786,7 +786,7 @@ public class BigDoors extends JavaPlugin implements Listener
         if (config.forceCodeGeneration())
             return FallbackGeneratorManager.getFallingBlockFactory();
 
-        if (SERVER_VERSION.isLowerThan(Semver.of(1, 11, 0)))
+        if (SERVER_VERSION.isLowerThan(Semver.create(1, 11, 0)))
         {
             logger.severe("This version of Minecraft is not supported. Is the plugin up-to-date?");
             return null;

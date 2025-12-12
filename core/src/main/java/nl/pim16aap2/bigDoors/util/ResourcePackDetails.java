@@ -19,126 +19,126 @@ public enum ResourcePackDetails
 {
     FORMAT_3(
         "https://www.dropbox.com/s/6zdkg4jr90pc1mi/BigDoorsResourcePack-1_11.zip?dl=1",
-        Semver.of(1, 11, 0),
-        Semver.of(1, 12, 2)
+        Semver.create(1, 11, 0),
+        Semver.create(1, 12, 2)
     ),
 
     FORMAT_4(
         "https://www.dropbox.com/scl/fi/bm29osi71pb70njyu5st8/BigDoorsResourcePack-Format4.zip?rlkey=cxolgh4bw4iiucnjkca789ofd&st=klrqaohl&dl=1",
-        Semver.of(1, 13, 0),
-        Semver.of(1, 14, 4)
+        Semver.create(1, 13, 0),
+        Semver.create(1, 14, 4)
     ),
 
     FORMAT_5(
         "https://www.dropbox.com/scl/fi/gg6bf8e30k89n7obvlpxc/BigDoorsResourcePack-Format5.zip?rlkey=l80rbfebfzb7zjnv2p814csxs&st=yeeu8ix4&dl=1",
-        Semver.of(1, 15, 0),
-        Semver.of(1, 16, 1)
+        Semver.create(1, 15, 0),
+        Semver.create(1, 16, 1)
     ),
 
     FORMAT_6(
         "https://www.dropbox.com/scl/fi/frc758gboe5xk1iz2jb4v/BigDoorsResourcePack-Format6.zip?rlkey=tp45b9m6dtgdka23mml535zid&st=zi7c5d2m&dl=1",
-        Semver.of(1, 16, 2),
-        Semver.of(1, 16, 5)
+        Semver.create(1, 16, 2),
+        Semver.create(1, 16, 5)
     ),
 
     FORMAT_7(
         "https://www.dropbox.com/s/frkik8qpv3jep9v/BigDoorsResourcePack-Format7.zip?dl=1",
-        Semver.of(1, 17, 0),
-        Semver.of(1, 17, 1)
+        Semver.create(1, 17, 0),
+        Semver.create(1, 17, 1)
     ),
 
     FORMAT_8(
         "https://www.dropbox.com/s/4pkvrpb9kmrq590/BigDoorsResourcePack-Format8.zip?dl=1",
-        Semver.of(1, 18, 0),
-        Semver.of(1, 18, 2)
+        Semver.create(1, 18, 0),
+        Semver.create(1, 18, 2)
     ),
 
     FORMAT_9(
         "https://www.dropbox.com/s/mrft439gckhz2cw/BigDoorsResourcePack-Format9.zip?dl=1",
-        Semver.of(1, 19, 0),
-        Semver.of(1, 19, 2)
+        Semver.create(1, 19, 0),
+        Semver.create(1, 19, 2)
     ),
 
     FORMAT_12(
         "https://www.dropbox.com/s/8vpwzjkd9jnp1xu/BigDoorsResourcePack-Format12.zip?dl=1",
-        Semver.of(1, 19, 3),
-        Semver.of(1, 19, 3)
+        Semver.create(1, 19, 3),
+        Semver.create(1, 19, 3)
     ),
 
     FORMAT_13(
         "https://www.dropbox.com/s/3b6ohu02ueq5no0/BigDoorsResourcePack-Format13.zip?dl=1",
-        Semver.of(1, 19, 4),
-        Semver.of(1, 19, 4)
+        Semver.create(1, 19, 4),
+        Semver.create(1, 19, 4)
     ),
 
     FORMAT_15(
         "https://www.dropbox.com/scl/fi/bnfpjvmk9gm1470iohjdx/BigDoorsResourcePack-Format15.zip?rlkey=us8jfsq9cqqz5zy2c2bb7ufuc&st=cii8luqv&dl=1",
         "759f22b5dc02edaf33e70fd89556248e85be92cf",
-        Semver.of(1, 20, 0),
-        Semver.of(1, 20, 1)
+        Semver.create(1, 20, 0),
+        Semver.create(1, 20, 1)
     ),
 
     FORMAT_18(
         "https://www.dropbox.com/scl/fi/6antz5z6qw0213st3qw81/BigDoorsResourcePack-Format18.zip?rlkey=oz4ghyajlhg7kkfma0iwveyph&st=p07goie9&dl=1",
         "5d457693e69f26bd7657db0b7033ad68dd465409",
-        Semver.of(1, 20, 2),
-        Semver.of(1, 20, 2)
+        Semver.create(1, 20, 2),
+        Semver.create(1, 20, 2)
     ),
 
     FORMAT_22(
         "https://www.dropbox.com/scl/fi/iid6k41zigbk7lr6q4k9p/BigDoorsResourcePack-Format22.zip?rlkey=rxa0yew6pzjelqqmwjno7mta0&st=5taz85qm&dl=1",
         "c05d5e2e4c327cb40c623b6a91456b0e86ab2987",
-        Semver.of(1, 20, 3),
-        Semver.of(1, 20, 4)
+        Semver.create(1, 20, 3),
+        Semver.create(1, 20, 4)
     ),
 
     FORMAT_32(
         "https://www.dropbox.com/scl/fi/xh01ikoowsn4t82hgb06d/BigDoorsResourcePack-Format32.zip?rlkey=d9m1rb80dt1xq7giypxif3e4i&st=rjh7uskr&dl=1",
         "4cab78f1f2e0183039ce252effe8ecb3f202632f",
-        Semver.of(1, 20, 5),
-        Semver.of(1, 20, 6)
+        Semver.create(1, 20, 5),
+        Semver.create(1, 20, 6)
     ),
 
     FORMAT_34(
         "https://www.dropbox.com/scl/fi/71jyxjeqfyrcn8hokn6cy/BigDoorsResourcePack-Format34.zip?rlkey=05afk8t5yxdil1w6zm34akzzo&st=9xxocl78&dl=1",
         "4d81904572cdf0ef7b313f87012b7230a2d2ac12",
-        Semver.of(1, 21, 0),
-        Semver.of(1, 21, 3)
+        Semver.create(1, 21, 0),
+        Semver.create(1, 21, 3)
     ),
 
     FORMAT_46(
         "https://www.dropbox.com/scl/fi/5totedxlfixk7dm7cnukz/BigDoorsResourcePack-Format46.zip?rlkey=fhy152g0rrh42ucu7uu3hgwyh&st=1w7yzm1a&dl=1",
         "ad5c666f2d37c8b992058fae5e6706b2883baab1",
-        Semver.of(1, 21, 4),
-        Semver.of(1, 21, 4)
+        Semver.create(1, 21, 4),
+        Semver.create(1, 21, 4)
     ),
 
     FORMAT_51(
         "https://www.dropbox.com/scl/fi/c6yv4ellokzp8blf91nlu/BigDoorsResourcePack-Format51.zip?rlkey=db4qkpjnxeziw9h2jzpjzp9o2&st=hhv1xigd&dl=1",
         "eacaccec6e755f871ef420a336bacafa0526eeca",
-        Semver.of(1, 21, 5),
-        Semver.of(1, 21, 5)
+        Semver.create(1, 21, 5),
+        Semver.create(1, 21, 5)
     ),
 
     FORMAT_63(
         "https://www.dropbox.com/scl/fi/0uwjn0undky7sf4259nn0/BigDoorsResourcePack-Format63.zip?rlkey=8n50f6gsw0ojnkylwhmebxbas&st=8lrcz9xn&dl=1",
         "9d9f7e771a7b47a7778bdbb5983cf835f657fd17",
-        Semver.of(1, 21, 6),
-        Semver.of(1, 21, 6)
+        Semver.create(1, 21, 6),
+        Semver.create(1, 21, 6)
     ),
 
     FORMAT_64(
         "https://www.dropbox.com/scl/fi/d2q7f2ss2vjzvsr4gd5e6/BigDoorsResourcePack-Format64.zip?rlkey=3oqrm9yctb5vp87mw8id7bhto&st=qm8wqgei&dl=1",
         "8a672d4e57d1190d571571e2a35a0f3fad2fdefb",
-        Semver.of(1, 21, 7),
-        Semver.of(1, 21, 8)
+        Semver.create(1, 21, 7),
+        Semver.create(1, 21, 8)
     ),
 
     FORMAT_69(
         "https://www.dropbox.com/scl/fi/pfr1rvlozumyfkkuqmel9/BigDoorsResourcePack-Format69.zip?rlkey=54hufiiuzly76nmi4jgmgipd4&st=68441xta&dl=1",
         "60ea5d6d3ac59663c950a40219c42857fef9012b",
-        Semver.of(1, 21, 9),
-        Semver.of(1, 21, 10)
+        Semver.create(1, 21, 9),
+        Semver.create(1, 21, 10)
     ),
 
     ;
