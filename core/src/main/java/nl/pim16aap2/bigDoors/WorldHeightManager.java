@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class WorldHeightManager
 {
-    private static final Semver VARIABLE_WORLD_DEPTH_UPDATE_VERSION = Semver.create(1, 18, 0);
+    private static final Semver VARIABLE_WORLD_DEPTH_UPDATE_VERSION = Semver.of(1, 18, 0);
 
     private static final MinWorldHeightFinder MIN_WORLD_HEIGHT_FINDER = getMinWorldHeightFinder();
 
