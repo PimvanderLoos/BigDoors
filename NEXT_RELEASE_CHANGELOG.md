@@ -1,3 +1,0 @@
-- Add full support for Minecraft 1.21.11.
-- Add some accidentally omitted materials in #61. Thanks, Strahilchu, for the bug report!
-- Update ByteBuddy to fix support for up to Java 26. Thanks, Strahilchu, for the bug report!
