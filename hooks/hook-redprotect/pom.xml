@@ -7,7 +7,7 @@
     <parent>
         <groupId>nl.pim16aap2.BigDoors</groupId>
         <artifactId>hooks</artifactId>
-        <version>0.1.8.65-SNAPSHOT</version>
+        <version>0.1.8.65</version>
     </parent>
 
     <repositories>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
             <artifactId>hooks-api</artifactId>
-            <version>0.1.8.65-SNAPSHOT</version>
+            <version>0.1.8.65</version>
             <scope>provided</scope>
         </dependency>
 

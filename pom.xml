@@ -3,7 +3,7 @@
     <groupId>nl.pim16aap2.BigDoors</groupId>
     <artifactId>BigDoors-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.8.65-SNAPSHOT</version>
+    <version>0.1.8.65</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Create 3D animated objects such as doors from blocks in Minecraft</description>
@@ -223,7 +223,7 @@
         <url>https://github.com/PimvanderLoos/BigDoors.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.1.8.65</tag>
     </scm>
 
     <distributionManagement>
