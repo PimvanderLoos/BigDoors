@@ -5,17 +5,19 @@ import org.bukkit.entity.Entity;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nonnull;
+
 public interface CustomCraftFallingBlock extends Entity
 {
-    boolean teleport(Location newPos);
+    boolean teleport(@Nonnull Location newPos);
 
     void remove();
 
-    void setVelocity(Vector vector);
+    void setVelocity(@Nonnull Vector vector);
 
-    Location getLocation();
+    @Nonnull Location getLocation();
 
-    Vector getVelocity();
+    @Nonnull Vector getVelocity();
 
     void setHeadPose(EulerAngle pose);
 

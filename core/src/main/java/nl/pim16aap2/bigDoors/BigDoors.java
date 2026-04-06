@@ -15,6 +15,7 @@ import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R4;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R5;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R6;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R7;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V26_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_11_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_12_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_13_R1;
@@ -781,6 +782,7 @@ public class BigDoors extends JavaPlugin implements Listener
     }
 
     // Check + initialize for the correct version of Minecraft.
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private @Nullable FallingBlockFactory createFallingBlockFactory()
         throws Exception
     {
@@ -913,13 +915,30 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 11:
                         return FallingBlockFactoryProvider_V1_21_R7.getFactory();
                 }
-
-            default:
-                logger.severe("Unsupported version of Minecraft: " + SERVER_VERSION);
-                if (config.allowCodeGeneration())
-                    return FallbackGeneratorManager.getFallingBlockFactory();
-                return null;
         }
+
+        switch (SERVER_VERSION.getMajor())
+        {
+            case 26:
+            {
+                switch (SERVER_VERSION.getMinor())
+                {
+                    case 1:
+                        switch (SERVER_VERSION.getPatch())
+                    {
+                        case 0:
+                        case 1:
+                            return FallingBlockFactoryProvider_V26_R1.getFactory();
+                    }
+                }
+            }
+        }
+
+        logger.severe("Unsupported version of Minecraft: " + SERVER_VERSION);
+        if (config.allowCodeGeneration())
+            return FallbackGeneratorManager.getFallingBlockFactory();
+
+        return null;
     }
 
     private void overrideVersion()
