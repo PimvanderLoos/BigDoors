@@ -36,16 +36,34 @@ public final class BukkitReflectionUtil
 
     static
     {
-        classNMSPlayer = ReflectionBuilder.findClass(NMS_BASE + "EntityPlayer",
-                                                     "net.minecraft.server.level.EntityPlayer").get();
-        classPlayerConnection = ReflectionBuilder.findClass(NMS_BASE + "PlayerConnection",
-                                                            "net.minecraft.server.network.PlayerConnection").get();
-        classCraftPlayer = ReflectionBuilder.findClass(CRAFT_BASE + "entity.CraftPlayer").get();
-        classVec3D = ReflectionBuilder.findClass(NMS_BASE + "Vec3D",
-                                                 "net.minecraft.world.phys.Vec3D").get();
+        classNMSPlayer = ReflectionBuilder.findClass(
+            NMS_BASE + "EntityPlayer",
+            "net.minecraft.server.level.EntityPlayer",
+            "net.minecraft.server.level.ServerPlayer"
+        ).get();
 
-        fieldPlayerConnection = ReflectionBuilder.findField()
-                                                 .inClass(classNMSPlayer).ofType(classPlayerConnection).get();
+        classPlayerConnection = ReflectionBuilder.findClass(
+            NMS_BASE + "PlayerConnection",
+            "net.minecraft.server.network.PlayerConnection",
+            "net.minecraft.server.network.ServerGamePacketListenerImpl"
+        ).get();
+
+        classCraftPlayer = ReflectionBuilder.findClass(
+            CRAFT_BASE + "entity.CraftPlayer"
+        ).get();
+
+        classVec3D = ReflectionBuilder.findClass(
+            NMS_BASE + "Vec3D",
+            "net.minecraft.world.phys.Vec3D",
+            "net.minecraft.world.phys.Vec3"
+        ).get();
+
+        fieldPlayerConnection = ReflectionBuilder
+            .findField()
+            .inClass(classNMSPlayer)
+            .ofType(classPlayerConnection)
+            .get();
+
         try
         {
             fieldsFlyingCounters = findFlyingCounters(classPlayerConnection);

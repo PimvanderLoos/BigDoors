@@ -242,21 +242,27 @@ final class NMSBlockClassGenerator extends ClassGenerator
     {
         final Object blockRotatableAxis = fieldBlockRotatableAxis.get(null);
 
-        final MethodCall getCurrentAxis = (MethodCall) invoke(methodEnumOrdinal)
-            .onMethodCall((MethodCall) invoke(methodGetIBlockDataHolderState).onField(FIELD_BLOCK_DATA)
-                                                                             .with(blockRotatableAxis)
-                                                                             .withAssigner(Assigner.DEFAULT,
-                                                                                           Assigner.Typing.DYNAMIC))
-            .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+        final MethodCall getCurrentAxis = (MethodCall)
+            invoke(methodEnumOrdinal)
+                .onMethodCall((MethodCall) invoke(methodGetIBlockDataHolderState)
+                    .onField(FIELD_BLOCK_DATA)
+                    .with(blockRotatableAxis)
+                    .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC))
+                .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
-        final MethodCall getNewAxis = (MethodCall) invoke(named(METHOD_ROTATE_UP_DOWN_NS_IMPL))
-            .withArgument(0).withMethodCall(getCurrentAxis).withField(FIELD_AXES_VALUES)
-            .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+        final MethodCall getNewAxis = (MethodCall)
+            invoke(named(METHOD_ROTATE_UP_DOWN_NS_IMPL))
+                .withArgument(0)
+                .withMethodCall(getCurrentAxis)
+                .withField(FIELD_AXES_VALUES)
+                .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
         final MethodCall setNewAxis = (MethodCall)
-            invoke(methodSetIBlockDataHolderState).onField(FIELD_BLOCK_DATA).with(blockRotatableAxis)
-                                                  .withMethodCall(getNewAxis)
-                                                  .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+            invoke(methodSetIBlockDataHolderState)
+                .onField(FIELD_BLOCK_DATA)
+                .with(blockRotatableAxis)
+                .withMethodCall(getNewAxis)
+                .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
 
         builder = builder
             .define(METHOD_ROTATE_UP_DOWN_NS)

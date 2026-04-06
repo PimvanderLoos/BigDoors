@@ -47,7 +47,7 @@ jobs:
           GROUPS_FILE: ${{ inputs.groups-file }}
         run: |
           import json, yaml, os
-          versions = {"java8": 8, "java16": 16, "java17": 17, "java21": 21}
+          versions = {"java8": 8, "java16": 16, "java17": 17, "java21": 21, "java25": 25}
           with open(os.environ["GROUPS_FILE"], encoding="utf-8") as fh:
               groups = yaml.safe_load(fh) or {}
           include = []
