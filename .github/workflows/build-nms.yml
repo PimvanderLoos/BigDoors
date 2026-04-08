@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Check if aggregated cache exists
         id: check-cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           key: ${{ inputs.cache-key }}
           path: |
@@ -39,7 +39,7 @@ jobs:
       matrix: ${{ steps.to-matrix.outputs.matrix }}
       has-work: ${{ steps.to-matrix.outputs.has-work }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - id: to-matrix
         shell: python
@@ -75,11 +75,11 @@ jobs:
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Restore aggregated Maven cache (best effort)
         id: aggregate-cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
@@ -90,14 +90,14 @@ jobs:
             ~/.m2/repository/net/md-5
 
       - name: Set up JDK
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
 
       - name: Build NMS
         if: ${{ inputs.force-rebuild || steps.aggregate-cache.outputs.cache-hit != 'true' || !hashFiles(format('~/.m2/repository/org/spigotmc/spigot/*{0}*/spigot-*.jar', matrix.version)) }}
-        uses: SpraxDev/Action-SpigotMC@e63b635efcbaeb868bf21878c46f61b7d919a0ac # v5.2.0
+        uses: SpraxDev/Action-SpigotMC@6419bc4cdfb60d37bd3f541f6c8d5be60e6e0933 # v5.3.0
         with:
           versions: ${{ matrix.version }}
 
@@ -110,7 +110,7 @@ jobs:
             net/md-5
         shell: bash
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: nms-${{ matrix.artifact }}
           path: fragments/nms-${{ matrix.artifact }}.tgz
@@ -123,7 +123,7 @@ jobs:
     env:
       CACHE_KEY: ${{ inputs.cache-key }}
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: nms-*
           path: artifacts
@@ -139,7 +139,7 @@ jobs:
         shell: bash
 
       - name: Save aggregated Maven repo
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           key: ${{ env.CACHE_KEY }}
           path: |
@@ -152,6 +152,6 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - uses: GeekyEggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+      - uses: GeekyEggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
           name: nms-*
