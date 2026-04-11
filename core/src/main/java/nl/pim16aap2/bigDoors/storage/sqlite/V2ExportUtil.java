@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -91,25 +92,28 @@ final class V2ExportUtil
 
         final IndexRemapper remapper = new IndexRemapper(plugin, seqPlayers, "player", remappedPlayers);
 
-        try (ResultSet rs = connV1.prepareStatement("SELECT * FROM players;").executeQuery())
+        try (
+            PreparedStatement ps = connV1.prepareStatement("SELECT * FROM players;");
+            ResultSet rs = ps.executeQuery()
+        )
         {
             while (rs.next())
             {
                 final String uuidStr = rs.getString("playerUUID");
                 final long uid = remapper.getRemappedId(rs.getInt("id"));
 
-                try (PreparedStatement ps = connV2.prepareStatement(insertStr))
+                try (PreparedStatement ps1 = connV2.prepareStatement(insertStr))
                 {
                     int idx = 0;
 
-                    ps.setLong(++idx, uid);
-                    ps.setString(++idx, uuidStr);
-                    ps.setString(++idx, rs.getString("playerName"));
-                    ps.setInt(++idx, plugin.getConfigLoader().maxDoorSize());
-                    ps.setInt(++idx, plugin.getConfigLoader().maxdoorCount());
-                    ps.setLong(++idx, 0L);
+                    ps1.setLong(++idx, uid);
+                    ps1.setString(++idx, uuidStr);
+                    ps1.setString(++idx, rs.getString("playerName"));
+                    ps1.setInt(++idx, plugin.getConfigLoader().maxDoorSize());
+                    ps1.setInt(++idx, plugin.getConfigLoader().maxdoorCount());
+                    ps1.setLong(++idx, 0L);
 
-                    ps.executeUpdate();
+                    ps1.executeUpdate();
                 }
             }
         }
@@ -125,7 +129,10 @@ final class V2ExportUtil
                 "bitflag, type, typeVersion, typeData) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
-        try (ResultSet rs = connV1.prepareStatement("SELECT * FROM doors;").executeQuery())
+        try (
+            PreparedStatement ps = connV1.prepareStatement("SELECT * FROM doors;");
+            ResultSet rs = ps.executeQuery()
+        )
         {
             while (rs.next())
             {
@@ -338,57 +345,71 @@ final class V2ExportUtil
     private void createV2Tables(Connection conn)
         throws SQLException
     {
-        conn.prepareStatement(
-            "CREATE TABLE IF NOT EXISTS Structure " +
-                "(id                   INTEGER    PRIMARY KEY AUTOINCREMENT, " +
-                "name                  TEXT       NOT NULL, " +
-                "world                 TEXT       NOT NULL, " +
-                "xMin                  INTEGER    NOT NULL, " +
-                "yMin                  INTEGER    NOT NULL, " +
-                "zMin                  INTEGER    NOT NULL, " +
-                "xMax                  INTEGER    NOT NULL, " +
-                "yMax                  INTEGER    NOT NULL, " +
-                "zMax                  INTEGER    NOT NULL, " +
-                "rotationPointX        INTEGER    NOT NULL, " +
-                "rotationPointY        INTEGER    NOT NULL, " +
-                "rotationPointZ        INTEGER    NOT NULL, " +
-                "rotationPointChunkId  INTEGER    NOT NULL, " +
-                "powerBlockX           INTEGER    NOT NULL, " +
-                "powerBlockY           INTEGER    NOT NULL, " +
-                "powerBlockZ           INTEGER    NOT NULL, " +
-                "powerBlockChunkId     INTEGER    NOT NULL, " +
-                "openDirection         INTEGER    NOT NULL, " +
-                "type                  TEXT       NOT NULL, " +
-                "typeVersion           INTEGER    NOT NULL, " +
-                "typeData              TEXT       NOT NULL, " +
-                "bitflag               INTEGER    NOT NULL);"
-        ).executeUpdate();
-        conn.prepareStatement(
-            "INSERT OR IGNORE INTO SQLITE_SEQUENCE (name, seq) VALUES ('Structure', 10);").executeUpdate();
+        try (Statement stmt = conn.createStatement())
+        {
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS Structure " +
+                    "(id                   INTEGER    PRIMARY KEY AUTOINCREMENT, " +
+                    "name                  TEXT       NOT NULL, " +
+                    "world                 TEXT       NOT NULL, " +
+                    "xMin                  INTEGER    NOT NULL, " +
+                    "yMin                  INTEGER    NOT NULL, " +
+                    "zMin                  INTEGER    NOT NULL, " +
+                    "xMax                  INTEGER    NOT NULL, " +
+                    "yMax                  INTEGER    NOT NULL, " +
+                    "zMax                  INTEGER    NOT NULL, " +
+                    "rotationPointX        INTEGER    NOT NULL, " +
+                    "rotationPointY        INTEGER    NOT NULL, " +
+                    "rotationPointZ        INTEGER    NOT NULL, " +
+                    "rotationPointChunkId  INTEGER    NOT NULL, " +
+                    "powerBlockX           INTEGER    NOT NULL, " +
+                    "powerBlockY           INTEGER    NOT NULL, " +
+                    "powerBlockZ           INTEGER    NOT NULL, " +
+                    "powerBlockChunkId     INTEGER    NOT NULL, " +
+                    "openDirection         INTEGER    NOT NULL, " +
+                    "type                  TEXT       NOT NULL, " +
+                    "typeVersion           INTEGER    NOT NULL, " +
+                    "typeData              TEXT       NOT NULL, " +
+                    "bitflag               INTEGER    NOT NULL);"
+            );
+            stmt.execute(
+                "INSERT OR IGNORE " +
+                    "INTO SQLITE_SEQUENCE (name, seq) " +
+                    "VALUES ('Structure', 10);"
+            );
 
-        conn.prepareStatement(
-            "CREATE TABLE IF NOT EXISTS Player " +
-                "(id            INTEGER    PRIMARY KEY AUTOINCREMENT, " +
-                "playerUUID     TEXT       NOT NULL, " +
-                "playerName     TEXT       NOT NULL, " +
-                "sizeLimit      INTEGER    NOT NULL, " +
-                "countLimit     INTEGER    NOT NULL, " +
-                "permissions    INTEGER    NOT NULL, " +
-                "unique(playerUUID));"
-        ).executeUpdate();
-        conn.prepareStatement(
-            "INSERT OR IGNORE INTO SQLITE_SEQUENCE (name, seq) VALUES ('Player', 10);").executeUpdate();
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS Player " +
+                    "(id            INTEGER    PRIMARY KEY AUTOINCREMENT, " +
+                    "playerUUID     TEXT       NOT NULL, " +
+                    "playerName     TEXT       NOT NULL, " +
+                    "sizeLimit      INTEGER    NOT NULL, " +
+                    "countLimit     INTEGER    NOT NULL, " +
+                    "permissions    INTEGER    NOT NULL, " +
+                    "UNIQUE (playerUUID));"
+            );
 
-        conn.prepareStatement(
-            "CREATE TABLE IF NOT EXISTS StructureOwnerPlayer " +
-                "(id           INTEGER    PRIMARY KEY AUTOINCREMENT, " +
-                "permission    INTEGER    NOT NULL, " +
-                "playerID      REFERENCES Player(id)   ON UPDATE CASCADE ON DELETE CASCADE, " +
-                "structureUID  REFERENCES Structure(id) ON UPDATE CASCADE ON DELETE CASCADE, " +
-                "unique (playerID, structureUID));"
-        ).executeUpdate();
-        conn.prepareStatement(
-            "INSERT OR IGNORE INTO SQLITE_SEQUENCE (name, seq) VALUES ('StructureOwnerPlayer', 10);").executeUpdate();
+            stmt.execute(
+                "INSERT OR IGNORE " +
+                    "INTO SQLITE_SEQUENCE (name, seq) " +
+                    "VALUES ('Player', 10);"
+            );
+
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS StructureOwnerPlayer " +
+                    "(id           INTEGER    PRIMARY KEY AUTOINCREMENT, " +
+                    "permission    INTEGER    NOT NULL, " +
+                    "playerID      REFERENCES Player(id)    ON UPDATE CASCADE ON DELETE CASCADE, " +
+                    "structureUID  REFERENCES Structure(id) ON UPDATE CASCADE ON DELETE CASCADE, " +
+                    "UNIQUE (playerID, structureUID));"
+            );
+
+            stmt.execute(
+                "INSERT OR IGNORE " +
+                    "INTO SQLITE_SEQUENCE (name, seq) " +
+                    "VALUES ('StructureOwnerPlayer', 10);"
+            );
+        }
     }
 
     private static final class IndexRemapper

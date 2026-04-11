@@ -146,7 +146,7 @@ public class SQLiteJDBCDriverConnection
         {
             Class.forName(DRIVER);
             conn = DriverManager.getConnection(url);
-            conn.createStatement().execute("PRAGMA foreign_keys=ON");
+            executeStatement(conn, "PRAGMA foreign_keys=ON");
         }
         catch (SQLException | NullPointerException ex)
         {
@@ -166,7 +166,9 @@ public class SQLiteJDBCDriverConnection
         {
             Class.forName(DRIVER);
             conn = DriverManager.getConnection(connectionUrl);
-            conn.createStatement().execute("PRAGMA foreign_keys=ON");
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("PRAGMA foreign_keys=ON");
+            }
         }
         catch (SQLException | NullPointerException ex)
         {
@@ -174,7 +176,7 @@ public class SQLiteJDBCDriverConnection
         }
         catch (ClassNotFoundException e)
         {
-            plugin.getMyLogger().logMessage("152: Failed to open connection: CLass not found!!", true, false);
+            plugin.getMyLogger().logMessage("152: Failed to open connection: Class not found!!", true, false);
         }
         return conn;
     }
@@ -398,13 +400,84 @@ public class SQLiteJDBCDriverConnection
                       "Please upgrade to replace BigDoors with Animated Architecture now!");
     }
 
+    private static void checkIntegrity(Connection conn)
+        throws SQLException
+    {
+        try (
+            PreparedStatement ps = conn.prepareStatement("PRAGMA integrity_check");
+            ResultSet rs = ps.executeQuery()
+        )
+        {
+            StringBuilder errors = new StringBuilder();
+            while (rs.next())
+            {
+                String value = rs.getString(1);
+                if ("ok".equals(value))
+                {
+                    continue;
+                }
+
+                if (errors.length() > 0)
+                {
+                    errors.append("; ");
+                }
+
+                errors.append(value);
+            }
+            if (errors.length() > 0)
+            {
+                throw new SQLException("Integrity check failed: " + errors);
+            }
+        }
+    }
+
+    private static void checkForeignKeys(Connection conn)
+        throws SQLException
+    {
+        try (
+            PreparedStatement ps = conn.prepareStatement("PRAGMA foreign_key_check");
+            ResultSet rs = ps.executeQuery()
+        )
+        {
+            StringBuilder errors = new StringBuilder();
+            while (rs.next())
+            {
+                if (errors.length() > 0)
+                {
+                    errors.append("; ");
+                }
+
+                errors
+                    .append(rs.getString(1))
+                    .append(" rowid=").append(rs.getLong(2))
+                    .append(" -> ").append(rs.getString(3))
+                    .append(" (fk_index=").append(rs.getInt(4)).append(")");
+            }
+            if (errors.length() > 0)
+            {
+                throw new SQLException("Foreign key violations: " + errors);
+            }
+        }
+    }
+
     static void optimizeDatabase(Connection conn)
         throws SQLException
     {
-        conn.prepareStatement("VACUUM;").execute();
-        conn.prepareStatement("PRAGMA integrity_check(1);").execute();
-        conn.prepareStatement("PRAGMA foreign_key_check;").execute();
-        conn.prepareStatement("PRAGMA analysis_limit=0; PRAGMA optimize;").execute();
+        checkIntegrity(conn);
+        checkForeignKeys(conn);
+
+        executeStatement(conn, "VACUUM");
+        executeStatement(conn, "PRAGMA analysis_limit=0");
+        executeStatement(conn, "PRAGMA optimize");
+    }
+
+    private static void executeStatement(Connection conn, String sql)
+        throws SQLException
+    {
+        try (PreparedStatement ps = conn.prepareStatement(sql))
+        {
+            ps.execute();
+        }
     }
 
     /**
@@ -416,10 +489,11 @@ public class SQLiteJDBCDriverConnection
      *
      * @param conn The connection.
      */
-    private void disableForeignKeys(final Connection conn) throws SQLException
+    private void disableForeignKeys(final Connection conn)
+        throws SQLException
     {
-        conn.createStatement().execute("PRAGMA foreign_keys=OFF");
-        conn.createStatement().execute("PRAGMA legacy_alter_table=ON");
+        executeStatement(conn, "PRAGMA foreign_keys=OFF");
+        executeStatement(conn, "PRAGMA legacy_alter_table=ON");
     }
 
     /**
@@ -429,10 +503,11 @@ public class SQLiteJDBCDriverConnection
      * @param conn The connection.
      * @throws SQLException
      */
-    private void reEnableForeignKeys(final Connection conn) throws SQLException
+    private void reEnableForeignKeys(final Connection conn)
+        throws SQLException
     {
-        conn.createStatement().execute("PRAGMA foreign_keys=ON");
-        conn.createStatement().execute("PRAGMA legacy_alter_table=OFF");
+        executeStatement(conn, "PRAGMA foreign_keys=ON");
+        executeStatement(conn, "PRAGMA legacy_alter_table=OFF");
     }
 
     // To make sure there aren't any string values hidden as integers and what-not,
@@ -1947,14 +2022,12 @@ public class SQLiteJDBCDriverConnection
 
     private int getDatabaseVersion(final Connection conn)
     {
-        try
-        {
+        try (
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("PRAGMA user_version;");
-            int dbVersion = rs.getInt(1);
-            stmt.close();
-            rs.close();
-            return dbVersion;
+            ResultSet rs = stmt.executeQuery("PRAGMA user_version")
+        )
+        {
+            return rs.getInt(1);
         }
         catch (SQLException | NullPointerException e)
         {
@@ -1984,11 +2057,7 @@ public class SQLiteJDBCDriverConnection
         try
         {
             conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("PRAGMA user_version;");
-            int dbVersion = rs.getInt(1);
-            stmt.close();
-            rs.close();
+            int dbVersion = getDatabaseVersion(conn);
 
             if (dbVersion == DATABASE_VERSION)
             {
@@ -2115,7 +2184,7 @@ public class SQLiteJDBCDriverConnection
     {
         try
         {
-            conn.createStatement().execute("PRAGMA user_version = " + version + ";");
+            executeStatement(conn, "PRAGMA user_version=" + version);
         }
         catch (SQLException | NullPointerException e)
         {
@@ -2581,7 +2650,7 @@ public class SQLiteJDBCDriverConnection
                 // So do it again manually here.
                 Class.forName(DRIVER);
                 conn = DriverManager.getConnection(url);
-                conn.createStatement().execute("PRAGMA foreign_keys=ON");
+                executeStatement(conn, "PRAGMA foreign_keys=ON");
 
                 ResultSet rs1 = conn.createStatement()
                     .executeQuery("SELECT * FROM players WHERE playerUUID='" + FAKEUUID + "';");

@@ -1,1 +1,2 @@
 - Add support for Minecraft 26.1
+- Fix some issues with database migration to v2 (AnimatedArchitecture). Thanks, Evonuts, for the report!
