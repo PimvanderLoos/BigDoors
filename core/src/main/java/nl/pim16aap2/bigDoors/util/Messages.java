@@ -58,8 +58,15 @@ public class Messages
 
         if (replace || !defaultFile.exists())
         {
-            plugin.saveResource(fileName, replace);
-            defaultFile.setWritable(false);
+            try
+            {
+                plugin.saveResource(fileName, replace);
+                defaultFile.setWritable(false);
+            }
+            catch (Exception exception)
+            {
+                plugin.getMyLogger().log("Failed to write default locale file \"" + fileName + "\"!", exception);
+            }
         }
     }
 
