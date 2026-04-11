@@ -21,7 +21,7 @@ public class Messages
     private static final List<String> DEFAULT_LOCALES = Collections.unmodifiableList(Arrays.asList(
         "en_US.txt",
         "zh_CN.txt",
-        "ru_RU.txt‎"
+        "ru_RU.txt"
     ));
 
     private final HashMap<String, String> messageMap = new HashMap<>();
