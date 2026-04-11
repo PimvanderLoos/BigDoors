@@ -1,4 +1,6 @@
 0.1.8.66
+- Add support for Minecraft 26.1
+- Fix some issues with database migration to v2 (AnimatedArchitecture). Thanks, Evonuts, for the report!
 
 Version 0.1.8.65
 - Add full support for Minecraft 1.21.11.
