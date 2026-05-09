@@ -346,11 +346,8 @@ final class ReflectionRepository
             .withReturnType(void.class)
             .withParameters(String.class, float.class)
             .get();
-        methodCraftBockDataFromNMSBlockData = findMethod()
-            .inClass(classCraftBlockData)
-            .withName("fromData")
-            .withParameters(classIBlockData)
-            .get();
+        methodCraftBockDataFromNMSBlockData =
+            getMethodCraftBockDataFromNMSBlockData();
         methodBlockBaseGetItem = findMethod()
             .inClass(classBlockBase)
             .withReturnType(classNMSItem)
@@ -566,6 +563,28 @@ final class ReflectionRepository
         {
             throw new RuntimeException("Failed to find IBlockData codec", e);
         }
+    }
+
+    private static Method getMethodCraftBockDataFromNMSBlockData()
+    {
+         Method method = findMethod()
+            .inClass(classCraftBlockData)
+            .withName("fromData")
+            .withParameters(classIBlockData)
+            .setNullable()
+            .get();
+
+         if (method != null)
+         {
+             return method;
+         }
+
+         return findMethod()
+             .inClass(classCraftBlockData)
+             .withName("createData") // Different name on paper
+             .withParameters(classIBlockData)
+             .setNullable()
+             .get();
     }
 
     private ReflectionRepository()

@@ -12,8 +12,11 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.Optional;
 
 import static nl.pim16aap2.bigDoors.codegeneration.ReflectionRepository.classCraftMagicNumbers;
+import static nl.pim16aap2.bigDoors.reflection.ReflectionBuilder.findClass;
+import static nl.pim16aap2.bigDoors.reflection.ReflectionBuilder.findMethod;
 
 /**
  * Represents the manager for the {@link ClassGenerator}s for the NMS/Craft classes that can be generated as a fallback
@@ -78,6 +81,12 @@ public final class FallbackGeneratorManager
 
     private static @NotNull String getMappingsVersion()
     {
+        final String paperVersionId = getPaperMappingsVersion();
+        if (paperVersionId != null)
+        {
+            return paperVersionId;
+        }
+
         try
         {
             final Method methodGetMappingsVersion = ReflectionBuilder.findMethod().inClass(classCraftMagicNumbers)
@@ -94,6 +103,36 @@ public final class FallbackGeneratorManager
         {
             e.printStackTrace();
             return "UNMAPPED";
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String getPaperMappingsVersion()
+    {
+        try
+        {
+            final Class<?> clz = findClass("io.papermc.paper.ServerBuildInfo").get();
+
+            final Method instanceGetter = findMethod().inClass(clz).withName("buildInfo").get();
+            final Method commitGetter = findMethod().inClass(clz).withName("gitCommit").get();
+
+            final Object object = instanceGetter.invoke(null);
+
+            final Optional<String> commit = (Optional<String>) commitGetter.invoke(object);
+            if (commit.isPresent())
+            {
+                return commit.get();
+            }
+
+            final Method versionGetter = findMethod().inClass(clz).withName("minecraftVersionId").get();
+
+            final String version = (String) versionGetter.invoke(object);
+            return version.replace('.', '_');
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
         }
     }
 }
