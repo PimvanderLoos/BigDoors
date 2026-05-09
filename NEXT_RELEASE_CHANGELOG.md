@@ -1,0 +1,1 @@
+- Add full 26.1.2 support. Thanks, Soul, for the bug report.

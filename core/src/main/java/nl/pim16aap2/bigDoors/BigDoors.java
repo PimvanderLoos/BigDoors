@@ -928,6 +928,7 @@ public class BigDoors extends JavaPlugin implements Listener
                     {
                         case 0:
                         case 1:
+                        case 2:
                             return FallingBlockFactoryProvider_V26_R1.getFactory();
                     }
                 }
