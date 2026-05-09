@@ -934,7 +934,10 @@ public class BigDoors extends JavaPlugin implements Listener
             }
         }
 
-        logger.severe("Unsupported version of Minecraft: " + SERVER_VERSION);
+        logger.severe(
+            "Unsupported version of Minecraft: " + SERVER_VERSION +
+                " (" + Bukkit.getVersion() + ") Is the plugin up-to-date?");
+
         if (config.allowCodeGeneration())
             return FallbackGeneratorManager.getFallingBlockFactory();
 
