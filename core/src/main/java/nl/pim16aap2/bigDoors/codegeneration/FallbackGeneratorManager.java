@@ -111,7 +111,11 @@ public final class FallbackGeneratorManager
     {
         try
         {
-            final Class<?> clz = findClass("io.papermc.paper.ServerBuildInfo").get();
+            final Class<?> clz = findClass("io.papermc.paper.ServerBuildInfo").setNullable().get();
+            if (clz == null)
+            {
+                return null;
+            }
 
             final Method instanceGetter = findMethod().inClass(clz).withName("buildInfo").get();
             final Method commitGetter = findMethod().inClass(clz).withName("gitCommit").get();
