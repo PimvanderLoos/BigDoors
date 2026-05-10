@@ -928,13 +928,17 @@ public class BigDoors extends JavaPlugin implements Listener
                     {
                         case 0:
                         case 1:
+                        case 2:
                             return FallingBlockFactoryProvider_V26_R1.getFactory();
                     }
                 }
             }
         }
 
-        logger.severe("Unsupported version of Minecraft: " + SERVER_VERSION);
+        logger.severe(
+            "Unsupported version of Minecraft: " + SERVER_VERSION +
+                " (" + Bukkit.getVersion() + ") Is the plugin up-to-date?");
+
         if (config.allowCodeGeneration())
             return FallbackGeneratorManager.getFallingBlockFactory();
 

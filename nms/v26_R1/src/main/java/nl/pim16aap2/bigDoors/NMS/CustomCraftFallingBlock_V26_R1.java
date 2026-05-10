@@ -4,7 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
@@ -88,7 +87,7 @@ public class CustomCraftFallingBlock_V26_R1 extends CraftEntity implements Falli
     @Override
     public @NotNull BlockData getBlockData()
     {
-        return CraftBlockData.fromData(this.getHandle().getBlockState());
+        return CraftBlockDataFactory.fromState(this.getHandle().getBlockState());
     }
 
     @Override

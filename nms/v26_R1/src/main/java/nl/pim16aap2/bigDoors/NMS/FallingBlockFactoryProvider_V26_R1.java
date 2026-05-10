@@ -16,8 +16,26 @@ public class FallingBlockFactoryProvider_V26_R1
      */
     public static FallingBlockFactory getFactory()
     {
+        if (!checkPreconditions())
+        {
+            return null;
+        }
+
         return new FallingBlockFactory_V26_R1(
             new CustomEntityFallingBlockGenerator_V26_R1().getEntityFallingBlockSupplier()
         );
+    }
+
+    private static boolean checkPreconditions()
+    {
+        try
+        {
+            return CraftBlockDataFactory.isInitialized();
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            return false;
+        }
     }
 }
