@@ -1,2 +1,0 @@
-- Add full 26.1.2 support. Thanks, Soul, for the bug report.
-- Fix 26.1.2 for Paper. Thanks, Soul, for the bug report.
