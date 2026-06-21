@@ -235,7 +235,7 @@
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
-            <artifactId>v26_R1</artifactId>
+            <artifactId>v26_1_R1</artifactId>
             <version>0.1.8.68-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

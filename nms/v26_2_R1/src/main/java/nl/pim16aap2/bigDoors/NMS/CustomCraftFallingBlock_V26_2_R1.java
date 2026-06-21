@@ -15,9 +15,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 @SuppressWarnings("UnstableApiUsage")
-public class CustomCraftFallingBlock_V26_R1 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
+public class CustomCraftFallingBlock_V26_2_R1 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
 {
-    public CustomCraftFallingBlock_V26_R1(final CraftServer server, final CustomEntityFallingBlock_V26_R1 entity)
+    public CustomCraftFallingBlock_V26_2_R1(final CraftServer server, final CustomEntityFallingBlock_V26_2_R1 entity)
     {
         super(server, entity);
         setVelocity(new Vector(0, 0, 0));
@@ -25,9 +25,9 @@ public class CustomCraftFallingBlock_V26_R1 extends CraftEntity implements Falli
     }
 
     @Override
-    public CustomEntityFallingBlock_V26_R1 getHandle()
+    public CustomEntityFallingBlock_V26_2_R1 getHandle()
     {
-        return (CustomEntityFallingBlock_V26_R1) entity;
+        return (CustomEntityFallingBlock_V26_2_R1) entity;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class CustomCraftFallingBlock_V26_R1 extends CraftEntity implements Falli
     @Override
     public @NotNull BlockData getBlockData()
     {
-        return CraftBlockDataFactory.fromState(this.getHandle().getBlockState());
+        return CraftBlockDataFactory_V26_2_R1.fromState(this.getHandle().getBlockState());
     }
 
     @Override
