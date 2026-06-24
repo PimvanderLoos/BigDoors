@@ -6,11 +6,11 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
-final class CraftBlockDataFactory
+final class CraftBlockDataFactory_V26_1_R1
 {
     private static final Function<BlockState, CraftBlockData> FROM_STATE = findFromStateFunction();
 
-    private CraftBlockDataFactory()
+    private CraftBlockDataFactory_V26_1_R1()
     {
     }
 

@@ -55,6 +55,7 @@ final class ReflectionRepository
     public static final Class<?> classCraftBlockData;
     public static final Class<?> classBlockStateEnum;
     public static final Class<?> classEntityTypes;
+    public static final Class<?> classEntityType;
     public static final Class<?> classRegistries;
     public static final Class<?> classResourceKey;
     public static final Class<?> classMinecraftKey;
@@ -187,7 +188,8 @@ final class ReflectionRepository
         classEnumDirectionAxis = findClass("net.minecraft.core.Direction$Axis").get();
         classEnumBlockRotation = findClass("net.minecraft.world.level.block.Rotation").get();
         classBlockRotatable = findClass("net.minecraft.world.level.block.RotatedPillarBlock").get();
-        classEntityTypes = findClass("net.minecraft.world.entity.EntityType").get();
+        classEntityTypes = findClass("net.minecraft.world.entity.EntityTypes").get();
+        classEntityType = findClass("net.minecraft.world.entity.EntityType").get();
         classRegistries = findClass("net.minecraft.core.registries.Registries").get();
         classResourceKey = findClass("net.minecraft.resources.ResourceKey").get();
         classIWorldReader = findClass("net.minecraft.world.level.LevelReader").get();
@@ -202,7 +204,7 @@ final class ReflectionRepository
             .get();
         cTorPublicNMSFallingBlockEntity = findConstructor()
             .inClass(classEntityFallingBlock)
-            .withParameters(classEntityTypes, classNMSWorld)
+            .withParameters(classEntityType, classNMSWorld)
             .get();
         cTorVec3D = findConstructor()
             .inClass(classVec3D)
@@ -563,6 +565,14 @@ final class ReflectionRepository
         {
             throw new RuntimeException("Failed to find IBlockData codec", e);
         }
+    }
+
+    /**
+     * This method is used to ensure that the static initializer of this class is executed.
+     * <p>
+     * It does nothing and is only used for its side effect of triggering the static initializer.
+     */
+    static void noop() {
     }
 
     private static Method getMethodCraftBockDataFromNMSBlockData()

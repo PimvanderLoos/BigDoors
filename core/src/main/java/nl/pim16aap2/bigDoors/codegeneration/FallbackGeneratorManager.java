@@ -55,6 +55,7 @@ public final class FallbackGeneratorManager
 
         try
         {
+            ensureReflectionLookupSuccess();
             final String mappingsVersion = getMappingsVersion();
             final ClassGenerator entityFallingBlockClassGenerator =
                 new EntityFallingBlockClassGenerator(mappingsVersion);
@@ -104,6 +105,11 @@ public final class FallbackGeneratorManager
             e.printStackTrace();
             return "UNMAPPED";
         }
+    }
+
+    private static void ensureReflectionLookupSuccess()
+    {
+        ReflectionRepository.noop();
     }
 
     @SuppressWarnings("unchecked")

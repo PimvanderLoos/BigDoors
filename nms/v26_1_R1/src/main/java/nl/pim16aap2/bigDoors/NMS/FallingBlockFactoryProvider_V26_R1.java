@@ -30,7 +30,7 @@ public class FallingBlockFactoryProvider_V26_R1
     {
         try
         {
-            return CraftBlockDataFactory.isInitialized();
+            return CraftBlockDataFactory_V26_1_R1.isInitialized();
         }
         catch (Throwable t)
         {

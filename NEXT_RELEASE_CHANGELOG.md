@@ -1,0 +1,1 @@
+- Added support for MC 26.2.

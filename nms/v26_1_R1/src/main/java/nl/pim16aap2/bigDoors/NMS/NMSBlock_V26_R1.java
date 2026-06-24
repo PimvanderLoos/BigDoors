@@ -95,7 +95,7 @@ public class NMSBlock_V26_R1 extends BlockBehaviour implements NMSBlock
 
     private void updateCraftBlockData()
     {
-        this.craftBlockData = CraftBlockDataFactory.fromState(blockData);
+        this.craftBlockData = CraftBlockDataFactory_V26_1_R1.fromState(blockData);
     }
 
     @Override

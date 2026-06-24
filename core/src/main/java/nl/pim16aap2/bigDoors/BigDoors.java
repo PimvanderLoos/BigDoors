@@ -15,6 +15,7 @@ import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R4;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R5;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R6;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_21_R7;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V26_2_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V26_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_11_R1;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_12_R1;
@@ -930,7 +931,17 @@ public class BigDoors extends JavaPlugin implements Listener
                         case 1:
                         case 2:
                             return FallingBlockFactoryProvider_V26_R1.getFactory();
+                        default:
+                            logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 26.1.x!");
+                            return null;
                     }
+                    case 2:
+                    {
+                        return FallingBlockFactoryProvider_V26_2_R1.getFactory();
+                    }
+                    default:
+                        logger.severe("Unexpected minor version '" + SERVER_VERSION.getMinor() + "' for 26.x!");
+                        return null;
                 }
             }
         }

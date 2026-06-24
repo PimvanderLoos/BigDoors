@@ -51,7 +51,8 @@
         <module>v1_21_R6</module>
         <module>v1_21_R7</module>
 
-        <module>v26_R1</module>
+        <module>v26_1_R1</module>
+        <module>v26_2_R1</module>
     </modules>
 
     <dependencies>

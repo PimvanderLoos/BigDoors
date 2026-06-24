@@ -87,10 +87,14 @@ public final class ASMUtil
 
         try
         {
-            return Objects.requireNonNull(
+            StaticFieldFinder staticFieldFinder = Objects.requireNonNull(
                 ASMUtil.processMethod(executable, null, (a, n, d, s, e) ->
                     StaticFieldFinder.create(a, n, d, s, e, fieldType, 1))
-            ).fields[0];
+            );
+
+            return Objects.requireNonNull(
+                staticFieldFinder.fields[0]
+            );
         }
         catch (IOException e)
         {
