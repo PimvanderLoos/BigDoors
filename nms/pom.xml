@@ -68,5 +68,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- NMS modules are internal implementation details; they are not published to the Maven repository. -->
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 </project>
