@@ -130,6 +130,43 @@ jobs:
             -Prelease \
             release:perform
 
+      # The published artifact set is defined by the Maven model (maven-deploy-plugin skip
+      # flags in the POMs); this step only verifies the outcome. It runs before the git push
+      # so that a broken publication fails the release without pushing commits or tags.
+      - name: Verify published artifact set
+        run: |
+          BASE_URL='https://eldonexus.de/repository/maven-public/nl/pim16aap2/BigDoors'
+          failed=0
+
+          # These artifacts (and their full parent POM chain) must be resolvable by consumers.
+          for artifact in \
+            "BigDoors-parent/${RELEASE_VERSION}/BigDoors-parent-${RELEASE_VERSION}.pom" \
+            "hooks/${RELEASE_VERSION}/hooks-${RELEASE_VERSION}.pom" \
+            "core/${RELEASE_VERSION}/core-${RELEASE_VERSION}.pom" \
+            "core/${RELEASE_VERSION}/core-${RELEASE_VERSION}.jar" \
+            "hooks-api/${RELEASE_VERSION}/hooks-api-${RELEASE_VERSION}.pom" \
+            "hooks-api/${RELEASE_VERSION}/hooks-api-${RELEASE_VERSION}.jar"; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "${BASE_URL}/${artifact}")
+            if [ "${code}" != "200" ]; then
+              echo "::error::Expected artifact missing (HTTP ${code}): ${artifact}"
+              failed=1
+            fi
+          done
+
+          # Internal modules must never be published.
+          for artifact in \
+            "nms-api/${RELEASE_VERSION}/nms-api-${RELEASE_VERSION}.pom" \
+            "hooks-bundle/${RELEASE_VERSION}/hooks-bundle-${RELEASE_VERSION}.pom" \
+            "nms/${RELEASE_VERSION}/nms-${RELEASE_VERSION}.pom"; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "${BASE_URL}/${artifact}")
+            if [ "${code}" != "404" ]; then
+              echo "::error::Internal artifact unexpectedly published (HTTP ${code}): ${artifact}"
+              failed=1
+            fi
+          done
+
+          exit "${failed}"
+
       - name: Push release commits and tag
         run: git push origin master --follow-tags
 
@@ -159,19 +196,26 @@ jobs:
             core/target/BigDoors.jar.asc
             core/target/BigDoors.jar.SHA-256
 
-      - name: Clear changelog for next release
+      - name: Clear changelog and bump README version for next release
         env:
           GPG_KEY: ${{ secrets.MAVEN_GPG_KEY }}
           Maven_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
           echo "$GPG_KEY" | gpg --batch --import
-          
+
           version_line=$(echo "${{ env.NEXT_DEV_VERSION }}" | sed 's/-SNAPSHOT//g')
           { printf '%s\n\n' "$version_line"; cat changelog.txt; } > changelog.tmp
           mv changelog.tmp changelog.txt
-          
+
           > NEXT_RELEASE_CHANGELOG.md
-          
-          git add changelog.txt NEXT_RELEASE_CHANGELOG.md
-          git commit -S -m "chore: clear next changelog after v${{ env.RELEASE_VERSION }} release"
+
+          # Point the README dependency snippets at the version that was just released.
+          # The greps fail the step loudly if a README reformat ever breaks the sed patterns.
+          sed -i "s|<version>[0-9][0-9.]*</version>|<version>${RELEASE_VERSION}</version>|" README.md
+          sed -i "s|BigDoors:core:[0-9][0-9.]*|BigDoors:core:${RELEASE_VERSION}|" README.md
+          grep -q "<version>${RELEASE_VERSION}</version>" README.md
+          grep -q "BigDoors:core:${RELEASE_VERSION}" README.md
+
+          git add changelog.txt NEXT_RELEASE_CHANGELOG.md README.md
+          git commit -S -m "chore: clear changelog and bump README to v${{ env.RELEASE_VERSION }} after release"
           git push origin master

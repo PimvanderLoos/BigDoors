@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/nexus/r/nl.pim16aap2/BigDoors?color=green&label=BigDoors&logo=BigDoors&logoColor=red&server=https%3A%2F%2Feldonexus.de&style=flat-square)
+[![BigDoors release](https://img.shields.io/github/v/release/PimvanderLoos/BigDoors?label=BigDoors&color=green&style=flat-square)](https://github.com/PimvanderLoos/BigDoors/releases/latest)
 
 # BigDoors v1
 BigDoors is a plugin for the Minecraft server mod [Spigot](https://spigotmc.org). Its aim is to enhance your server with
@@ -393,7 +393,7 @@ There are 2 modules available:
   <dependency>
     <groupId>nl.pim16aap2.BigDoors</groupId>
     <artifactId>core</artifactId>
-    <version>0.1.8.64</version>
+    <version>0.1.8.68</version>
     <scope>provided</scope>
   </dependency>
 </dependencies>
@@ -407,7 +407,7 @@ maven {
 }
 
 dependencies {
-  compileOnly 'nl.pim16aap2.BigDoors:core:0.1.8.64'
+  compileOnly 'nl.pim16aap2.BigDoors:core:0.1.8.68'
 }
 ```
 
