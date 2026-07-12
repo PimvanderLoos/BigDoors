@@ -1,1 +1,2 @@
 - Fix support for version before MC 1.16.5.
+- Fixed a way to dupe the BigDoors stick. Thanks, 1Pootis1, for the bug report!
