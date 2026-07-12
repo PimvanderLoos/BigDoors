@@ -1,0 +1,1 @@
+- Disabled fake player creator for < 1.16.5 due to a lack of Library Loader support on legacy versions.
