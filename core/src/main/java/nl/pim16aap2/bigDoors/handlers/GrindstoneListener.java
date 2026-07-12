@@ -1,6 +1,7 @@
 package nl.pim16aap2.bigDoors.handlers;
 
 import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.reflection.ReflectionBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
@@ -11,6 +12,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 
 public class GrindstoneListener implements Listener
@@ -19,66 +21,77 @@ public class GrindstoneListener implements Listener
 
     private final BigDoors bigDoors;
 
-    private final Class<? extends Event> clzPrepareGrindstoneEvent;
-    private final Method methodSetResult;
-    private final InventoryType grindStoneInventoryType;
-
-    GrindstoneListener(
-        BigDoors bigDoors,
-        Class<? extends Event> clzPrepareGrindstoneEvent,
-        Method methodSetResult,
-        InventoryType grindStoneInventoryType
-    )
+    GrindstoneListener(BigDoors bigDoors)
     {
         this.bigDoors = bigDoors;
-        this.clzPrepareGrindstoneEvent = clzPrepareGrindstoneEvent;
-        this.methodSetResult = methodSetResult;
-        this.grindStoneInventoryType = grindStoneInventoryType;
     }
 
-    public static void tryRegister(BigDoors bigDoors)
+    private boolean tryRegisterOnGrindstoneInventoryClick(GrindstoneListener listener)
     {
-        final Class<? extends Event> clzPrepareGrindstoneEvent;
-        final Method methodSetResult;
-        final InventoryType grindStoneInventoryType;
-        try
-        {
-            clzPrepareGrindstoneEvent = Class.forName(EVENT_CLASS_NAME).asSubclass(Event.class);
-            methodSetResult = clzPrepareGrindstoneEvent.getMethod("setResult", ItemStack.class);
-            grindStoneInventoryType = InventoryType.valueOf("GRINDSTONE");
-        }
-        catch (ReflectiveOperationException e)
-        {
-            return;
-        }
+        final @Nullable InventoryType grindStoneInventoryType = (InventoryType) ReflectionBuilder.findEnumValues()
+            .inClass(InventoryType.class)
+            .withName("GRINDSTONE")
+            .setNullable()
+            .get();
 
-        final GrindstoneListener listener = new GrindstoneListener(
-            bigDoors,
-            clzPrepareGrindstoneEvent,
-            methodSetResult,
-            grindStoneInventoryType
-        );
-
-        Bukkit.getPluginManager().registerEvent(
-            clzPrepareGrindstoneEvent,
-            listener,
-            EventPriority.HIGHEST,
-            (ignored, event) -> listener.onPrepareGrindstone(event),
-            bigDoors,
-            true
-        );
+        // Grindstone inventory type was introduced in 1.14; clzPrepareGrindstoneEvent in 1.16.
+        if (grindStoneInventoryType == null)
+            return false;
 
         Bukkit.getPluginManager().registerEvent(
             InventoryClickEvent.class,
             listener,
             EventPriority.HIGHEST,
-            (ignored, event) -> listener.onInventoryClick(event),
+            (ignored, event) -> listener.onGrindstoneInventoryClick(event, grindStoneInventoryType),
+            bigDoors,
+            true
+        );
+
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void tryRegisterOnPrepareGrindstone(GrindstoneListener listener)
+    {
+        final @Nullable Class<? extends Event> clzPrepareGrindstoneEvent = (Class<? extends Event>) ReflectionBuilder
+            .findClass()
+            .withNames(EVENT_CLASS_NAME)
+            .setNullable()
+            .get();
+        if (clzPrepareGrindstoneEvent == null)
+            return;
+
+        final @Nullable Method methodSetResult = ReflectionBuilder.findMethod()
+            .inClass(clzPrepareGrindstoneEvent)
+            .withName("setResult")
+            .withParameters(ItemStack.class)
+            .setNullable()
+            .get();
+        if (methodSetResult == null)
+            return;
+
+
+        Bukkit.getPluginManager().registerEvent(
+            clzPrepareGrindstoneEvent,
+            listener,
+            EventPriority.HIGHEST,
+            (ignored, event) -> listener.onPrepareGrindstone(event, clzPrepareGrindstoneEvent, methodSetResult),
             bigDoors,
             true
         );
     }
 
-    void onInventoryClick(Event event)
+    public static void tryRegister(BigDoors bigDoors)
+    {
+        final GrindstoneListener listener = new GrindstoneListener(bigDoors);
+
+        if (!listener.tryRegisterOnGrindstoneInventoryClick(listener))
+            return;
+
+        listener.tryRegisterOnPrepareGrindstone(listener);
+    }
+
+    void onGrindstoneInventoryClick(Event event, InventoryType grindStoneInventoryType)
     {
         if (!(event instanceof InventoryClickEvent))
             return;
@@ -94,7 +107,7 @@ public class GrindstoneListener implements Listener
             ice.setCancelled(true);
     }
 
-    void onPrepareGrindstone(Event event)
+    void onPrepareGrindstone(Event event, Class<? extends Event> clzPrepareGrindstoneEvent, Method methodSetResult)
     {
         if (!clzPrepareGrindstoneEvent.isInstance(event))
             return;
