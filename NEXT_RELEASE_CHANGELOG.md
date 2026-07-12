@@ -1,0 +1,1 @@
+- Fix support for version before MC 1.16.5.
