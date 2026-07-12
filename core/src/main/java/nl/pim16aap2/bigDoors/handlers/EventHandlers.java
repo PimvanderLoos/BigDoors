@@ -1,7 +1,9 @@
 package nl.pim16aap2.bigDoors.handlers;
 
-import java.text.MessageFormat;
-
+import nl.pim16aap2.bigDoors.BigDoors;
+import nl.pim16aap2.bigDoors.Door;
+import nl.pim16aap2.bigDoors.events.DoorEventToggleStart;
+import nl.pim16aap2.bigDoors.toolUsers.ToolUser;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,10 +22,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.PlayerInventory;
 
-import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.events.DoorEventToggleStart;
-import nl.pim16aap2.bigDoors.toolUsers.ToolUser;
+import java.text.MessageFormat;
 
 public class EventHandlers implements Listener
 {

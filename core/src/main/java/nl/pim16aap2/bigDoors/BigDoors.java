@@ -42,6 +42,7 @@ import nl.pim16aap2.bigDoors.handlers.CommandHandler;
 import nl.pim16aap2.bigDoors.handlers.EventHandlers;
 import nl.pim16aap2.bigDoors.handlers.FailureCommandHandler;
 import nl.pim16aap2.bigDoors.handlers.GUIHandler;
+import nl.pim16aap2.bigDoors.handlers.GrindstoneListener;
 import nl.pim16aap2.bigDoors.handlers.LoginMessageHandler;
 import nl.pim16aap2.bigDoors.handlers.LoginResourcePackHandler;
 import nl.pim16aap2.bigDoors.handlers.RedstoneHandler;
@@ -273,6 +274,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Bukkit.getPluginManager().registerEvents(new EventHandlers(this), this);
         Bukkit.getPluginManager().registerEvents(new GUIHandler(this), this);
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadHandler(this), this);
+        GrindstoneListener.tryRegister(this);
 
         // No need to put these in init, as they should not be reloaded.
         pbCache = new TimedCache<>(config.cacheTimeout());
