@@ -436,7 +436,7 @@ public final class FakePlayerClassGenerator
      */
     private DynamicType.Builder<?> addMethodGetWorld(DynamicType.Builder<?> currentBuilder, Map<String, Method> methods)
     {
-        final Method method = findMethod(Player.class).withName("getWorld").checkInterfaces().get();
+        final Method method = findMethod(Player.class).findMultiple().atLeast(1).withName("getWorld").checkInterfaces().get().get(0);
         final Method target = findMethod(Location.class).withName("getWorld").get();
         if (methods.remove(simpleMethodString(method)) == null)
             throw new IllegalStateException("Failed to find mapped method: " + method);

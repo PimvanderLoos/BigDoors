@@ -44,3 +44,9 @@ updateMirror.sh
 **/target/*
 */lib/*
 nms_build/
+
+
+.factorypath
+.settings/
+bin/
+tmp/
