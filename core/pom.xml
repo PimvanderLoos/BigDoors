@@ -258,7 +258,7 @@
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>${dependency.bytebuddy.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -407,6 +407,10 @@
                         <relocation>
                             <pattern>com.github.Anon8281.universalScheduler</pattern>
                             <shadedPattern>nl.pim16aap2.bigDoors.lib.universalScheduler</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.bytebuddy</pattern>
+                            <shadedPattern>nl.pim16aap2.bigDoors.lib.bytebuddy</shadedPattern>
                         </relocation>
                     </relocations>
                     <filters>
