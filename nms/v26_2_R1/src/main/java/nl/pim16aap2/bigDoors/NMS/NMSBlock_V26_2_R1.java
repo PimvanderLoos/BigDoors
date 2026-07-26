@@ -112,7 +112,7 @@ public class NMSBlock_V26_2_R1 extends BlockBehaviour implements NMSBlock
 
         craftWorld
             .getHandle()
-            .setBlock(BlockPos.containing(loc.getX(), loc.getY(), loc.getZ()), blockData, 1);
+            .setBlock(BlockPos.containing(loc.getX(), loc.getY(), loc.getZ()), blockData, 3);
     }
 
     private void updateCraftBlockDataMultipleFacing()

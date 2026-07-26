@@ -386,7 +386,7 @@ final class NMSBlockClassGenerator extends ClassGenerator
                                         .withMethodCall(invoke(methodLocationGetY).onField(FIELD_LOCATION))
                                         .withMethodCall(invoke(methodLocationGetZ).onField(FIELD_LOCATION)))
                     .withField(FIELD_BLOCK_DATA)
-                    .with(1)));
+                    .with(3)));
     }
 
     private DynamicType.Builder<?> addUpdateMultipleFacingMethod(DynamicType.Builder<?> builder)
