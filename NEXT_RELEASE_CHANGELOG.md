@@ -1,2 +1,0 @@
-- Disabled fake player creator for < 1.16.5 due to a lack of Library Loader support on legacy versions.
-- Fix support for Paper 26.2. Thanks, phwog, for the bug report and the suggested fix.

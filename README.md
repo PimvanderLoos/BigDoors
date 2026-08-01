@@ -393,7 +393,7 @@ There are 2 modules available:
   <dependency>
     <groupId>nl.pim16aap2.BigDoors</groupId>
     <artifactId>core</artifactId>
-    <version>0.1.8.69</version>
+    <version>0.1.8.70</version>
     <scope>provided</scope>
   </dependency>
 </dependencies>
@@ -407,7 +407,7 @@ maven {
 }
 
 dependencies {
-  compileOnly 'nl.pim16aap2.BigDoors:core:0.1.8.69'
+  compileOnly 'nl.pim16aap2.BigDoors:core:0.1.8.70'
 }
 ```
 
