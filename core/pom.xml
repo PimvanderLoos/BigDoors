@@ -247,6 +247,14 @@
             <scope>compile</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>nl.pim16aap2.BigDoors</groupId>
+            <artifactId>v26_3_R1</artifactId>
+            <version>0.1.8.71-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>${dependency.xseries.groupid}</groupId>
             <artifactId>XSeries</artifactId>
