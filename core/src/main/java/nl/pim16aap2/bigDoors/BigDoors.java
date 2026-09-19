@@ -784,20 +784,8 @@ public class BigDoors extends JavaPlugin implements Listener
         return IS_ON_FLATTENED_VERSION;
     }
 
-    // Check + initialize for the correct version of Minecraft.
-    @SuppressWarnings("SwitchStatementWithTooFewBranches")
-    private @Nullable FallingBlockFactory createFallingBlockFactory()
-        throws Exception
+    private @Nullable FallingBlockFactory createLegacyFallingBlockFactory()
     {
-        if (config.forceCodeGeneration())
-            return FallbackGeneratorManager.getFallingBlockFactory();
-
-        if (SERVER_VERSION.isLowerThan(Semver.of(1, 11, 0)))
-        {
-            logger.severe("This version of Minecraft is not supported. Is the plugin up-to-date?");
-            return null;
-        }
-
         switch (SERVER_VERSION.getMinor())
         {
             case 11:
@@ -807,6 +795,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 return new FallingBlockFactory_V1_12_R1();
 
             case 13:
+            {
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
@@ -815,10 +804,9 @@ public class BigDoors extends JavaPlugin implements Listener
                         return new FallingBlockFactory_V1_13_R1_5();
                     case 2:
                         return new FallingBlockFactory_V1_13_R2();
-                    default:
-                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.13!");
-                        return null;
                 }
+                return null;
+            }
 
             case 14:
                 return new FallingBlockFactory_V1_14_R1();
@@ -827,6 +815,7 @@ public class BigDoors extends JavaPlugin implements Listener
                 return new FallingBlockFactory_V1_15_R1();
 
             case 16:
+            {
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
@@ -838,15 +827,15 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 4:
                     case 5:
                         return new FallingBlockFactory_V1_16_R3();
-                    default:
-                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.16!");
-                        return null;
                 }
+                return null;
+            }
 
             case 17:
                 return new FallingBlockFactory_V1_17_R1();
 
             case 18:
+            {
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
@@ -854,12 +843,12 @@ public class BigDoors extends JavaPlugin implements Listener
                         return new FallingBlockFactory_V1_18_R1();
                     case 2:
                         return new FallingBlockFactory_V1_18_R2();
-                    default:
-                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.18!");
-                        return null;
                 }
+                return null;
+            }
 
             case 19:
+            {
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
@@ -871,12 +860,12 @@ public class BigDoors extends JavaPlugin implements Listener
                         return new FallingBlockFactory_V1_19_R2();
                     case 4:
                         return new FallingBlockFactory_V1_19_R3();
-                    default:
-                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.19!");
-                        return null;
                 }
+                return null;
+            }
 
             case 20:
+            {
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
@@ -890,12 +879,12 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 5:
                     case 6:
                         return FallingBlockFactoryProvider_V1_20_R4.getFactory();
-                    default:
-                        logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 1.20!");
-                        return null;
                 }
+                return null;
+            }
 
             case 21:
+            {
                 switch (SERVER_VERSION.getPatch())
                 {
                     case 0:
@@ -918,8 +907,15 @@ public class BigDoors extends JavaPlugin implements Listener
                     case 11:
                         return FallingBlockFactoryProvider_V1_21_R7.getFactory();
                 }
+                return null;
+            }
         }
+        return null;
+    }
 
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
+    private @Nullable FallingBlockFactory createModernFallingBlockFactory()
+    {
         switch (SERVER_VERSION.getMajor())
         {
             case 26:
@@ -927,26 +923,55 @@ public class BigDoors extends JavaPlugin implements Listener
                 switch (SERVER_VERSION.getMinor())
                 {
                     case 1:
-                        switch (SERVER_VERSION.getPatch())
                     {
-                        case 0:
-                        case 1:
-                        case 2:
-                            return FallingBlockFactoryProvider_V26_R1.getFactory();
-                        default:
-                            logger.severe("Unexpected patch version '" + SERVER_VERSION.getPatch() + "' for 26.1.x!");
-                            return null;
+                        switch (SERVER_VERSION.getPatch())
+                        {
+                            case 0:
+                            case 1:
+                            case 2:
+                                return FallingBlockFactoryProvider_V26_R1.getFactory();
+                        }
+                        return null;
                     }
                     case 2:
                     {
                         return FallingBlockFactoryProvider_V26_2_R1.getFactory();
                     }
-                    default:
-                        logger.severe("Unexpected minor version '" + SERVER_VERSION.getMinor() + "' for 26.x!");
-                        return null;
                 }
+                return null;
             }
         }
+        return null;
+    }
+
+    // Check + initialize for the correct version of Minecraft.
+    private @Nullable FallingBlockFactory createFallingBlockFactory()
+        throws Exception
+    {
+        if (config.forceCodeGeneration())
+            return FallbackGeneratorManager.getFallingBlockFactory();
+
+        if (SERVER_VERSION.isLowerThan(Semver.of(1, 11, 0)))
+        {
+            logger.severe("This version of Minecraft is not supported. Is the plugin up-to-date?");
+            return null;
+        }
+
+        final FallingBlockFactory factory;
+        if (SERVER_VERSION.getMajor() == 1)
+        {
+            factory = createLegacyFallingBlockFactory();
+        }
+        else
+        {
+            factory = createModernFallingBlockFactory();
+        }
+
+        if (factory != null)
+        {
+            return factory;
+        }
+
 
         logger.severe(
             "Unsupported version of Minecraft: " + SERVER_VERSION +
