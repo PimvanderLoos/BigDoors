@@ -83,7 +83,7 @@ public class CustomEntityFallingBlock_V26_3_R1 extends FallingBlockEntity implem
     protected void addAdditionalSaveData(@NonNull ValueOutput valueOutput)
     {
         super.addAdditionalSaveData(valueOutput);
-        applyDefaultSettings();
+        valueOutput.store("BlockState", BlockState.CODEC, this.blockState);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class CustomEntityFallingBlock_V26_3_R1 extends FallingBlockEntity implem
     {
         super.readAdditionalSaveData(valueInput);
         this.blockState = super.getBlockState();
-        setTicksLived(0);
+        applyDefaultSettings();
     }
 
     @Override
