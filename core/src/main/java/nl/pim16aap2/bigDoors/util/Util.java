@@ -659,24 +659,55 @@ public final class Util
 
         String name = mat.toString();
 
-        if (name.endsWith("SLAB") || name.endsWith("STAIRS") || name.endsWith("WALL"))
+        if (name.endsWith("SLAB")
+            || name.endsWith("STAIRS")
+            || name.endsWith("WALL")
+        )
+        {
             return true;
-
-        if (name.contains("POLISHED") || name.contains("SMOOTH") ||
-            name.contains("BRICKS") || name.contains("DEEPSLATE"))
-            return true;
+        }
 
         if (name.endsWith("TRAPDOOR"))
+        {
             return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
+        }
 
-        if (name.endsWith("BANNER") || name.endsWith("SHULKER_BOX") || name.endsWith("DOOR") ||
-            name.endsWith("BED") || name.endsWith("SIGN") || name.endsWith("HEAD") || name.endsWith("SKULL") ||
-            name.endsWith("CHEST") || name.endsWith("GOLEM_STATUE"))
+        if (name.endsWith("BANNER")
+            || name.endsWith("SHULKER_BOX")
+            || name.endsWith("DOOR")
+            || name.endsWith("BED")
+            || name.endsWith("SIGN")
+            || name.endsWith("HEAD")
+            || name.endsWith("SKULL")
+            || name.endsWith("CHEST")
+            || name.endsWith("GOLEM_STATUE")
+            || name.endsWith("_CUSHION")
+            || name.endsWith("_SHELF")
+        )
+        {
             return false;
+        }
 
-        if (name.endsWith("CARPET") || name.endsWith("BUTTON") || name.endsWith("PRESSURE_PLATE") ||
-            name.endsWith("SAPLING") || name.endsWith("TORCH") || name.endsWith("RAIL") || name.endsWith("TULIP"))
+        if (name.endsWith("CARPET")
+            || name.endsWith("BUTTON")
+            || name.endsWith("PRESSURE_PLATE")
+            || name.endsWith("SAPLING")
+            || name.endsWith("TORCH")
+            || name.endsWith("RAIL")
+            || name.endsWith("TULIP")
+        )
+        {
             return BigDoors.SERVER_VERSION.isGreaterThanOrEqualTo(Semver.of(1, 18, 0));
+        }
+
+        if (name.contains("POLISHED")
+            || name.contains("SMOOTH")
+            || name.contains("BRICKS")
+            || name.contains("DEEPSLATE")
+        )
+        {
+            return true;
+        }
 
         final @Nullable XMaterial xmat = matchXMaterial(mat);
         if (xmat == null)
