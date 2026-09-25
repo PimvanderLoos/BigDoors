@@ -162,6 +162,13 @@ public enum ResourcePackDetails
         Semver.of(26, 2, 1)
     ),
 
+    FORMAT_88_PLUS(
+        "https://www.dropbox.com/scl/fi/nsl9xqz4unlzcher30olt/BigDoorsResourcePack-Format88-plus.zip?rlkey=zzqrw6edctqksfi4pahbrr9yp&st=c6pxt116&dl=1",
+        "b794bd96cd5870adceb06433d1370e4e19f3ddeb",
+        Semver.of(26, 3, 0),
+        Semver.of(99, 99, 99)
+    ),
+
     ;
 
     private static final ResourcePackDetails[] VALUES = values();
