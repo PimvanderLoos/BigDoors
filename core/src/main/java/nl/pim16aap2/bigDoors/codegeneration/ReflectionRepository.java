@@ -299,12 +299,9 @@ final class ReflectionRepository
                 .withOptionalParameters(classNMSDamageSource))
             .get();
         methodMove = findMethod().inClass(classNMSEntity)
-            .findMultiple()
-            .withReturnType(void.class)
+            .withName("move")
             .withParameters(classEnumMoveType, classVec3D)
-            .atLeast(1)
-            .get()
-            .get(0);
+            .get();
         methodEntityFallingBlockGetBlock = findMethod()
             .inClass(classEntityFallingBlock)
             .withReturnType(classIBlockData)
