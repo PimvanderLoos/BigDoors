@@ -14,13 +14,13 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityRemoveEvent;
 import org.jspecify.annotations.NonNull;
 
-public class CustomEntityFallingBlock_V26_2_R1 extends FallingBlockEntity implements CustomEntityFallingBlock
+public class CustomEntityFallingBlock_V26_3_R1 extends FallingBlockEntity implements CustomEntityFallingBlock
 {
     // We need to keep our own blockstate as the parent is private without setter.
     private BlockState blockState;
     private final CraftWorld world;
 
-    public CustomEntityFallingBlock_V26_2_R1(
+    public CustomEntityFallingBlock_V26_3_R1(
         final org.bukkit.World world,
         final double spawnX,
         final double spawnY,

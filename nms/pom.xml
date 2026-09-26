@@ -53,6 +53,7 @@
 
         <module>v26_1_R1</module>
         <module>v26_2_R1</module>
+        <module>v26_3_R1</module>
     </modules>
 
     <dependencies>
