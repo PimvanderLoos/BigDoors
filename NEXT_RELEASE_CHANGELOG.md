@@ -1,1 +1,0 @@
-- Add support for MC 26.3.
