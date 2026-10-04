@@ -55,7 +55,7 @@ public class CustomEntityFallingBlock_V26_3_R1 extends FallingBlockEntity implem
 
     public void spawn()
     {
-        this.world.addEntityToWorld(this, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        this.world.getHandle().addFreshEntity(this, CreatureSpawnEvent.SpawnReason.CUSTOM);
     }
 
     private void die()

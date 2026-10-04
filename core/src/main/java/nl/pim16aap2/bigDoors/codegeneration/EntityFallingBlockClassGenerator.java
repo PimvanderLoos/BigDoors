@@ -152,8 +152,8 @@ final class EntityFallingBlockClassGenerator extends ClassGenerator
     {
         return builder
             .defineMethod(METHOD_SPAWN, boolean.class, Visibility.PUBLIC)
-            .intercept(invoke(methodCraftAddEntityToWorld)
-                           .onField(FIELD_CRAFT_WORLD)
+            .intercept(invoke(methodAddFreshEntity)
+                           .onMethodCall(invoke(methodGetWorldHandle).onField(FIELD_CRAFT_WORLD))
                            .with(MethodCall.ArgumentLoader.ForThisReference.Factory.INSTANCE)
                            .with(CreatureSpawnEvent.SpawnReason.CUSTOM)
                            .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC)
