@@ -1,0 +1,1 @@
+- Fix error on Paper 26.3. Thanks, Casuistry1, for reporting it!

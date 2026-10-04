@@ -35,6 +35,7 @@ final class ReflectionRepository
     public static final Class<?> classStateHolder;
     public static final Class<?> classBlockData;
     public static final Class<?> classNMSWorld;
+    public static final Class<?> classServerLevel;
     public static final Class<?> classNMSEntity;
     public static final Class<?> classNMSBlock;
     public static final Class<?> classNMSItem;
@@ -102,7 +103,7 @@ final class ReflectionRepository
     public static final Method methodLocX;
     public static final Method methodLocY;
     public static final Method methodLocZ;
-    public static final Method methodCraftAddEntityToWorld;
+    public static final Method methodAddFreshEntity;
     public static final Method methodAppendEntityCrashReport;
     public static final Method methodCrashReportAppender;
     public static final Method methodValueOutputSetCodec;
@@ -173,6 +174,7 @@ final class ReflectionRepository
         classCraftWorld = findClass(craftBase + "CraftWorld").get();
         classEnumMoveType = findClass("net.minecraft.world.entity.MoverType").get();
         classVec3D = findClass("net.minecraft.world.phys.Vec3").get();
+        classServerLevel = findClass("net.minecraft.server.level.ServerLevel").get();
         classNMSWorld = findClass("net.minecraft.world.level.Level").get();
         classNMSEntity = findClass("net.minecraft.world.entity.Entity").get();
         classBlockPosition = findClass("net.minecraft.core.BlockPos").get();
@@ -401,7 +403,7 @@ final class ReflectionRepository
             .withParameters(classEnumBlockRotation)
             .get();
         methodSetTypeAndData = findMethod()
-            .inClass(classNMSWorld)
+            .inClass(classServerLevel)
             .withReturnType(boolean.class)
             .withParameters(classBlockPosition, classIBlockData, int.class)
             .checkInterfaces()
@@ -440,9 +442,9 @@ final class ReflectionRepository
             .inClass(Object.class)
             .withName("getClass")
             .get();
-        methodCraftAddEntityToWorld = findMethod()
-            .inClass(classCraftWorld)
-            .withName("addEntityToWorld")
+        methodAddFreshEntity = findMethod()
+            .inClass(classServerLevel)
+            .withName("addFreshEntity")
             .withParameters(classNMSEntity, CreatureSpawnEvent.SpawnReason.class)
             .get();
         methodGetIBlockDataHolderState = ReflectionASMAnalyzers
